@@ -3,17 +3,19 @@ import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 
 interface SortableCardProps {
-  id: string;
-  title: string;
+  id: number;
+  name: string;
   value: number;
   showVal: boolean;
+  active: string;
 }
 
 export default function SortableCard({
   id,
-  title,
+  name,
   value,
   showVal,
+  active,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -27,7 +29,13 @@ export default function SortableCard({
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
-      <Card title={title}>
+      <Card
+        title={name}
+        style={{
+          borderColor: active ? active : "",
+          borderWidth: active ? "5px" : "",
+        }}
+      >
         {showVal == true ? (
           <Row justify={"center"}>
             <div

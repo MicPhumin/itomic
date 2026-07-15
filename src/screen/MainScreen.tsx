@@ -1,6 +1,7 @@
-import { Button, Card, Col, Divider, Row } from "antd";
-import React, { useState } from "react";
+import { Button, Card, Col, Divider, Row, Modal, Input, Tabs } from "antd";
+import React, { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
+import { supabase } from "../supabase";
 
 import {
   SortableContext,
@@ -9,21 +10,107 @@ import {
 } from "@dnd-kit/sortable";
 
 import SortableCard from "../component/SortableCard";
-
-const initialCards = [
-  { id: "1", title: "Apple", value: 3 },
-  { id: "2", title: "Orange", value: 16 },
-  { id: "3", title: "Banana", value: 35 },
-  { id: "4", title: "Grape", value: 50 },
-  { id: "5", title: "Melon", value: 67 },
-  { id: "6", title: "Cherry", value: 89 },
-  { id: "7", title: "Mango", value: 95 },
-];
+interface SortableCardProps {
+  id: number;
+  name: string;
+  value: number;
+  showVal: boolean;
+  active: string;
+}
 
 const MainScreen = () => {
-  const [cards, setCards] = useState(initialCards);
+  const [cards, setCards] = useState<SortableCardProps[]>([]);
+  const [myCards, setMyCards] = useState<SortableCardProps>();
   const [showVal, setShowVal] = useState<boolean>(false);
-  console.log("Card=>", cards);
+  const [name, setName] = useState("");
+  const [topic, setTopic] = useState("");
+  const [score, setScore] = useState(null);
+  const [isNewGame, setIsNewGame] = useState(false);
+
+  const [isModalOpen, setIsModalOpen] = useState(true);
+  console.log("cards", cards);
+
+  const getAllPlayer = async () => {
+    const { data } = await supabase.from("itomic").select("*");
+    const mycard = data?.find((item) => {
+      return item.name === name;
+    });
+
+    const getTopic = data?.find((item) => {
+      return item.topic !== "";
+    });
+    console.log("getTopic", getTopic);
+    if (topic === "") {
+      setTopic(getTopic.topic);
+    }
+    console.log("myCards", myCards);
+    setMyCards(mycard);
+    setCards(data);
+  };
+  useEffect(() => {
+    getAllPlayer();
+  }, []);
+
+  const onChange = (key: string) => {
+    console.log(key);
+  };
+
+  const items: TabsProps["items"] = [
+    {
+      key: "1",
+      label: "User",
+      children: (
+        <>
+          <h3>Enter Name</h3>
+          <Input
+            placeholder="Enter Name"
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+          />
+        </>
+      ),
+    },
+    {
+      key: "2",
+      label: "Modurator",
+      children: (
+        <>
+          <h3>Enter Name</h3>
+          <Input
+            placeholder="Enter Name"
+            onChange={(e) => {
+              setName(e.target.value);
+            }}
+          />
+
+          <h3>Enter Topic</h3>
+          <Input
+            placeholder="Enter Topic"
+            onChange={(e) => {
+              setTopic(e.target.value);
+            }}
+          />
+        </>
+      ),
+    },
+  ];
+  const handleOk = async () => {
+    const randomNumber = Math.floor(Math.random() * 100) + 1;
+
+    const UserData = {
+      id: cards.length + 1,
+      name: name,
+      value: Number(randomNumber),
+      showVal: false,
+      topic: topic,
+    };
+
+    await supabase.from("itomic").insert(UserData);
+    console.log("Card=>", cards);
+    getAllPlayer();
+    setIsModalOpen(false);
+  };
 
   function handleDragEnd(event: any) {
     const { active, over } = event;
@@ -36,9 +123,83 @@ const MainScreen = () => {
     setCards(arrayMove(cards, oldIndex, newIndex));
   }
 
+  const handleOrder = () => {
+    cards.map((item) => {
+      console.log(item);
+    });
+
+    const updatedData = cards.map((item, index, arr) => {
+      const nextItem = arr[index + 1];
+      console.log("item", item);
+      console.log("nextItem", nextItem);
+
+      return {
+        ...item,
+        active: nextItem && item.value < nextItem.value ? "green" : "red",
+      };
+    });
+    let score = 0;
+    updatedData.filter((item) => {
+      if (item.active === "green") {
+        return score++;
+      }
+    });
+    setScore(score);
+    setCards(updatedData);
+    setIsNewGame(true);
+  };
+
+  const deleteAllRows = async () => {
+    const { error } = await supabase.from("itomic").delete().neq("id", 0);
+
+    if (error) {
+      console.error(error);
+    } else {
+      console.log("Deleted all rows");
+    }
+    window.location.reload();
+    setIsNewGame(false);
+  };
+
   return (
     <div style={{ margin: "0px 50px 0px 50px" }}>
-      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC</h3>
+      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC ver.1.0</h3>
+
+      <Modal
+        title={
+          <Row justify={"center"}>
+            <h2 style={{ color: "magenta" }}>iTOMIC</h2>
+          </Row>
+        }
+        closable={false}
+        open={isModalOpen}
+        footer={
+          <>
+            <Row justify={"center"}>
+              <Button
+                size="large"
+                type="primary"
+                onClick={handleOk}
+                style={{
+                  width: "100px",
+                }}
+              >
+                Ok
+              </Button>
+            </Row>
+          </>
+        }
+        width={{
+          xs: "80%",
+          sm: "80%",
+          md: "70%",
+          lg: "60%",
+          xl: "50%",
+          xxl: "40%",
+        }}
+      >
+        <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+      </Modal>
       <Row justify={"center"}>
         <Col xs={24} sm={24} md={4} lg={4} xl={2}>
           <Row>
@@ -48,18 +209,18 @@ const MainScreen = () => {
 
         <Col xs={24} sm={24} md={20} lg={16} xl={18}>
           <Row>
-            <h2 style={{ fontSize: "30px" }}>iTOMIC Topic</h2>
+            <h2 style={{ fontSize: "30px" }}>{topic}</h2>
           </Row>
         </Col>
 
-        <Col xs={20} sm={20} md={6} lg={4} xl={4}>
+        <Col xs={20} sm={20} md={10} lg={4} xl={4}>
           <Row justify={"center"}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               {" "}
               <h2 style={{ fontSize: "20px" }}>Your Number is :</h2>
             </Col>
             <Col xs={12} sm={12} md={24} lg={24} xl={24}>
-              <Card title={"Username"}>
+              <Card title={myCards?.name}>
                 <div
                   style={{
                     color: "black",
@@ -67,7 +228,7 @@ const MainScreen = () => {
                     fontWeight: "bold",
                   }}
                 >
-                  2
+                  {myCards?.value}
                 </div>
               </Card>
             </Col>
@@ -107,9 +268,10 @@ const MainScreen = () => {
                       <SortableCard
                         key={card.id}
                         id={card.id}
-                        title={card.title}
+                        name={card.name}
                         value={card.value}
                         showVal={showVal}
+                        active={card.active}
                       />
                     </Col>
                   </>
@@ -119,22 +281,44 @@ const MainScreen = () => {
           </DndContext>
         </Col>
       </Row>
-      <Row justify={"center"}>
-        <Button
-          variant="solid"
-          color="purple"
-          onClick={() => {
-            setShowVal(!showVal);
-          }}
-          style={{
-            fontSize: "30px",
-            width: "300px",
-            height: "50px",
-          }}
-        >
-          Show
-        </Button>
-      </Row>
+      {score != null && <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>}
+
+      {isNewGame === false ? (
+        <Row justify={"center"}>
+          <Button
+            variant="solid"
+            color="purple"
+            onClick={() => {
+              handleOrder();
+              setShowVal(!showVal);
+            }}
+            style={{
+              fontSize: "30px",
+              width: "300px",
+              height: "50px",
+            }}
+          >
+            Finish
+          </Button>
+        </Row>
+      ) : (
+        <Row justify={"center"}>
+          <Button
+            variant="solid"
+            color="green"
+            onClick={() => {
+              deleteAllRows();
+            }}
+            style={{
+              fontSize: "30px",
+              width: "300px",
+              height: "50px",
+            }}
+          >
+            New Game
+          </Button>
+        </Row>
+      )}
     </div>
   );
 };
