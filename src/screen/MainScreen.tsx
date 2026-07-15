@@ -306,7 +306,7 @@ const MainScreen = () => {
           </DndContext>
         </Col>
       </Row>
-      {isNewGame === false && (
+      {isNewGame === true && (
         <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
       )}
 
