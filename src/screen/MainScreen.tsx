@@ -9,7 +9,7 @@ import {
   Tabs,
   type TabsProps,
 } from "antd";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
 
@@ -55,7 +55,9 @@ const MainScreen = () => {
     }
 
     setMyCards(mycard);
-    setCards(data);
+    if (data) {
+      setCards(data);
+    }
   };
   useEffect(() => {
     getAllPlayer();
