@@ -39,16 +39,17 @@ const MainScreen = () => {
     const getTopic = data?.find((item) => {
       return item.topic !== "";
     });
-    console.log("getTopic", getTopic);
+
     if (topic === "") {
       setTopic(getTopic.topic);
     }
-    console.log("myCards", myCards);
+
     setMyCards(mycard);
     setCards(data);
   };
   useEffect(() => {
     getAllPlayer();
+    console.log("run at first");
   }, []);
 
   const onChange = (key: string) => {
@@ -59,21 +60,6 @@ const MainScreen = () => {
     {
       key: "1",
       label: "User",
-      children: (
-        <>
-          <h3>Enter Name</h3>
-          <Input
-            placeholder="Enter Name"
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-          />
-        </>
-      ),
-    },
-    {
-      key: "2",
-      label: "Modurator",
       children: (
         <>
           <h3>Enter Name</h3>
@@ -94,7 +80,23 @@ const MainScreen = () => {
         </>
       ),
     },
+    // {
+    //   key: "2",
+    //   label: "User",
+    //   children: (
+    //     <>
+    //       <h3>Enter Name</h3>
+    //       <Input
+    //         placeholder="Enter Name"
+    //         onChange={(e) => {
+    //           setName(e.target.value);
+    //         }}
+    //       />
+    //     </>
+    //   ),
+    // },
   ];
+
   const handleOk = async () => {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
 
@@ -107,7 +109,7 @@ const MainScreen = () => {
     };
 
     await supabase.from("itomic").insert(UserData);
-    console.log("Card=>", cards);
+
     getAllPlayer();
     setIsModalOpen(false);
   };
@@ -124,26 +126,36 @@ const MainScreen = () => {
   }
 
   const handleOrder = () => {
-    cards.map((item) => {
-      console.log(item);
+    const isSorted = cards.every((item, index, arr) => {
+      return index === arr.length - 1 || item.value < arr[index + 1].value;
     });
 
-    const updatedData = cards.map((item, index, arr) => {
-      const nextItem = arr[index + 1];
-      console.log("item", item);
-      console.log("nextItem", nextItem);
+    const updatedData = cards.map((item, index, arr) => ({
+      ...item,
+      active:
+        index === arr.length - 1
+          ? isSorted
+            ? "green"
+            : "red"
+          : item.value < arr[index + 1].value
+            ? "green"
+            : "red",
+    }));
 
-      return {
-        ...item,
-        active: nextItem && item.value < nextItem.value ? "green" : "red",
-      };
-    });
-    let score = 0;
-    updatedData.filter((item) => {
-      if (item.active === "green") {
-        return score++;
-      }
-    });
+    const greenCount = updatedData.filter(
+      (item) => item.active === "green",
+    ).length;
+    const allGreen =
+      greenCount > 0 &&
+      greenCount === updatedData.filter((item) => item.active !== "").length;
+
+    const hasGreenThenRed = updatedData.some(
+      (item, index) =>
+        item.active === "green" && updatedData[index + 1]?.active === "red",
+    );
+
+    const score = allGreen ? greenCount : hasGreenThenRed ? 0 : greenCount;
+
     setScore(score);
     setCards(updatedData);
     setIsNewGame(true);
@@ -177,6 +189,7 @@ const MainScreen = () => {
           <>
             <Row justify={"center"}>
               <Button
+                disabled={name && topic ? false : true}
                 size="large"
                 type="primary"
                 onClick={handleOk}
