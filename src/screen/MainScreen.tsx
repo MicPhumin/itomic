@@ -1,4 +1,14 @@
-import { Button, Card, Col, Divider, Row, Modal, Input, Tabs } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Row,
+  Modal,
+  Input,
+  Tabs,
+  type TabsProps,
+} from "antd";
 import React, { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
@@ -24,7 +34,7 @@ const MainScreen = () => {
   const [showVal, setShowVal] = useState<boolean>(false);
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
-  const [score, setScore] = useState(null);
+  const [score, setScore] = useState(0);
   const [isNewGame, setIsNewGame] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(true);
@@ -294,7 +304,9 @@ const MainScreen = () => {
           </DndContext>
         </Col>
       </Row>
-      {score != null && <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>}
+      {isNewGame === false && (
+        <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
+      )}
 
       {isNewGame === false ? (
         <Row justify={"center"}>
