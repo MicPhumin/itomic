@@ -152,6 +152,7 @@ const MainScreen = () => {
   const deleteAllRows = async () => {
     const { error } = await supabase.from("itomic").delete().neq("id", 0);
     localStorage.removeItem("player");
+    localStorage.clear();
     if (error) {
       console.error(error);
     } else {
