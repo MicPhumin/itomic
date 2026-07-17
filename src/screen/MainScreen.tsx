@@ -69,12 +69,15 @@ const MainScreen = () => {
           schema: "public",
           table: "itomic",
         },
-        () => {
+        (payload) => {
+          console.log("Realtime event:", payload);
           loadPlayers();
         },
       )
 
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Status:", status);
+      });
 
     return () => {
       supabase.removeChannel(channel);
