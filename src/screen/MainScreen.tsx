@@ -72,6 +72,11 @@ const MainScreen = () => {
         (payload) => {
           console.log("Realtime event:", payload);
           loadPlayers();
+          if (payload.eventType === "DELETE") {
+            console.log("DELETE");
+            localStorage.clear();
+            window.location.reload();
+          }
         },
       )
 
@@ -151,20 +156,17 @@ const MainScreen = () => {
 
   const deleteAllRows = async () => {
     const { error } = await supabase.from("itomic").delete().neq("id", 0);
-    localStorage.removeItem("player");
-    localStorage.clear();
     if (error) {
       console.error(error);
     } else {
       console.log("Deleted all rows");
     }
-    window.location.reload();
     setIsNewGame(false);
   };
 
   return (
     <div style={{ margin: "0px 50px 0px 50px" }}>
-      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC ver.1.0</h3>
+      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC ver 1.2</h3>
 
       <Modal
         title={
