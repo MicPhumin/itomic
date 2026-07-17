@@ -43,8 +43,10 @@ const MainScreen = () => {
       return item?.is_host === true;
     });
 
-    if (findHost?.is_host === true) {
+    if (findHost?.is_host == true) {
       setHostBtn(true);
+      setIsHost(true);
+      setTopic(findHost.topic ? findHost.topic : topic);
     }
 
     if (player) {
@@ -222,7 +224,7 @@ const MainScreen = () => {
           </Col>
           <Col xs={24} sm={24} md={6} lg={8} xl={8}>
             {" "}
-            <h3>Set the topic</h3>
+            <h3>Host (Set the topic)</h3>
             <Switch
               disabled={hostBtn === true}
               onChange={(e) => {
