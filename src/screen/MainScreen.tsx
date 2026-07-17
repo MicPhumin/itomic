@@ -1,15 +1,4 @@
-import {
-  Button,
-  Card,
-  Col,
-  Divider,
-  Row,
-  Modal,
-  Input,
-  Tabs,
-  type TabsProps,
-  Switch,
-} from "antd";
+import { Button, Card, Col, Divider, Row, Modal, Input, Switch } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
@@ -47,7 +36,7 @@ const MainScreen = () => {
   const loadPlayers = async () => {
     const { data } = await supabase.from("itomic").select("*");
 
-    let player = JSON.parse(localStorage.getItem("player"));
+    const player = JSON.parse(localStorage.getItem("player") ?? "null");
     console.log("player", player);
     if (player) {
       const findPlayer = data?.find((item) => {
