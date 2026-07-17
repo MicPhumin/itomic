@@ -18,6 +18,7 @@ interface SortableCardProps {
   online: string;
   is_host: string;
   topic: string;
+  active: string;
 }
 
 const MainScreen = () => {
@@ -304,6 +305,9 @@ const MainScreen = () => {
                         value={card.value}
                         showVal={showVal}
                         active={card.active}
+                        is_host={card.is_host}
+                        online={card.online}
+                        topic={card.topic}
                       />
                     </Col>
                   </>
