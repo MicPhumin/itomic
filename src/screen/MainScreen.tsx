@@ -50,8 +50,9 @@ const MainScreen = () => {
     }
 
     console.log("mycard", myCards);
-
-    setCards(data);
+    if (data) {
+      setCards(data);
+    }
   };
 
   useEffect(() => {
