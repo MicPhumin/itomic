@@ -8,6 +8,7 @@ import {
   Input,
   Tabs,
   type TabsProps,
+  Switch,
 } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -25,7 +26,9 @@ interface SortableCardProps {
   name: string;
   value: number;
   showVal: boolean;
-  active: string;
+  online: string;
+  is_host: string;
+  topic: string;
 }
 
 const MainScreen = () => {
@@ -35,94 +38,73 @@ const MainScreen = () => {
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [score, setScore] = useState(0);
+  const [isHost, setIsHost] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen] = useState(true);
   console.log("cards", cards);
 
-  const getAllPlayer = async () => {
+  const loadPlayers = async () => {
     const { data } = await supabase.from("itomic").select("*");
-    const mycard = data?.find((item) => {
-      return item.name === name;
-    });
 
-    const getTopic = data?.find((item) => {
-      return item.topic !== "";
-    });
-
-    if (topic === "") {
-      setTopic(getTopic.topic);
+    let player = JSON.parse(localStorage.getItem("player"));
+    console.log("player", player);
+    if (player) {
+      const findPlayer = data?.find((item) => {
+        return item.id == player?.id;
+      });
+      setMyCards(findPlayer);
+      setIsModalOpen(false);
+    } else {
+      setIsModalOpen(true);
     }
 
-    setMyCards(mycard);
-    if (data) {
-      setCards(data);
-    }
+    console.log("mycard", myCards);
+
+    setCards(data);
   };
+
   useEffect(() => {
-    getAllPlayer();
-    console.log("run at first");
+    loadPlayers();
+    console.log("Run at First");
+
+    const channel = supabase
+      .channel("players")
+
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "itomic",
+        },
+        () => {
+          loadPlayers();
+        },
+      )
+
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
-
-  const onChange = (key: string) => {
-    console.log(key);
-  };
-
-  const items: TabsProps["items"] = [
-    {
-      key: "1",
-      label: "User",
-      children: (
-        <>
-          <h3>Enter Name</h3>
-          <Input
-            placeholder="Enter Name"
-            onChange={(e) => {
-              setName(e.target.value);
-            }}
-          />
-
-          <h3>Enter Topic</h3>
-          <Input
-            placeholder="Enter Topic"
-            onChange={(e) => {
-              setTopic(e.target.value);
-            }}
-          />
-        </>
-      ),
-    },
-    // {
-    //   key: "2",
-    //   label: "User",
-    //   children: (
-    //     <>
-    //       <h3>Enter Name</h3>
-    //       <Input
-    //         placeholder="Enter Name"
-    //         onChange={(e) => {
-    //           setName(e.target.value);
-    //         }}
-    //       />
-    //     </>
-    //   ),
-    // },
-  ];
 
   const handleOk = async () => {
     const randomNumber = Math.floor(Math.random() * 100) + 1;
-
     const UserData = {
       id: cards.length + 1,
       name: name,
       value: Number(randomNumber),
-      showVal: false,
-      topic: topic,
+      online: true,
+      is_host: isHost === true ? true : false,
+      topic: isHost === true ? topic : "",
     };
 
     await supabase.from("itomic").insert(UserData);
-
-    getAllPlayer();
+    localStorage.setItem("player", JSON.stringify(UserData));
+    loadPlayers();
+    // getAllPlayer();
     setIsModalOpen(false);
   };
 
@@ -175,7 +157,7 @@ const MainScreen = () => {
 
   const deleteAllRows = async () => {
     const { error } = await supabase.from("itomic").delete().neq("id", 0);
-
+    localStorage.removeItem("player");
     if (error) {
       console.error(error);
     } else {
@@ -201,7 +183,6 @@ const MainScreen = () => {
           <>
             <Row justify={"center"}>
               <Button
-                disabled={name && topic ? false : true}
                 size="large"
                 type="primary"
                 onClick={handleOk}
@@ -223,7 +204,44 @@ const MainScreen = () => {
           xxl: "40%",
         }}
       >
-        <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
+        <Row gutter={12}>
+          <Col xs={24} sm={24} md={18} lg={16} xl={16}>
+            <h3>Enter Name</h3>
+            <Input
+              placeholder="Enter Name"
+              value={name}
+              onChange={(e) => {
+                setName(e.target.value);
+              }}
+            />
+          </Col>
+          <Col xs={24} sm={24} md={6} lg={8} xl={8}>
+            {" "}
+            <h3>Set the topic</h3>
+            <Switch
+              disabled={myCards?.is_host === "true"}
+              onChange={(e) => {
+                setIsHost(e);
+              }}
+              value={isHost}
+            />
+          </Col>
+        </Row>
+        {isHost === true ? (
+          <>
+            {" "}
+            <h3>Enter topic</h3>
+            <Input
+              placeholder="Enter Topic"
+              value={topic}
+              onChange={(e) => {
+                setTopic(e.target.value);
+              }}
+            />
+          </>
+        ) : (
+          <></>
+        )}
       </Modal>
       <Row justify={"center"}>
         <Col xs={24} sm={24} md={4} lg={4} xl={2}>
