@@ -29,6 +29,7 @@ const MainScreen = () => {
   const [topic, setTopic] = useState("");
   const [score, setScore] = useState(0);
   const [isHost, setIsHost] = useState(false);
+  const [hostBtn, setHostBtn] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -36,13 +37,21 @@ const MainScreen = () => {
 
   const loadPlayers = async () => {
     const { data } = await supabase.from("itomic").select("*");
-
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
-    console.log("player", player);
+
+    const findHost = data?.find((item) => {
+      return item?.is_host === true;
+    });
+
+    if (findHost?.is_host === true) {
+      setHostBtn(true);
+    }
+
     if (player) {
       const findPlayer = data?.find((item) => {
         return item.id == player?.id;
       });
+
       setMyCards(findPlayer);
       setIsModalOpen(false);
     } else {
@@ -73,7 +82,6 @@ const MainScreen = () => {
           console.log("Realtime event:", payload);
           loadPlayers();
           if (payload.eventType === "DELETE") {
-            console.log("DELETE");
             localStorage.clear();
             window.location.reload();
           }
@@ -166,7 +174,7 @@ const MainScreen = () => {
 
   return (
     <div style={{ margin: "0px 50px 0px 50px" }}>
-      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC ver 1.2</h3>
+      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC </h3>
 
       <Modal
         title={
@@ -216,7 +224,7 @@ const MainScreen = () => {
             {" "}
             <h3>Set the topic</h3>
             <Switch
-              disabled={myCards?.is_host === "true"}
+              disabled={hostBtn === true}
               onChange={(e) => {
                 setIsHost(e);
               }}
@@ -259,7 +267,7 @@ const MainScreen = () => {
               {" "}
               <h2 style={{ fontSize: "20px" }}>Your Number is :</h2>
             </Col>
-            <Col xs={12} sm={12} md={24} lg={24} xl={24}>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Card title={myCards?.name}>
                 <div
                   style={{
@@ -328,42 +336,50 @@ const MainScreen = () => {
         <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
       )}
 
-      {isNewGame === false ? (
-        <Row justify={"center"}>
-          <Button
-            variant="solid"
-            color="purple"
-            onClick={() => {
-              handleOrder();
-              setShowVal(!showVal);
-            }}
-            style={{
-              fontSize: "30px",
-              width: "300px",
-              height: "50px",
-            }}
-          >
-            Finish
-          </Button>
-        </Row>
-      ) : (
-        <Row justify={"center"}>
-          <Button
-            variant="solid"
-            color="green"
-            onClick={() => {
-              deleteAllRows();
-            }}
-            style={{
-              fontSize: "30px",
-              width: "300px",
-              height: "50px",
-            }}
-          >
-            New Game
-          </Button>
-        </Row>
+      {isHost === true && (
+        <>
+          {isNewGame === false ? (
+            <Row justify={"center"}>
+              <Button
+                variant="solid"
+                color="purple"
+                onClick={() => {
+                  handleOrder();
+                  setShowVal(!showVal);
+                }}
+                style={{
+                  fontSize: "30px",
+                  width: "300px",
+                  height: "50px",
+                }}
+              >
+                Finish
+              </Button>
+            </Row>
+          ) : (
+            <Row justify={"center"}>
+              <Button
+                variant="solid"
+                color="green"
+                onClick={() => {
+                  deleteAllRows();
+                }}
+                style={{
+                  fontSize: "30px",
+                  width: "300px",
+                  height: "50px",
+                }}
+              >
+                New Game
+              </Button>
+            </Row>
+          )}
+        </>
       )}
+
+      <Row justify={"end"}>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.2 </h3>
+      </Row>
     </div>
   );
 };
