@@ -1,4 +1,14 @@
-import { Button, Card, Col, Divider, Row, Modal, Input, Switch } from "antd";
+import {
+  Button,
+  Card,
+  Col,
+  Divider,
+  Row,
+  Modal,
+  Input,
+  Switch,
+  Form,
+} from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
@@ -10,6 +20,7 @@ import {
 } from "@dnd-kit/sortable";
 
 import SortableCard from "../component/SortableCard";
+import React from "react";
 interface SortableCardProps {
   id: number;
   name: string;
@@ -21,6 +32,15 @@ interface SortableCardProps {
   active: string;
 }
 
+interface isHost {
+  id: number;
+  name: string;
+  value: number;
+  online: boolean;
+  is_host: boolean;
+  topic: string;
+}
+
 const MainScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
@@ -28,29 +48,44 @@ const MainScreen = () => {
   const [name, setName] = useState("");
   const [topic, setTopic] = useState("");
   const [score, setScore] = useState(0);
-  const [isHost, setIsHost] = useState(false);
   const [hostBtn, setHostBtn] = useState(false);
+  const [isHost, setIsHost] = useState<isHost>({
+    id: 0,
+    name: "",
+    value: 0,
+    topic: "",
+    is_host: false,
+    online: true,
+  });
   const [isNewGame, setIsNewGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const [submittable, setSubmittable] = React.useState<boolean>(false);
+  const [form] = Form.useForm();
   console.log("cards", cards);
-  console.log("cards", cards);
+  const values = Form.useWatch([], form);
+  React.useEffect(() => {
+    form
+      .validateFields({ validateOnly: true })
+      .then(() => setSubmittable(true))
+      .catch(() => setSubmittable(false));
+  }, [form, values]);
 
   const loadPlayers = async () => {
     const { data } = await supabase.from("itomic").select("*");
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
 
-    const findHost = data?.find((item) => {
-      return item?.is_host === true;
-    });
-
-    if (findHost?.is_host == true) {
-      setHostBtn(true);
-      setIsHost(true);
-      setTopic(findHost.topic ? findHost.topic : topic);
-    }
-
     if (player) {
+      const findHost = data?.find((item) => {
+        return item?.is_host === player.is_host;
+      });
+      setIsHost(findHost);
+      console.log("findHost", findHost);
+
+      if (findHost?.is_host == true) {
+        setHostBtn(true);
+        setTopic(findHost.topic ? findHost.topic : topic);
+      }
+
       const findPlayer = data?.find((item) => {
         return item.id == player?.id;
       });
@@ -66,6 +101,7 @@ const MainScreen = () => {
       setCards(data);
     }
   };
+  console.log("isHost", isHost);
 
   useEffect(() => {
     loadPlayers();
@@ -107,8 +143,8 @@ const MainScreen = () => {
       name: name,
       value: Number(randomNumber),
       online: true,
-      is_host: isHost === true ? true : false,
-      topic: isHost === true ? topic : "",
+      is_host: hostBtn === true ? true : false,
+      topic: hostBtn === true ? topic : "",
     };
 
     await supabase.from("itomic").insert(UserData);
@@ -191,6 +227,8 @@ const MainScreen = () => {
           <>
             <Row justify={"center"}>
               <Button
+                htmlType="submit"
+                disabled={!submittable}
                 size="large"
                 type="primary"
                 onClick={handleOk}
@@ -212,44 +250,55 @@ const MainScreen = () => {
           xxl: "40%",
         }}
       >
-        <Row gutter={12}>
-          <Col xs={24} sm={24} md={18} lg={16} xl={16}>
-            <h3>Enter Name</h3>
-            <Input
-              placeholder="Enter Name"
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
-              }}
-            />
-          </Col>
-          <Col xs={24} sm={24} md={6} lg={8} xl={8}>
-            {" "}
-            <h3>Host (Set the topic)</h3>
-            <Switch
-              disabled={hostBtn === true}
-              onChange={(e) => {
-                setIsHost(e);
-              }}
-              value={isHost}
-            />
-          </Col>
-        </Row>
-        {isHost === true ? (
-          <>
-            {" "}
-            <h3>Enter topic</h3>
-            <Input
-              placeholder="Enter Topic"
-              value={topic}
-              onChange={(e) => {
-                setTopic(e.target.value);
-              }}
-            />
-          </>
-        ) : (
-          <></>
-        )}
+        <Form
+          form={form}
+          name="validateOnly"
+          layout="vertical"
+          autoComplete="off"
+        >
+          <Row gutter={12}>
+            <Col xs={24} sm={24} md={18} lg={16} xl={16}>
+              <Form.Item
+                name="Name"
+                label={<h3>Enter Name</h3>}
+                rules={[{ required: true }]}
+              >
+                <Input
+                  placeholder="Enter Name"
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
+                />
+              </Form.Item>
+            </Col>
+
+            <Col xs={24} sm={24} md={6} lg={8} xl={8}>
+              {" "}
+              <h3>Host (Set the topic)</h3>
+              <Switch
+                onChange={(e) => {
+                  setHostBtn(e);
+                }}
+                value={hostBtn}
+              />
+            </Col>
+          </Row>
+          {hostBtn === true && (
+            <>
+              {" "}
+              <h3>Enter topic</h3>
+              <Input
+                disabled={isHost.topic !== ""}
+                placeholder="Enter Topic"
+                value={topic}
+                onChange={(e) => {
+                  setTopic(e.target.value);
+                }}
+              />
+            </>
+          )}
+        </Form>
       </Modal>
       <Row justify={"center"}>
         <Col xs={24} sm={24} md={4} lg={4} xl={2}>
@@ -335,53 +384,53 @@ const MainScreen = () => {
           </DndContext>
         </Col>
       </Row>
-      {/* {isNewGame === true && ( */}
-      <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
-      {/* )} */}
+      {isNewGame === true && (
+        <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
+      )}
 
-      {/* {isHost === true && ( */}
-      <>
-        {isNewGame === false ? (
-          <Row justify={"center"}>
-            <Button
-              variant="solid"
-              color="purple"
-              onClick={() => {
-                handleOrder();
-                setShowVal(!showVal);
-              }}
-              style={{
-                fontSize: "30px",
-                width: "300px",
-                height: "50px",
-              }}
-            >
-              Finish
-            </Button>
-          </Row>
-        ) : (
-          <Row justify={"center"}>
-            <Button
-              variant="solid"
-              color="green"
-              onClick={() => {
-                deleteAllRows();
-              }}
-              style={{
-                fontSize: "30px",
-                width: "300px",
-                height: "50px",
-              }}
-            >
-              New Game
-            </Button>
-          </Row>
-        )}
-      </>
-      {/* )} */}
+      {isHost && isHost.is_host === true && (
+        <>
+          {isNewGame === false ? (
+            <Row justify={"center"}>
+              <Button
+                variant="solid"
+                color="purple"
+                onClick={() => {
+                  handleOrder();
+                  setShowVal(!showVal);
+                }}
+                style={{
+                  fontSize: "30px",
+                  width: "300px",
+                  height: "50px",
+                }}
+              >
+                Finish
+              </Button>
+            </Row>
+          ) : (
+            <Row justify={"center"}>
+              <Button
+                variant="solid"
+                color="green"
+                onClick={() => {
+                  deleteAllRows();
+                }}
+                style={{
+                  fontSize: "30px",
+                  width: "300px",
+                  height: "50px",
+                }}
+              >
+                New Game
+              </Button>
+            </Row>
+          )}
+        </>
+      )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.2 </h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.3 </h3>
       </Row>
     </div>
   );
