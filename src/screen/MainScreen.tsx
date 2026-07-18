@@ -34,6 +34,7 @@ const MainScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   console.log("cards", cards);
+  console.log("cards", cards);
 
   const loadPlayers = async () => {
     const { data } = await supabase.from("itomic").select("*");
@@ -334,50 +335,50 @@ const MainScreen = () => {
           </DndContext>
         </Col>
       </Row>
-      {isNewGame === true && (
-        <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
-      )}
+      {/* {isNewGame === true && ( */}
+      <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
+      {/* )} */}
 
-      {isHost === true && (
-        <>
-          {isNewGame === false ? (
-            <Row justify={"center"}>
-              <Button
-                variant="solid"
-                color="purple"
-                onClick={() => {
-                  handleOrder();
-                  setShowVal(!showVal);
-                }}
-                style={{
-                  fontSize: "30px",
-                  width: "300px",
-                  height: "50px",
-                }}
-              >
-                Finish
-              </Button>
-            </Row>
-          ) : (
-            <Row justify={"center"}>
-              <Button
-                variant="solid"
-                color="green"
-                onClick={() => {
-                  deleteAllRows();
-                }}
-                style={{
-                  fontSize: "30px",
-                  width: "300px",
-                  height: "50px",
-                }}
-              >
-                New Game
-              </Button>
-            </Row>
-          )}
-        </>
-      )}
+      {/* {isHost === true && ( */}
+      <>
+        {isNewGame === false ? (
+          <Row justify={"center"}>
+            <Button
+              variant="solid"
+              color="purple"
+              onClick={() => {
+                handleOrder();
+                setShowVal(!showVal);
+              }}
+              style={{
+                fontSize: "30px",
+                width: "300px",
+                height: "50px",
+              }}
+            >
+              Finish
+            </Button>
+          </Row>
+        ) : (
+          <Row justify={"center"}>
+            <Button
+              variant="solid"
+              color="green"
+              onClick={() => {
+                deleteAllRows();
+              }}
+              style={{
+                fontSize: "30px",
+                width: "300px",
+                height: "50px",
+              }}
+            >
+              New Game
+            </Button>
+          </Row>
+        )}
+      </>
+      {/* )} */}
 
       <Row justify={"end"}>
         <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.2 </h3>
