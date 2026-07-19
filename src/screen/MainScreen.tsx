@@ -244,7 +244,7 @@ const MainScreen = () => {
               <Button
                 variant="solid"
                 color="purple"
-                onClick={() => setHowToPlayModal(false)}
+                onClick={() => setHowToPlayModal(true)}
               >
                 How to play
               </Button>
