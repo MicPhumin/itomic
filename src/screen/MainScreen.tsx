@@ -34,6 +34,7 @@ interface SortableCardProps {
   topic: string;
   active: string;
   order: number;
+  score: number;
 }
 
 interface isHost {
@@ -131,6 +132,9 @@ const MainScreen = () => {
             window.location.reload();
           } else if (payload.eventType === "UPDATE") {
             setIsLoading(true);
+            const player = payload.new as SortableCardProps;
+            setScore(player.score);
+            setShowVal(showVal === true);
           }
         },
       )
@@ -182,7 +186,7 @@ const MainScreen = () => {
     );
   }
 
-  const handleOrder = () => {
+  const handleOrder = async () => {
     const isSorted = cards.every((item, index, arr) => {
       return index === arr.length - 1 || item.value < arr[index + 1].value;
     });
@@ -212,7 +216,17 @@ const MainScreen = () => {
     );
 
     const score = allGreen ? greenCount : hasGreenThenRed ? 0 : greenCount;
+    await supabase.from("itomic").update({ score: score }).neq("id", 0);
 
+    await Promise.all(
+      updatedData.map((card) =>
+        supabase
+          .from("itomic")
+          .update({ active: card.active })
+          .eq("id", card.id),
+      ),
+    );
+    setShowVal(!showVal);
     setScore(score);
     setCards(updatedData);
     setIsNewGame(true);
@@ -497,9 +511,8 @@ const MainScreen = () => {
           </>
         )}
       </Row>
-      {isNewGame === true && (
-        <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
-      )}
+
+      <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
 
       {isHost && isHost.is_host === true && (
         <>
