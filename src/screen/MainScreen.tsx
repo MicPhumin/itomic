@@ -8,6 +8,7 @@ import {
   Input,
   Switch,
   Form,
+  Spin,
 } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -58,6 +59,7 @@ const MainScreen = () => {
     is_host: false,
     online: true,
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
@@ -99,6 +101,7 @@ const MainScreen = () => {
     if (data) {
       setCards(data);
     }
+    setIsLoading(false);
   };
   console.log("isHost", isHost);
 
@@ -119,11 +122,10 @@ const MainScreen = () => {
         (payload) => {
           console.log("Realtime event:", payload);
           loadPlayers();
+
           if (payload.eventType === "DELETE") {
             localStorage.clear();
             window.location.reload();
-          } else if (payload.eventType === "UPDATE") {
-            loadPlayers();
           }
         },
       )
@@ -152,7 +154,6 @@ const MainScreen = () => {
     await supabase.from("itomic").insert(UserData);
     localStorage.setItem("player", JSON.stringify(UserData));
     loadPlayers();
-    // getAllPlayer();
     setIsModalOpen(false);
   };
 
@@ -176,6 +177,7 @@ const MainScreen = () => {
           .eq("id", card.id),
       ),
     );
+    setIsLoading(true);
   }
 
   const handleOrder = () => {
@@ -355,47 +357,67 @@ const MainScreen = () => {
           Arrange the numbers from smallest to largest .{" "}
         </h1>
       </Row>
-      <Row style={{ margin: "0px 50px 0px 50px" }}>
-        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-          <DndContext
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={cards}
-              strategy={verticalListSortingStrategy}
-            >
-              <Row gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }} align={"middle"}>
-                {cards.map((card, index) => (
-                  <>
-                    <Col
-                      className="gutter-row"
-                      xs={24}
-                      sm={12}
-                      md={8}
-                      lg={6}
-                      xl={4}
-                      span={4}
-                    >
-                      <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
-                      <SortableCard
-                        key={card.id}
-                        id={card.id}
-                        name={card.name}
-                        value={card.value}
-                        showVal={showVal}
-                        active={card.active}
-                        is_host={card.is_host}
-                        online={card.online}
-                        topic={card.topic}
-                      />
-                    </Col>
-                  </>
-                ))}
-              </Row>
-            </SortableContext>
-          </DndContext>
-        </Col>
+      <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
+        {isLoading === true ? (
+          <>
+            <Row>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                <Spin
+                  description="Loading"
+                  size="large"
+                  style={{ margin: "50px 0px 50px 0px" }}
+                ></Spin>
+              </Col>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+              <DndContext
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <SortableContext
+                  items={cards}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <Row
+                    gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+                    align={"middle"}
+                  >
+                    {cards.map((card, index) => (
+                      <>
+                        <Col
+                          className="gutter-row"
+                          xs={24}
+                          sm={12}
+                          md={8}
+                          lg={6}
+                          xl={4}
+                          span={4}
+                        >
+                          <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
+
+                          <SortableCard
+                            key={card.id}
+                            id={card.id}
+                            name={card.name}
+                            value={card.value}
+                            showVal={showVal}
+                            active={card.active}
+                            is_host={card.is_host}
+                            online={card.online}
+                            topic={card.topic}
+                          />
+                        </Col>
+                      </>
+                    ))}
+                  </Row>
+                </SortableContext>
+              </DndContext>
+            </Col>
+          </>
+        )}
       </Row>
       {isNewGame === true && (
         <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
@@ -443,7 +465,7 @@ const MainScreen = () => {
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.3 </h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.4 </h3>
       </Row>
     </div>
   );
