@@ -244,7 +244,7 @@ const MainScreen = () => {
               <Button
                 variant="solid"
                 color="purple"
-                onClick={(e) => setHowToPlayModal(e)}
+                onClick={() => setHowToPlayModal(false)}
               >
                 How to play
               </Button>
@@ -343,7 +343,7 @@ const MainScreen = () => {
             <div>X</div>
           </Tooltip>
         }
-        onCancel={(e) => setHowToPlayModal(false)}
+        onCancel={() => setHowToPlayModal(false)}
         open={howToPlayModal}
         footer={false}
         width={{
