@@ -97,18 +97,15 @@ const MainScreen = () => {
       setIsModalOpen(false);
     }
 
-    console.log("mycard", myCards);
     if (data) {
       setCards(data);
     }
     setIsLoading(false);
   };
-  console.log("isHost", isHost);
 
   useEffect(() => {
     loadPlayers();
     console.log("Run at First");
-    console.log("IsModalOpen", isModalOpen);
     const channel = supabase
       .channel("players")
 
@@ -126,6 +123,8 @@ const MainScreen = () => {
           if (payload.eventType === "DELETE") {
             localStorage.clear();
             window.location.reload();
+          } else if (payload.eventType === "UPDATE") {
+            setIsLoading(true);
           }
         },
       )
@@ -167,8 +166,6 @@ const MainScreen = () => {
 
     const newCards = arrayMove(cards, oldIndex, newIndex);
     setCards(newCards);
-    console.log("active=>", active, "over=>", over);
-    console.log("arrayMove=>", arrayMove(cards, oldIndex, newIndex));
     await Promise.all(
       newCards.map((card, index) =>
         supabase
@@ -177,7 +174,6 @@ const MainScreen = () => {
           .eq("id", card.id),
       ),
     );
-    setIsLoading(true);
   }
 
   const handleOrder = () => {
