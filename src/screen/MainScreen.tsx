@@ -9,6 +9,7 @@ import {
   Switch,
   Form,
   Spin,
+  Tooltip,
 } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -22,6 +23,7 @@ import {
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
+import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 interface SortableCardProps {
   id: number;
   name: string;
@@ -62,6 +64,7 @@ const MainScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
+  const [howToPlayModal, setHowToPlayModal] = useState(false);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
   console.log("cards", cards);
@@ -228,8 +231,24 @@ const MainScreen = () => {
 
       <Modal
         title={
-          <Row justify={"center"}>
-            <h2 style={{ color: "magenta" }}>iTOMIC</h2>
+          <Row>
+            <Col xs={24} sm={24} md={16} lg={16} xl={20}>
+              {" "}
+              <Row justify={"center"}>
+                {" "}
+                <h2 style={{ color: "magenta" }}>iTOMIC</h2>
+              </Row>
+            </Col>
+            <Col xs={24} sm={24} md={8} lg={8} xl={4}>
+              {" "}
+              <Button
+                variant="solid"
+                color="purple"
+                onClick={(e) => setHowToPlayModal(e)}
+              >
+                How to play
+              </Button>
+            </Col>
           </Row>
         }
         closable={false}
@@ -268,7 +287,7 @@ const MainScreen = () => {
           autoComplete="off"
         >
           <Row gutter={12}>
-            <Col xs={24} sm={24} md={18} lg={16} xl={16}>
+            <Col xs={24} sm={24} md={16} lg={16} xl={16}>
               <Form.Item
                 name="Name"
                 label={<h3>Enter Name</h3>}
@@ -284,14 +303,15 @@ const MainScreen = () => {
               </Form.Item>
             </Col>
 
-            <Col xs={24} sm={24} md={6} lg={8} xl={8}>
+            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               {" "}
-              <h3>Host (Set the topic)</h3>
+              <h3>Host (Set Topic)</h3>
               <Switch
                 onChange={(e) => {
                   setHostBtn(e);
                 }}
                 value={hostBtn}
+                style={{ marginTop: "12px" }}
               />
             </Col>
           </Row>
@@ -310,6 +330,65 @@ const MainScreen = () => {
             </>
           )}
         </Form>
+      </Modal>
+      <Modal
+        title={
+          <Row justify={"center"}>
+            {" "}
+            <h2 style={{ color: "magenta" }}>iTOMIC</h2>
+          </Row>
+        }
+        closeIcon={
+          <Tooltip title="เอ้า!! จะกดออกแล้วหรอลองเลื่อนเมาส์ไปตัวหนังสือก่อนดิ">
+            <div>X</div>
+          </Tooltip>
+        }
+        onCancel={(e) => setHowToPlayModal(false)}
+        open={howToPlayModal}
+        footer={false}
+        width={{
+          xs: "80%",
+          sm: "80%",
+          md: "70%",
+          lg: "60%",
+          xl: "50%",
+          xxl: "40%",
+        }}
+      >
+        <Row justify={"center"}>
+          {" "}
+          <Tooltip title="เป็นเกมที่เน้นการสื่อสารกันเป็นทีม ผู้เล่นทุกคนจะได้รับตัวเลขลับ (1-100) และต้องใบ้คำตามหัวข้อที่กำหนดเพื่อร่วมมือกันเรียงลำดับการ์ดจากน้อยไปหามาก โดยห้ามบอกตัวเลขตรงๆ">
+            <h3>ฮั่นแน่~ อยากรู้ก็ลองเล่นดูดิ อะ ฮิฮิฮิ</h3>
+          </Tooltip>
+        </Row>
+        <Row justify={"end"} style={{ marginRight: "50px" }}>
+          {" "}
+          <h3>Made By Mic</h3>
+        </Row>
+        <Row justify={"end"}>
+          <Button
+            type="link"
+            color="magenta"
+            variant="text"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.instagram.com/cosmic_being9/"
+          >
+            <InstagramOutlined />
+            Instragram
+          </Button>
+          <Button
+            type="link"
+            color="magenta"
+            variant="text"
+            target="_blank"
+            rel="noopener noreferrer"
+            href="https://www.tiktok.com/@mickeyphu"
+          >
+            <TikTokOutlined />
+            TikTok
+          </Button>
+        </Row>
       </Modal>
       <Row justify={"center"}>
         <Col xs={24} sm={24} md={4} lg={4} xl={2}>
@@ -461,7 +540,7 @@ const MainScreen = () => {
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.4 </h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.5.0</h3>
       </Row>
     </div>
   );
