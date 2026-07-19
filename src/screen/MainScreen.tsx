@@ -130,11 +130,19 @@ const MainScreen = () => {
           if (payload.eventType === "DELETE") {
             localStorage.clear();
             window.location.reload();
-          } else if (payload.eventType === "UPDATE") {
+          } else if (
+            payload.eventType === "UPDATE" &&
+            payload.new.order !== ""
+          ) {
             setIsLoading(true);
             const player = payload.new as SortableCardProps;
-            setScore(player.score);
-            setShowVal(showVal === true);
+            if (player.active === "green") {
+              setScore(player.score);
+              setShowVal(showVal === true);
+            } else if (player.active === "red") {
+              setScore(player.score);
+              setShowVal(showVal === true);
+            }
           }
         },
       )
