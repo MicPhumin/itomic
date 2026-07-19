@@ -89,7 +89,6 @@ const MainScreen = () => {
 
       if (findHost?.is_host == true) {
         setHostBtn(true);
-        setTopic(findHost.topic ? findHost.topic : topic);
       }
 
       const findPlayer = data?.find((item) => {
@@ -102,6 +101,10 @@ const MainScreen = () => {
 
     if (data) {
       setCards(data);
+      const findTopic = data.find((item) => {
+        return item.topic !== "";
+      });
+      setTopic(findTopic.topic ? findTopic.topic : topic);
     }
     setIsLoading(false);
   };
