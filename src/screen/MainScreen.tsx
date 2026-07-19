@@ -30,6 +30,7 @@ interface SortableCardProps {
   is_host: string;
   topic: string;
   active: string;
+  order: number;
 }
 
 interface isHost {
@@ -58,7 +59,7 @@ const MainScreen = () => {
     online: true,
   });
   const [isNewGame, setIsNewGame] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
   console.log("cards", cards);
@@ -71,7 +72,7 @@ const MainScreen = () => {
   }, [form, values]);
 
   const loadPlayers = async () => {
-    const { data } = await supabase.from("itomic").select("*");
+    const { data } = await supabase.from("itomic").select("*").order("order");
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
 
     if (player) {
@@ -92,8 +93,6 @@ const MainScreen = () => {
 
       setMyCards(findPlayer);
       setIsModalOpen(false);
-    } else {
-      setIsModalOpen(true);
     }
 
     console.log("mycard", myCards);
@@ -106,7 +105,7 @@ const MainScreen = () => {
   useEffect(() => {
     loadPlayers();
     console.log("Run at First");
-
+    console.log("IsModalOpen", isModalOpen);
     const channel = supabase
       .channel("players")
 
@@ -123,6 +122,8 @@ const MainScreen = () => {
           if (payload.eventType === "DELETE") {
             localStorage.clear();
             window.location.reload();
+          } else if (payload.eventType === "UPDATE") {
+            loadPlayers();
           }
         },
       )
@@ -145,6 +146,7 @@ const MainScreen = () => {
       online: true,
       is_host: hostBtn === true ? true : false,
       topic: hostBtn === true ? topic : "",
+      order: cards.length + 1,
     };
 
     await supabase.from("itomic").insert(UserData);
@@ -154,7 +156,7 @@ const MainScreen = () => {
     setIsModalOpen(false);
   };
 
-  function handleDragEnd(event: any) {
+  async function handleDragEnd(event: any) {
     const { active, over } = event;
 
     if (!over || active.id === over.id) return;
@@ -162,7 +164,18 @@ const MainScreen = () => {
     const oldIndex = cards.findIndex((i) => i.id === active.id);
     const newIndex = cards.findIndex((i) => i.id === over.id);
 
-    setCards(arrayMove(cards, oldIndex, newIndex));
+    const newCards = arrayMove(cards, oldIndex, newIndex);
+    setCards(newCards);
+    console.log("active=>", active, "over=>", over);
+    console.log("arrayMove=>", arrayMove(cards, oldIndex, newIndex));
+    await Promise.all(
+      newCards.map((card, index) =>
+        supabase
+          .from("itomic")
+          .update({ order: index + 1 })
+          .eq("id", card.id),
+      ),
+    );
   }
 
   const handleOrder = () => {
