@@ -28,7 +28,7 @@ interface SortableCardProps {
   id: number;
   name: string;
   value: number;
-  showVal: boolean;
+  showVal?: boolean;
   online: string;
   is_host: string;
   topic: string;
@@ -134,7 +134,11 @@ const MainScreen = () => {
             setIsLoading(true);
             const player = payload.new as SortableCardProps;
             setScore(player.score);
-            setShowVal(showVal === true);
+
+            if (player.showVal && player.showVal === true) {
+              setShowVal(player.showVal);
+              setIsNewGame(player.showVal);
+            }
           }
         },
       )
@@ -149,7 +153,15 @@ const MainScreen = () => {
   }, []);
 
   const handleOk = async () => {
-    const randomNumber = Math.floor(Math.random() * 100) + 1;
+    const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    const randomNumber = shuffled.pop();
+
+    // const randomNumber = Math.floor(Math.random() * 100) + 1;
     const UserData = {
       id: cards.length + 1,
       name: name,
@@ -187,48 +199,42 @@ const MainScreen = () => {
   }
 
   const handleOrder = async () => {
-    const isSorted = cards.every((item, index, arr) => {
-      return index === arr.length - 1 || item.value < arr[index + 1].value;
+    const result = cards.map((player, index) => {
+      const next = cards[index + 1];
+
+      if (index === cards.length - 1) {
+        const prev = cards[index - 1];
+        return {
+          ...player,
+          active: player.value >= prev.value ? "green" : "red",
+        };
+      }
+
+      return {
+        ...player,
+        active: player.value <= next.value ? "green" : "red",
+      };
     });
 
-    const updatedData = cards.map((item, index, arr) => ({
-      ...item,
-      active:
-        index === arr.length - 1
-          ? isSorted
-            ? "green"
-            : "red"
-          : item.value < arr[index + 1].value
-            ? "green"
-            : "red",
-    }));
-
-    const greenCount = updatedData.filter(
-      (item) => item.active === "green",
-    ).length;
-    const allGreen =
-      greenCount > 0 &&
-      greenCount === updatedData.filter((item) => item.active !== "").length;
-
-    const hasGreenThenRed = updatedData.some(
-      (item, index) =>
-        item.active === "green" && updatedData[index + 1]?.active === "red",
-    );
-
-    const score = allGreen ? greenCount : hasGreenThenRed ? 0 : greenCount;
-    await supabase.from("itomic").update({ score: score }).neq("id", 0);
-
+    for (let i = 0; i < result.length; i++) {
+      if (result[i].active === "red") {
+        for (let j = 0; j < i; j++) {
+          result[j].active = "red";
+        }
+      }
+    }
+    const score = result.filter((item) => item.active === "green").length;
     await Promise.all(
-      updatedData.map((card) =>
+      result.map((card) =>
         supabase
           .from("itomic")
-          .update({ active: card.active })
+          .update({ active: card.active, score: score, showVal: true })
           .eq("id", card.id),
       ),
     );
-    setShowVal(!showVal);
+
     setScore(score);
-    setCards(updatedData);
+    setCards(result);
     setIsNewGame(true);
   };
 
@@ -512,8 +518,9 @@ const MainScreen = () => {
         )}
       </Row>
 
-      <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
-
+      {isNewGame === true && (
+        <h2 style={{ fontSize: "50px" }}>Score: {score}</h2>
+      )}
       {isHost && isHost.is_host === true && (
         <>
           {isNewGame === false ? (
@@ -535,28 +542,30 @@ const MainScreen = () => {
               </Button>
             </Row>
           ) : (
-            <Row justify={"center"}>
-              <Button
-                variant="solid"
-                color="green"
-                onClick={() => {
-                  deleteAllRows();
-                }}
-                style={{
-                  fontSize: "30px",
-                  width: "300px",
-                  height: "50px",
-                }}
-              >
-                New Game
-              </Button>
-            </Row>
+            <>
+              <Row justify={"center"}>
+                <Button
+                  variant="solid"
+                  color="green"
+                  onClick={() => {
+                    deleteAllRows();
+                  }}
+                  style={{
+                    fontSize: "30px",
+                    width: "300px",
+                    height: "50px",
+                  }}
+                >
+                  New Game
+                </Button>
+              </Row>
+            </>
           )}
         </>
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.5.0</h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.6.0</h3>
       </Row>
     </div>
   );
