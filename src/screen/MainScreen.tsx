@@ -85,17 +85,15 @@ const MainScreen = () => {
       const findHost = data?.find((item) => {
         return item?.is_host === player.is_host;
       });
-      setIsHost(findHost);
-      console.log("findHost", findHost);
 
       if (findHost?.is_host == true) {
+        setIsHost(findHost);
+        console.log("findHost", findHost);
         setHostBtn(true);
       }
-
       const findPlayer = data?.find((item) => {
         return item.id == player?.id;
       });
-
       setMyCards(findPlayer);
       setIsModalOpen(false);
     }
@@ -161,7 +159,6 @@ const MainScreen = () => {
 
     const randomNumber = shuffled.pop();
 
-    // const randomNumber = Math.floor(Math.random() * 100) + 1;
     const UserData = {
       id: cards.length + 1,
       name: name,
@@ -172,9 +169,12 @@ const MainScreen = () => {
       order: cards.length + 1,
     };
 
-    await supabase.from("itomic").insert(UserData);
-    localStorage.setItem("player", JSON.stringify(UserData));
-    loadPlayers();
+    const { data } = await supabase
+      .from("itomic")
+      .insert(UserData)
+      .select()
+      .single();
+    localStorage.setItem("player", JSON.stringify(data));
     setIsModalOpen(false);
   };
 
@@ -530,7 +530,6 @@ const MainScreen = () => {
                 color="purple"
                 onClick={() => {
                   handleOrder();
-                  setShowVal(!showVal);
                 }}
                 style={{
                   fontSize: "30px",
