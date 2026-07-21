@@ -482,6 +482,7 @@ const MainScreen = () => {
                   <Row
                     gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
                     align={"middle"}
+                    style={{ pointerEvents: isNewGame ? "none" : "auto" }}
                   >
                     {cards.map((card, index) => (
                       <>
@@ -564,7 +565,7 @@ const MainScreen = () => {
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.6.0</h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.7.0</h3>
       </Row>
     </div>
   );
