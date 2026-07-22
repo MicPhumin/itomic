@@ -10,6 +10,7 @@ import {
   Form,
   Spin,
   Tooltip,
+  message,
 } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -29,21 +30,12 @@ interface SortableCardProps {
   name: string;
   value: number;
   showVal?: boolean;
-  online: string;
-  is_host: string;
-  topic: string;
-  active: string;
-  order: number;
-  score: number;
-}
-
-interface isHost {
-  id: number;
-  name: string;
-  value: number;
   online: boolean;
   is_host: boolean;
   topic: string;
+  active: string;
+  player_order: number;
+  score: number;
 }
 
 const MainScreen = () => {
@@ -54,13 +46,16 @@ const MainScreen = () => {
   const [topic, setTopic] = useState("");
   const [score, setScore] = useState(0);
   const [hostBtn, setHostBtn] = useState(false);
-  const [isHost, setIsHost] = useState<isHost>({
+  const [isHost, setIsHost] = useState<SortableCardProps>({
     id: 0,
     name: "",
     value: 0,
     topic: "",
     is_host: false,
     online: true,
+    active: "",
+    player_order: 0,
+    score: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
@@ -78,12 +73,15 @@ const MainScreen = () => {
   }, [form, values]);
 
   const loadPlayers = async () => {
-    const { data } = await supabase.from("itomic").select("*").order("order");
+    const { data } = await supabase
+      .from("itomic")
+      .select("*")
+      .order("player_order");
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
 
     if (player) {
       const findHost = data?.find((item) => {
-        return item?.is_host === player.is_host;
+        return item.is_host === player.is_host;
       });
 
       if (findHost?.is_host == true) {
@@ -152,6 +150,7 @@ const MainScreen = () => {
 
   const handleOk = async () => {
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
+
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
@@ -159,22 +158,27 @@ const MainScreen = () => {
 
     const randomNumber = shuffled.pop();
 
-    const UserData = {
-      id: cards.length + 1,
-      name: name,
-      value: Number(randomNumber),
-      online: true,
-      is_host: hostBtn === true ? true : false,
-      topic: hostBtn === true ? topic : "",
-      order: cards.length + 1,
-    };
+    const { data, error } = await supabase.rpc("join_game", {
+      p_name: name,
+      p_value: Number(randomNumber),
+      p_online: true,
+      p_is_host: hostBtn,
+      p_topic: hostBtn ? topic : "",
+      p_order: cards.length + 1,
+    });
 
-    const { data } = await supabase
-      .from("itomic")
-      .insert(UserData)
-      .select()
-      .single();
-    localStorage.setItem("player", JSON.stringify(data));
+    if (!error) {
+      if (data) {
+        const userData = data.find((item: SortableCardProps) => {
+          return item;
+        });
+        console.log("join success");
+        localStorage.setItem("player", JSON.stringify(userData));
+      }
+    } else {
+      console.log("join have error");
+      message.error(error.message);
+    }
     setIsModalOpen(false);
   };
 
@@ -192,7 +196,7 @@ const MainScreen = () => {
       newCards.map((card, index) =>
         supabase
           .from("itomic")
-          .update({ order: index + 1 })
+          .update({ player_order: index + 1 })
           .eq("id", card.id),
       ),
     );

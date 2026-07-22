@@ -7,8 +7,8 @@ interface SortableCardProps {
   name: string;
   value: number;
   showVal: boolean;
-  online: string;
-  is_host: string;
+  online: boolean;
+  is_host: boolean;
   topic: string;
   active: string;
 }
