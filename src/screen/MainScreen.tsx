@@ -15,6 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
+import { AiOutlineReload } from "react-icons/ai";
 
 import {
   SortableContext,
@@ -63,7 +64,7 @@ const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
-  console.log("cards", cards);
+
   const values = Form.useWatch([], form);
   React.useEffect(() => {
     form
@@ -83,17 +84,20 @@ const MainScreen = () => {
       const findHost = data?.find((item) => {
         return item.is_host === player.is_host;
       });
-
       if (findHost?.is_host == true) {
         setIsHost(findHost);
-        console.log("findHost", findHost);
         setHostBtn(true);
       }
-      const findPlayer = data?.find((item) => {
-        return item.id == player?.id;
-      });
-      setMyCards(findPlayer);
-      setIsModalOpen(false);
+      if (findHost.id === player.id) {
+        const findPlayer = data?.find((item) => {
+          return item.id == player?.id;
+        });
+        setMyCards(findPlayer);
+        setIsModalOpen(false);
+      } else if (findHost.id !== player.id) {
+        localStorage.clear();
+        console.log("local storage cleared");
+      }
     }
 
     if (data) {
@@ -147,6 +151,31 @@ const MainScreen = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // const handleRestart = async () => {
+  //   const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
+
+  //   for (let i = shuffled.length - 1; i > 0; i--) {
+  //     const j = Math.floor(Math.random() * (i + 1));
+  //     [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  //   }
+
+  //   for (let i = 0; i < cards.length; i++) {
+  //     const randomNumber = shuffled.pop();
+
+  //     console.log("randomNumber", randomNumber);
+  //     console.log("cards[i]", cards[i]);
+  //     const { data, error } = await supabase
+  //       .from("itomic")
+  //       .update({
+  //         value: Number(randomNumber),
+  //         active: null,
+  //         score: null,
+  //         showVal: false,
+  //       })
+  //       .eq("id", cards[i].id);
+  //   }
+  // };
 
   const handleOk = async () => {
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -345,15 +374,27 @@ const MainScreen = () => {
           {hostBtn === true && (
             <>
               {" "}
-              <h3>Enter topic</h3>
-              <Input
-                disabled={isHost.topic !== ""}
-                placeholder="Enter Topic"
-                value={topic}
-                onChange={(e) => {
-                  setTopic(e.target.value);
-                }}
-              />
+              <Row gutter={[2, 16]}>
+                <h3>Enter topic</h3>
+                <Input
+                  disabled={isHost.topic !== ""}
+                  placeholder="Enter Topic"
+                  value={topic}
+                  onChange={(e) => {
+                    setTopic(e.target.value);
+                  }}
+                />{" "}
+                <Button
+                  variant="solid"
+                  color="red"
+                  onClick={() => {
+                    deleteAllRows();
+                  }}
+                  icon={<AiOutlineReload />}
+                >
+                  Reset game
+                </Button>
+              </Row>
             </>
           )}
         </Form>
@@ -565,6 +606,34 @@ const MainScreen = () => {
               </Row>
             </>
           )}
+          {/* <Button
+            variant="solid"
+            color="purple"
+            onClick={() => {
+              handleOrder();
+            }}
+            style={{
+              fontSize: "30px",
+              width: "300px",
+              height: "50px",
+            }}
+          >
+            Finish2
+          </Button>
+          <Button
+            variant="solid"
+            color="purple"
+            onClick={() => {
+              handleRestart();
+            }}
+            style={{
+              fontSize: "30px",
+              width: "300px",
+              height: "50px",
+            }}
+          >
+            Generate Num
+          </Button> */}
         </>
       )}
 
