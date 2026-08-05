@@ -15,7 +15,7 @@ import {
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import { supabase } from "../supabase";
-import { AiOutlineReload } from "react-icons/ai";
+import { AiFillAlert, AiOutlineReload } from "react-icons/ai";
 
 import {
   SortableContext,
@@ -26,6 +26,7 @@ import {
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
+import topicGame from "../assets/topic.json";
 interface SortableCardProps {
   id: number;
   name: string;
@@ -177,6 +178,14 @@ const MainScreen = () => {
   //   }
   // };
 
+  const handleRandomTopic = () => {
+    console.log("topic", topicGame);
+
+    const index = Math.floor(Math.random() * topicGame.length);
+    const item = topicGame.splice(index, 1)[0];
+    setTopic(item.topic);
+    console.log(item);
+  };
   const handleOk = async () => {
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
 
@@ -384,6 +393,17 @@ const MainScreen = () => {
                     setTopic(e.target.value);
                   }}
                 />{" "}
+                <Button
+                  variant="solid"
+                  color="green"
+                  onClick={() => {
+                    handleRandomTopic();
+                  }}
+                  icon={<AiFillAlert />}
+                  style={{ marginRight: "10px" }}
+                >
+                  Generate Topic
+                </Button>
                 <Button
                   variant="solid"
                   color="red"
