@@ -179,13 +179,11 @@ const MainScreen = () => {
   // };
 
   const handleRandomTopic = () => {
-    console.log("topic", topicGame);
-
     const index = Math.floor(Math.random() * topicGame.length);
     const item = topicGame.splice(index, 1)[0];
     setTopic(item.topic);
-    console.log(item);
   };
+
   const handleOk = async () => {
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
 
