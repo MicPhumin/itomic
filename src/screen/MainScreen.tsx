@@ -72,6 +72,8 @@ const MainScreen = () => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
 
+  console.log("card", cards);
+
   const values = Form.useWatch([], form);
   React.useEffect(() => {
     form
@@ -95,14 +97,14 @@ const MainScreen = () => {
         setIsHost(findHost);
         setHostBtn(true);
       }
-      if (findHost.id === player.id) {
-        const findPlayer = data?.find((item) => {
-          return item.id == player?.id;
-        });
-        setMyCards(findPlayer);
-        localStorage.setItem("player", JSON.stringify(findPlayer));
-        setIsModalOpen(false);
-      }
+
+      const findPlayer = data?.find((item) => {
+        return item.id == player?.id;
+      });
+
+      setMyCards(findPlayer);
+      localStorage.setItem("player", JSON.stringify(findPlayer));
+      setIsModalOpen(false);
     }
 
     if (data) {
