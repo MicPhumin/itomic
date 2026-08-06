@@ -102,9 +102,6 @@ const MainScreen = () => {
         setMyCards(findPlayer);
         localStorage.setItem("player", JSON.stringify(findPlayer));
         setIsModalOpen(false);
-      } else if (findHost.id !== player.id) {
-        localStorage.clear();
-        console.log("local storage cleared");
       }
     }
 
