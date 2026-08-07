@@ -315,6 +315,7 @@ const MainScreen = () => {
     setCards(result);
     setIsNewGame(true);
   };
+  console.log("setIsNewGame", isNewGame);
 
   const deleteAllRows = async () => {
     const { error } = await supabase.from("itomic").delete().neq("id", 0);
@@ -646,7 +647,7 @@ const MainScreen = () => {
                     align={"middle"}
                     style={{
                       zIndex: -1,
-                      // pointerEvents: isNewGame ? "none" : "auto",
+                      pointerEvents: isNewGame ? "none" : "auto",
                     }}
                   >
                     {cards.map((card, index) => (
@@ -710,21 +711,6 @@ const MainScreen = () => {
           ) : (
             <>
               <Row justify={"center"} gutter={24}>
-                <Button
-                  variant="solid"
-                  color="green"
-                  onClick={() => {
-                    handleOrder();
-                  }}
-                  icon={<AiFillCheckCircle />}
-                  style={{
-                    fontSize: "25px",
-                    width: "200px",
-                    height: "50px",
-                  }}
-                >
-                  Finish
-                </Button>
                 <Col>
                   {" "}
                   <Button
