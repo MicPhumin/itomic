@@ -1,4 +1,4 @@
-import { Card, Row } from "antd";
+import { Card, Row, Typography } from "antd";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 
@@ -11,6 +11,7 @@ interface SortableCardProps {
   is_host: boolean;
   topic: string;
   active: string;
+  note: string;
 }
 
 export default function SortableCard({
@@ -19,6 +20,7 @@ export default function SortableCard({
   value,
   showVal,
   active,
+  note,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -56,6 +58,7 @@ export default function SortableCard({
             </div>
           </Row>
         )}
+        <Typography.Text ellipsis={{ tooltip: true }}>{note}</Typography.Text>
       </Card>
     </div>
   );

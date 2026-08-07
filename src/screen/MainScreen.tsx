@@ -27,6 +27,9 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
+import dragSound from "../assets/sound/whoosh.mp3";
+import saveNote from "../assets/sound/check-mark.mp3";
+import finish from "../assets/sound/ta-da.mp3";
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
@@ -43,17 +46,19 @@ interface SortableCardProps {
   active: string;
   player_order: number;
   score: number;
+  note: string;
 }
 
 const MainScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
   const [showVal, setShowVal] = useState<boolean>(false);
-  const [name, setName] = useState("");
-  const [topic, setTopic] = useState("");
+  const [name, setName] = useState<string>("");
+  const [topic, setTopic] = useState<string>("");
+  const [note, setNote] = useState<string>("");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
-  const [score, setScore] = useState(0);
-  const [hostBtn, setHostBtn] = useState(false);
+  const [score, setScore] = useState<number>(0);
+  const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<SortableCardProps>({
     id: 0,
     name: "",
@@ -64,6 +69,7 @@ const MainScreen = () => {
     active: "",
     player_order: 0,
     score: 0,
+    note: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
@@ -71,6 +77,13 @@ const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
+  const [dragSoundPlay, setDragSoundPlay] = useState<boolean>(false);
+
+  const sounds = {
+    drag: new Audio(dragSound),
+    saveNote: new Audio(saveNote),
+    finish: new Audio(finish),
+  };
 
   console.log("card", cards);
 
@@ -81,6 +94,12 @@ const MainScreen = () => {
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
+
+  useEffect(() => {
+    if (!dragSoundPlay) return;
+    sounds.drag.play();
+    setDragSoundPlay(false);
+  }, [dragSoundPlay]);
 
   const loadPlayers = async () => {
     const { data } = await supabase
@@ -110,7 +129,7 @@ const MainScreen = () => {
     if (data) {
       setCards(data);
       const findTopic = data.find((item) => {
-        return item.topic !== "";
+        return item?.topic !== "";
       });
       setTopic(findTopic.topic ? findTopic.topic : topic);
     }
@@ -144,6 +163,7 @@ const MainScreen = () => {
 
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
+
               setShowVal(player.showVal);
               setIsNewGame(player.showVal);
             } else if (player.showVal === false) {
@@ -184,9 +204,11 @@ const MainScreen = () => {
           active: null,
           score: null,
           showVal: false,
+          note: null,
         })
         .eq("id", cards[i].id);
     }
+    setNote("");
   };
 
   const handleTopic = async (topicName: string) => {
@@ -248,9 +270,12 @@ const MainScreen = () => {
 
     const oldIndex = cards.findIndex((i) => i.id === active.id);
     const newIndex = cards.findIndex((i) => i.id === over.id);
-
+    // sounds.drag.play().catch((err) => {
+    //   console.error(err);
+    // });
     const newCards = arrayMove(cards, oldIndex, newIndex);
     setCards(newCards);
+    setDragSoundPlay(true);
     await Promise.all(
       newCards.map((card, index) =>
         supabase
@@ -315,7 +340,11 @@ const MainScreen = () => {
     setCards(result);
     setIsNewGame(true);
   };
-  console.log("setIsNewGame", isNewGame);
+
+  const handleNote = async () => {
+    const player = JSON.parse(localStorage.getItem("player") ?? "null");
+    await supabase.from("itomic").update({ note: note }).eq("id", player.id);
+  };
 
   const deleteAllRows = async () => {
     const { error } = await supabase.from("itomic").delete().neq("id", 0);
@@ -575,6 +604,7 @@ const MainScreen = () => {
               <Row>
                 <Button
                   variant="solid"
+                  size="large"
                   color="purple"
                   onClick={() => {
                     setChangeTopic(true);
@@ -606,6 +636,26 @@ const MainScreen = () => {
                 >
                   {myCards?.value}
                 </div>
+                <Input
+                  placeholder="Enter Note"
+                  value={note}
+                  allowClear
+                  onChange={(e) => {
+                    setNote(e.target.value);
+                  }}
+                />
+                <Button
+                  variant="solid"
+                  color="purple"
+                  onClick={() => {
+                    sounds.saveNote.play();
+                    handleNote();
+                  }}
+                  icon={<AiFillCheckCircle />}
+                  style={{ marginTop: "10px" }}
+                >
+                  Save Note
+                </Button>
               </Card>
             </Col>
           </Row>
@@ -673,6 +723,7 @@ const MainScreen = () => {
                             is_host={card.is_host}
                             online={card.online}
                             topic={card.topic}
+                            note={card.note}
                           />
                         </Col>
                       </>
@@ -697,6 +748,7 @@ const MainScreen = () => {
                 color="green"
                 onClick={() => {
                   handleOrder();
+                  // sounds.finish.play();
                 }}
                 icon={<AiFillCheckCircle />}
                 style={{
@@ -756,7 +808,7 @@ const MainScreen = () => {
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.8.0</h3>
+        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.8.2</h3>
       </Row>
     </div>
   );
