@@ -27,9 +27,9 @@ import {
   verticalListSortingStrategy,
   arrayMove,
 } from "@dnd-kit/sortable";
-import dragSound from "../assets/sound/whoosh.mp3";
-import saveNote from "../assets/sound/check-mark.mp3";
-import finish from "../assets/sound/ta-da.mp3";
+// import dragSound from "../assets/sound/whoosh.mp3";
+// import saveNote from "../assets/sound/check-mark.mp3";
+// import finish from "../assets/sound/ta-da.mp3";
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
