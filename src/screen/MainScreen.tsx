@@ -288,7 +288,7 @@ const MainScreen = () => {
 
   const handleOrder = async () => {
     const result = cards.map((player, index) => {
-      const next = cards[index + 1];
+      // const next = cards[index + 1];
 
       const sorted = [...cards].sort((a, b) => a.value - b.value);
 
