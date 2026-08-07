@@ -265,27 +265,42 @@ const MainScreen = () => {
     const result = cards.map((player, index) => {
       const next = cards[index + 1];
 
-      if (index === cards.length - 1) {
-        const prev = cards[index - 1];
+      const sorted = [...cards].sort((a, b) => a.value - b.value);
+
+      if (player.value === sorted[index].value) {
         return {
           ...player,
-          active: player.value >= prev.value ? "green" : "red",
+          active: "green",
+        };
+      } else {
+        return {
+          ...player,
+          active: "red",
         };
       }
+      //========old func ============
+      // if (index === cards.length - 1) {
+      //   const prev = cards[index - 1];
+      //   return {
+      //     ...player,
+      //     active: player.value >= prev.value ? "green" : "red",
+      //   };
+      // }
 
-      return {
-        ...player,
-        active: player.value <= next.value ? "green" : "red",
-      };
+      // return {
+      //   ...player,
+      //   active: player.value <= next.value ? "green" : "red",
+      // };
     });
 
-    for (let i = 0; i < result.length; i++) {
-      if (result[i].active === "red") {
-        for (let j = 0; j < i; j++) {
-          result[j].active = "red";
-        }
-      }
-    }
+    // for (let i = 0; i < result.length; i++) {
+    //   if (result[i].active === "red") {
+    //     for (let j = 0; j < i; j++) {
+    //       result[j].active = "red";
+    //     }
+    //   }
+    // }
+
     const score = result.filter((item) => item.active === "green").length;
     await Promise.all(
       result.map((card) =>
@@ -695,6 +710,21 @@ const MainScreen = () => {
           ) : (
             <>
               <Row justify={"center"} gutter={24}>
+                <Button
+                  variant="solid"
+                  color="green"
+                  onClick={() => {
+                    handleOrder();
+                  }}
+                  icon={<AiFillCheckCircle />}
+                  style={{
+                    fontSize: "25px",
+                    width: "200px",
+                    height: "50px",
+                  }}
+                >
+                  Finish
+                </Button>
                 <Col>
                   {" "}
                   <Button
