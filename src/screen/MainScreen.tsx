@@ -77,13 +77,13 @@ const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
-  const [dragSoundPlay, setDragSoundPlay] = useState<boolean>(false);
+  // const [dragSoundPlay, setDragSoundPlay] = useState<boolean>(false);
 
-  const sounds = {
-    drag: new Audio(dragSound),
-    saveNote: new Audio(saveNote),
-    finish: new Audio(finish),
-  };
+  // const sounds = {
+  //   drag: new Audio(dragSound),
+  //   saveNote: new Audio(saveNote),
+  //   finish: new Audio(finish),
+  // };
 
   console.log("card", cards);
 
@@ -95,11 +95,11 @@ const MainScreen = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  useEffect(() => {
-    if (!dragSoundPlay) return;
-    sounds.drag.play();
-    setDragSoundPlay(false);
-  }, [dragSoundPlay]);
+  // useEffect(() => {
+  //   if (!dragSoundPlay) return;
+  //   sounds.drag.play();
+  //   setDragSoundPlay(false);
+  // }, [dragSoundPlay]);
 
   const loadPlayers = async () => {
     const { data } = await supabase
