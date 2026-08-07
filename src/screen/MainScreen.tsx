@@ -275,7 +275,7 @@ const MainScreen = () => {
     // });
     const newCards = arrayMove(cards, oldIndex, newIndex);
     setCards(newCards);
-    setDragSoundPlay(true);
+    // setDragSoundPlay(true);
     await Promise.all(
       newCards.map((card, index) =>
         supabase
@@ -648,7 +648,6 @@ const MainScreen = () => {
                   variant="solid"
                   color="purple"
                   onClick={() => {
-                    sounds.saveNote.play();
                     handleNote();
                   }}
                   icon={<AiFillCheckCircle />}
