@@ -30,6 +30,7 @@ export default function SortableCard({
     transition,
     cursor: "grab",
     marginBottom: 16,
+    touchAction: "none",
   };
 
   return (
@@ -39,12 +40,17 @@ export default function SortableCard({
         style={{
           borderColor: active ? active : "",
           borderWidth: active ? "5px" : "",
+          height: window.innerWidth <= 426 ? "180px" : "100%",
         }}
       >
         {showVal == true ? (
           <Row justify={"center"}>
             <div
-              style={{ color: "black", fontSize: "80px", fontWeight: "bold" }}
+              style={{
+                color: "black",
+                fontSize: window.innerWidth <= 426 ? "40px" : "80px",
+                fontWeight: "bold",
+              }}
             >
               {value}
             </div>
@@ -52,7 +58,11 @@ export default function SortableCard({
         ) : (
           <Row justify={"center"}>
             <div
-              style={{ color: "black", fontSize: "80px", fontWeight: "bold" }}
+              style={{
+                color: "black",
+                fontSize: window.innerWidth <= 426 ? "40px" : "80px",
+                fontWeight: "bold",
+              }}
             >
               ?
             </div>

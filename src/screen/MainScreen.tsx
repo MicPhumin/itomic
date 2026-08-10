@@ -8,7 +8,6 @@ import {
   Input,
   Switch,
   Form,
-  Spin,
   Tooltip,
   message,
 } from "antd";
@@ -24,9 +23,12 @@ import {
 
 import {
   SortableContext,
-  verticalListSortingStrategy,
   arrayMove,
+  horizontalListSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+
+import loadingGIF from "../assets/loading.gif";
 // import dragSound from "../assets/sound/whoosh.mp3";
 // import saveNote from "../assets/sound/check-mark.mp3";
 // import finish from "../assets/sound/ta-da.mp3";
@@ -85,6 +87,8 @@ const MainScreen = () => {
   //   finish: new Audio(finish),
   // };
 
+  console.log("window", window.innerWidth);
+
   console.log("card", cards);
 
   const values = Form.useWatch([], form);
@@ -122,6 +126,7 @@ const MainScreen = () => {
       });
 
       setMyCards(findPlayer);
+      setNote(findPlayer.note);
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
@@ -197,6 +202,7 @@ const MainScreen = () => {
 
     for (let i = 0; i < cards.length; i++) {
       const randomNumber = shuffled.pop();
+
       await supabase
         .from("itomic")
         .update({
@@ -357,7 +363,12 @@ const MainScreen = () => {
   };
 
   return (
-    <div style={{ margin: "0px 50px 0px 50px" }}>
+    <div
+      style={{
+        margin:
+          window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+      }}
+    >
       <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC </h3>
 
       <Modal
@@ -664,19 +675,24 @@ const MainScreen = () => {
       <Divider style={{ backgroundColor: "green" }} />
       <Row justify={"center"}>
         <h1 style={{ fontSize: "30px" }}>
-          Arrange the numbers from smallest to largest .{" "}
+          Arrange the numbers from smallest to largest .
         </h1>
       </Row>
+
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
         {isLoading === true ? (
           <>
             <Row>
               <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                <Spin
-                  description="Loading"
-                  size="large"
-                  style={{ margin: "50px 0px 50px 0px" }}
-                ></Spin>
+                <img
+                  src={loadingGIF}
+                  alt=""
+                  style={{
+                    margin: "50px 0px 50px 0px",
+                    width: "250px",
+                    height: "250px",
+                  }}
+                />
               </Col>
             </Row>
           </>
@@ -689,7 +705,7 @@ const MainScreen = () => {
               >
                 <SortableContext
                   items={cards}
-                  strategy={verticalListSortingStrategy}
+                  strategy={horizontalListSortingStrategy}
                 >
                   <Row
                     gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
@@ -703,7 +719,7 @@ const MainScreen = () => {
                       <>
                         <Col
                           className="gutter-row"
-                          xs={24}
+                          xs={8}
                           sm={12}
                           md={8}
                           lg={6}
