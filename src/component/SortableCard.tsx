@@ -7,11 +7,12 @@ interface SortableCardProps {
   name: string;
   value: number;
   showVal: boolean;
-  online: boolean;
+  room: string;
   is_host: boolean;
   topic: string;
   active: string;
   note: string;
+  noteColor: string;
 }
 
 export default function SortableCard({
@@ -21,6 +22,7 @@ export default function SortableCard({
   showVal,
   active,
   note,
+  noteColor,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -36,6 +38,7 @@ export default function SortableCard({
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card
+        className=""
         title={name}
         style={{
           borderColor: active ? active : "",
@@ -68,7 +71,23 @@ export default function SortableCard({
             </div>
           </Row>
         )}
-        <Typography.Text ellipsis={{ tooltip: true }}>{note}</Typography.Text>
+        <Typography.Text
+          // ellipsis={{
+          //   tooltip: true,
+          // }}
+          style={{
+            wordBreak: "break-word",
+            overflowWrap: "break-word",
+            fontFamily: "Kanit, sans-serif",
+            fontSize: 25,
+            fontWeight: "bold",
+            color: noteColor,
+            WebkitTextStroke: "1px #111",
+            // textShadow: "1px 1px 0 #111, 2px 2px 0 #111",
+          }}
+        >
+          {note}
+        </Typography.Text>
       </Card>
     </div>
   );

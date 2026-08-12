@@ -10,6 +10,7 @@ import {
   Form,
   Tooltip,
   message,
+  ColorPicker,
 } from "antd";
 import { useEffect, useState } from "react";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -25,30 +26,33 @@ import {
   SortableContext,
   arrayMove,
   horizontalListSortingStrategy,
-  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
 import loadingGIF from "../assets/loading.gif";
-// import dragSound from "../assets/sound/whoosh.mp3";
-// import saveNote from "../assets/sound/check-mark.mp3";
-// import finish from "../assets/sound/ta-da.mp3";
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 import topicGame from "../assets/topic.json";
+import type { ColorPickerProps, GetProp } from "antd";
+
+type Color = Extract<
+  GetProp<ColorPickerProps, "value">,
+  string | { cleared: any }
+>;
 interface SortableCardProps {
   id: number;
   name: string;
   value: number;
   showVal?: boolean;
-  online: boolean;
+  room: string;
   is_host: boolean;
   topic: string;
   active: string;
   player_order: number;
   score: number;
   note: string;
+  notecolor: string;
 }
 
 const MainScreen = () => {
@@ -58,6 +62,7 @@ const MainScreen = () => {
   const [name, setName] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [note, setNote] = useState<string>("");
+  const [noteColor, setNoteColor] = useState<Color>("#000");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
@@ -67,11 +72,12 @@ const MainScreen = () => {
     value: 0,
     topic: "",
     is_host: false,
-    online: true,
+    room: "",
     active: "",
     player_order: 0,
     score: 0,
     note: "",
+    notecolor: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
@@ -79,17 +85,14 @@ const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
-  // const [dragSoundPlay, setDragSoundPlay] = useState<boolean>(false);
-
-  // const sounds = {
-  //   drag: new Audio(dragSound),
-  //   saveNote: new Audio(saveNote),
-  //   finish: new Audio(finish),
-  // };
-
-  console.log("window", window.innerWidth);
 
   console.log("card", cards);
+
+  const hexString = React.useMemo<string>(
+    () =>
+      typeof noteColor === "string" ? noteColor : noteColor?.toHexString(),
+    [noteColor],
+  );
 
   const values = Form.useWatch([], form);
   React.useEffect(() => {
@@ -98,12 +101,6 @@ const MainScreen = () => {
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
   }, [form, values]);
-
-  // useEffect(() => {
-  //   if (!dragSoundPlay) return;
-  //   sounds.drag.play();
-  //   setDragSoundPlay(false);
-  // }, [dragSoundPlay]);
 
   const loadPlayers = async () => {
     const { data } = await supabase
@@ -127,6 +124,7 @@ const MainScreen = () => {
 
       setMyCards(findPlayer);
       setNote(findPlayer.note);
+      setNoteColor(findPlayer.notecolor);
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
@@ -215,6 +213,7 @@ const MainScreen = () => {
         .eq("id", cards[i].id);
     }
     setNote("");
+    setNote("#00000");
   };
 
   const handleTopic = async (topicName: string) => {
@@ -248,7 +247,7 @@ const MainScreen = () => {
     const { data, error } = await supabase.rpc("join_game", {
       p_name: name,
       p_value: Number(randomNumber),
-      p_online: true,
+      p_room: "",
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
       p_order: cards.length + 1,
@@ -349,7 +348,10 @@ const MainScreen = () => {
 
   const handleNote = async () => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
-    await supabase.from("itomic").update({ note: note }).eq("id", player.id);
+    await supabase
+      .from("itomic")
+      .update({ note: note, notecolor: hexString })
+      .eq("id", player.id);
   };
 
   const deleteAllRows = async () => {
@@ -558,7 +560,15 @@ const MainScreen = () => {
       <Row justify={"center"}>
         <Col xs={24} sm={24} md={4} lg={4} xl={2}>
           <Row>
-            <h2 style={{ fontSize: "30px", color: "gray" }}>Topic :</h2>
+            <h2
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "30px",
+                color: "gray",
+              }}
+            >
+              Topic :
+            </h2>
           </Row>
         </Col>
 
@@ -610,7 +620,11 @@ const MainScreen = () => {
           ) : (
             <>
               <Row>
-                <h2 style={{ fontSize: "30px" }}>{topic}</h2>{" "}
+                <h2
+                  style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}
+                >
+                  {topic}
+                </h2>{" "}
               </Row>
               <Row>
                 <Button
@@ -621,7 +635,9 @@ const MainScreen = () => {
                     setChangeTopic(true);
                   }}
                   icon={<AiFillPlusSquare />}
-                  style={{ marginRight: "10px" }}
+                  style={{
+                    marginRight: "10px",
+                  }}
                 >
                   Change Topic
                 </Button>
@@ -647,14 +663,26 @@ const MainScreen = () => {
                 >
                   {myCards?.value}
                 </div>
-                <Input
-                  placeholder="Enter Note"
-                  value={note}
-                  allowClear
-                  onChange={(e) => {
-                    setNote(e.target.value);
-                  }}
-                />
+                <Row>
+                  <Col xs={20} sm={20} md={20} lg={20} xl={20}>
+                    <Input
+                      placeholder="Enter Note"
+                      value={note}
+                      allowClear
+                      onChange={(e) => {
+                        setNote(e.target.value);
+                      }}
+                    />
+                  </Col>
+                  <Col xs={4} sm={4} md={4} lg={4} xl={4}>
+                    <ColorPicker
+                      format="hex"
+                      value={noteColor}
+                      onChangeComplete={setNoteColor}
+                    />
+                  </Col>
+                </Row>
+
                 <Button
                   variant="solid"
                   color="purple"
@@ -674,7 +702,7 @@ const MainScreen = () => {
 
       <Divider style={{ backgroundColor: "green" }} />
       <Row justify={"center"}>
-        <h1 style={{ fontSize: "30px" }}>
+        <h1 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
           Arrange the numbers from smallest to largest .
         </h1>
       </Row>
@@ -736,9 +764,10 @@ const MainScreen = () => {
                             showVal={showVal}
                             active={card.active}
                             is_host={card.is_host}
-                            online={card.online}
+                            room={card.room}
                             topic={card.topic}
                             note={card.note}
+                            noteColor={card.notecolor}
                           />
                         </Col>
                       </>
@@ -770,6 +799,7 @@ const MainScreen = () => {
                   fontSize: "25px",
                   width: "200px",
                   height: "50px",
+                  fontFamily: "Kanit, sans-serif",
                 }}
               >
                 Finish
@@ -791,6 +821,7 @@ const MainScreen = () => {
                       fontSize: "25px",
                       width: "200px",
                       height: "50px",
+                      fontFamily: "Kanit, sans-serif",
                     }}
                   >
                     Restart
@@ -810,6 +841,7 @@ const MainScreen = () => {
                         fontSize: "25px",
                         width: "200px",
                         height: "50px",
+                        fontFamily: "Kanit, sans-serif",
                       }}
                     >
                       New Game
@@ -823,7 +855,14 @@ const MainScreen = () => {
       )}
 
       <Row justify={"end"}>
-        <h3 style={{ fontSize: "20px", color: "magenta" }}>iTOMIC ver 1.8.2</h3>
+        <h3
+          style={{
+            fontSize: "20px",
+            color: "magenta",
+          }}
+        >
+          iTOMIC ver 1.8.4
+        </h3>
       </Row>
     </div>
   );
