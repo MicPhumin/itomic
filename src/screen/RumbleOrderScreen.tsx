@@ -8,7 +8,6 @@ import {
   Input,
   Switch,
   Form,
-  Tooltip,
   message,
   ColorPicker,
 } from "antd";

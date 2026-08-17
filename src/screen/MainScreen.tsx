@@ -1,7 +1,7 @@
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
-import { Button, Col, Modal, Row, Tooltip } from "antd";
+import { Button, Modal, Row, Tooltip } from "antd";
 import React, { useState } from "react";
-import { AiFillAudio, AiFillFire, AiOutlineOrderedList } from "react-icons/ai";
+import { AiFillAudio, AiOutlineOrderedList } from "react-icons/ai";
 
 type Props = {};
 
