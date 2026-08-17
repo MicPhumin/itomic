@@ -1,11 +1,9 @@
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 import { Button, Modal, Row, Tooltip } from "antd";
-import React, { useState } from "react";
+import { useState } from "react";
 import { AiFillAudio, AiOutlineOrderedList } from "react-icons/ai";
 
-type Props = {};
-
-const MainScreen = (props: Props) => {
+const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
   return (
     <div

@@ -62,7 +62,6 @@ const RumbleOrderScreen = () => {
   const [note, setNote] = useState<string>("");
   const [noteColor, setNoteColor] = useState<Color>("#000");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
-  const [globalIndex, setGlobalIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [isHost, setIsHost] = useState<SortableCardProps>({

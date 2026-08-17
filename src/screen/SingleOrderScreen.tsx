@@ -83,7 +83,6 @@ const RumbleOrderScreen = () => {
     heart: 3,
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [isNewGame, setIsNewGame] = useState(false);
   const [loseModal, setLoseModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
@@ -174,10 +173,6 @@ const RumbleOrderScreen = () => {
 
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
-
-              setIsNewGame(player.showVal);
-            } else if (player.showVal === false) {
-              setIsNewGame(false);
             }
 
             if (player.topic) {
@@ -362,7 +357,6 @@ const RumbleOrderScreen = () => {
     } else {
       console.log("Deleted all rows");
     }
-    setIsNewGame(false);
   };
 
   return (
