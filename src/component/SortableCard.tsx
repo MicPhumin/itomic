@@ -6,7 +6,7 @@ interface SortableCardProps {
   id: number;
   name: string;
   value: number;
-  showVal: boolean;
+  showVal: boolean | undefined;
   room: string;
   is_host: boolean;
   topic: string;
@@ -30,14 +30,17 @@ export default function SortableCard({
   const style: React.CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
-    cursor: "grab",
     marginBottom: 16,
     touchAction: "none",
+    pointerEvents: showVal === true ? "none" : "auto",
+    opacity: showVal === true ? 0.5 : 1,
+    cursor: showVal === true ? "not-allowed" : "grab",
   };
 
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card
+        aria-disabled={true}
         className=""
         title={name}
         style={{
