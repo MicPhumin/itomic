@@ -5,6 +5,8 @@ import { AiFillAudio, AiOutlineOrderedList } from "react-icons/ai";
 
 const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
+  console.log("window.location.origin", window.location.origin);
+
   return (
     <div
       style={{
