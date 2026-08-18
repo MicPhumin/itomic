@@ -11,8 +11,14 @@ import {
   message,
   ColorPicker,
 } from "antd";
-import { useEffect, useState } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { useEffect, useRef, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  type DragMoveEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { supabase } from "../supabase";
 import {
   AiFillAlert,
@@ -90,7 +96,22 @@ const RumbleOrderScreen = () => {
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
 
+  // ---------------- Realtime Drag (ง่าย ๆ) ----------------
+  const channelRef = useRef<any>(null);
+  const playerIdRef = useRef<string>(crypto.randomUUID());
+  const dragPositionRef = useRef({ x: 0, y: 0 });
+  const lastDragMoveRef = useRef(0);
+
+  const [remoteDrag, setRemoteDrag] = useState<{
+    cardId: number;
+    left: number;
+    top: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
   console.log("card", cards);
+  console.log("remoteDrag", remoteDrag);
 
   const hexString = React.useMemo<string>(
     () =>
@@ -144,15 +165,19 @@ const RumbleOrderScreen = () => {
       });
       setTopic(findTopic.topic ? findTopic.topic : topic);
     }
-    setIsLoading(false);
+    // setIsLoading(false);
   };
 
   useEffect(() => {
     loadPlayers();
     console.log("Run at First");
+
     const channel = supabase
       .channel("players")
 
+      // -----------------------------
+      // Database Realtime
+      // -----------------------------
       .on(
         "postgres_changes",
         {
@@ -168,7 +193,7 @@ const RumbleOrderScreen = () => {
             localStorage.clear();
             window.location.reload();
           } else if (payload.eventType === "UPDATE") {
-            setIsLoading(true);
+            // setIsLoading(true);
             const player = payload.new as SortableCardProps;
 
             setScore(player.score);
@@ -180,8 +205,10 @@ const RumbleOrderScreen = () => {
             if (player.topic) {
               setTopic(player.topic);
             }
+
             if (player.active === "red") {
               setHeart(player.heart);
+
               if (player.heart === 0) {
                 setLoseModal(true);
               }
@@ -190,11 +217,84 @@ const RumbleOrderScreen = () => {
         },
       )
 
+      // -----------------------------
+      // Other browser: Drag Start
+      // -----------------------------
+      .on("broadcast", { event: "drag-start" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag({
+          cardId: Number(payload.cardId),
+          left: Number(payload.left || 0),
+          top: Number(payload.top || 0),
+          x: 0,
+          y: 0,
+        });
+      })
+
+      // -----------------------------
+      // Other browser: Drag Move
+      // -----------------------------
+      .on("broadcast", { event: "drag-move" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag((prev) => {
+          // 💡 ถ้า prev ยังไม่มี ให้รับค่า x, y และตั้งต้นใหม่ทันที
+          if (!prev || prev.cardId !== Number(payload.cardId)) {
+            return {
+              cardId: Number(payload.cardId),
+              left: Number(payload.left || 0),
+              top: Number(payload.top || 0),
+              x: Number(payload.x || 0),
+              y: Number(payload.y || 0),
+            };
+          }
+
+          return {
+            ...prev,
+            x: Number(payload.x || 0),
+            y: Number(payload.y || 0),
+          };
+        });
+      })
+      // -----------------------------
+      // Other browser: Drag End
+      // -----------------------------
+      .on("broadcast", { event: "drag-end" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag(null);
+
+        if (payload.cancelled) return;
+
+        setCards((currentCards) => {
+          const oldIndex = currentCards.findIndex(
+            (card) => card.id === Number(payload.cardId),
+          );
+
+          const newIndex = Number(payload.newIndex);
+
+          if (
+            oldIndex === -1 ||
+            newIndex < 0 ||
+            newIndex >= currentCards.length ||
+            oldIndex === newIndex
+          ) {
+            return currentCards;
+          }
+
+          return arrayMove(currentCards, oldIndex, newIndex);
+        });
+      })
+
       .subscribe((status) => {
         console.log("Status:", status);
       });
 
+    channelRef.current = channel;
+
     return () => {
+      channelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, []);
@@ -283,19 +383,117 @@ const RumbleOrderScreen = () => {
     setIsModalOpen(false);
   };
 
-  async function handleDragEnd(event: any) {
+  // -----------------------------
+  // Drag Start
+  // -----------------------------
+
+  const handleDragStart = async (event: DragStartEvent) => {
+    const cardId = Number(event.active.id);
+
+    dragPositionRef.current = { x: 0, y: 0 };
+    lastDragMoveRef.current = Date.now();
+
+    // 💡 ดึง DOM Element จริงของการ์ดจาก Event Activator Target
+    const activatorNode = event.activatorEvent.target as HTMLElement | null;
+    const cardElement = activatorNode?.closest(".gutter-row") || activatorNode;
+    const rect = cardElement?.getBoundingClientRect();
+
+    // ดึงค่า left, top จริงบนหน้าจอ (ถ้าหาไม่ได้ค่อยดึง fallback)
+    const left = rect ? rect.left : 0;
+    const top = rect ? rect.top : 0;
+
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-start",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId,
+        left,
+        top,
+      },
+    });
+  };
+  // -----------------------------
+  // Drag Move
+  // ส่งทุก ~40ms
+  // -----------------------------
+
+  const handleDragMove = async (event: DragMoveEvent) => {
+    const now = Date.now();
+    if (now - lastDragMoveRef.current < 30) return;
+    lastDragMoveRef.current = now;
+
+    // event.delta คือระยะที่ลากออกจากจุดเริ่มต้นจริง
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-move",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId: Number(event.active.id),
+        x: event.delta.x,
+        y: event.delta.y,
+      },
+    });
+  };
+
+  // -----------------------------
+  // Drag End
+  // -----------------------------
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
 
-    if (!over || active.id === over.id) return;
+    // แจ้ง browser อื่นว่าจบการลาก
+    if (!over) {
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId: Number(active.id),
+          cancelled: true,
+        },
+      });
 
-    const oldIndex = cards.findIndex((i) => i.id === active.id);
-    const newIndex = cards.findIndex((i) => i.id === over.id);
-    // sounds.drag.play().catch((err) => {
-    //   console.error(err);
-    // });
+      return;
+    }
+
+    const oldIndex = cards.findIndex((card) => card.id === Number(active.id));
+
+    const newIndex = cards.findIndex((card) => card.id === Number(over.id));
+
+    // ไม่ได้เปลี่ยนตำแหน่ง
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId: Number(active.id),
+          cancelled: true,
+        },
+      });
+
+      return;
+    }
+
     const newCards = arrayMove(cards, oldIndex, newIndex);
+
     setCards(newCards);
-    // setDragSoundPlay(true);
+
+    // Browser อื่น
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-end",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId: Number(active.id),
+        oldIndex,
+        newIndex,
+        cancelled: false,
+      },
+    });
+
+    // Save DB เฉพาะตอนปล่อย
     await Promise.all(
       newCards.map((card, index) =>
         supabase
@@ -304,7 +502,7 @@ const RumbleOrderScreen = () => {
           .eq("id", card.id),
       ),
     );
-  }
+  };
 
   const handleSingle = async () => {
     const sorted = [...cards].sort((a, b) => a.value - b.value);
@@ -439,7 +637,7 @@ const RumbleOrderScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <h2 style={{ color: "magenta" }}>iTOMIC</h2>
+                <h2 style={{ color: "magenta" }}>iTOMIC Test</h2>
               </Row>
               <Row justify={"center"}>
                 {" "}
@@ -741,7 +939,7 @@ const RumbleOrderScreen = () => {
       </Row>
 
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
-        {isLoading === true ? (
+        {/* {isLoading === true ? (
           <>
             <Row>
               <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -757,56 +955,112 @@ const RumbleOrderScreen = () => {
               </Col>
             </Row>
           </>
-        ) : (
-          <>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+        ) : ( */}
+        <>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragMove={handleDragMove}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={cards}
+                strategy={horizontalListSortingStrategy}
               >
-                <SortableContext
-                  items={cards}
-                  strategy={horizontalListSortingStrategy}
+                <Row
+                  gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
+                  align={"middle"}
                 >
-                  <Row
-                    gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                    align={"middle"}
-                  >
-                    {cards.map((card, index) => (
-                      <>
-                        <Col
-                          className="gutter-row"
-                          xs={8}
-                          sm={12}
-                          md={8}
-                          lg={6}
-                          xl={4}
-                          span={4}
-                        >
-                          <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
+                  {cards.map((card, index) => (
+                    <>
+                      <Col
+                        className="gutter-row"
+                        xs={8}
+                        sm={12}
+                        md={8}
+                        lg={6}
+                        xl={4}
+                        span={4}
+                      >
+                        <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
 
-                          <SortableCard
-                            key={card.id}
-                            id={card.id}
-                            name={card.name}
-                            value={card.value}
-                            showVal={card?.showVal}
-                            active={card.active}
-                            is_host={card.is_host}
-                            room={card.room}
-                            topic={card.topic}
-                            note={card.note}
-                            noteColor={card.notecolor}
-                          />
-                        </Col>
-                      </>
-                    ))}
-                  </Row>
-                </SortableContext>
-              </DndContext>
-            </Col>
-          </>
-        )}
+                        <SortableCard
+                          key={card.id}
+                          id={card.id}
+                          name={card.name}
+                          value={card.value}
+                          showVal={card?.showVal}
+                          active={card.active}
+                          is_host={card.is_host}
+                          room={card.room}
+                          topic={card.topic}
+                          note={card.note}
+                          noteColor={card.notecolor}
+                        />
+                      </Col>
+                    </>
+                  ))}
+                </Row>
+              </SortableContext>
+
+              {remoteDrag &&
+                remoteDrag.left > 0 &&
+                (() => {
+                  const targetCard = cards.find(
+                    (card) => card.id === remoteDrag.cardId,
+                  );
+                  if (!targetCard) return null;
+
+                  return (
+                    <div
+                      style={{
+                        position: "fixed",
+                        left: `${remoteDrag.left}px`,
+                        top: `${remoteDrag.top}px`,
+                        transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
+                        transition: "transform 30ms linear",
+                        width: "200px",
+                        height: "220px",
+                        boxSizing: "border-box",
+                        padding: "15px",
+                        background: "#ffffff",
+                        border: "3px dashed #722ed1",
+                        borderRadius: "12px",
+                        boxShadow: "0 8px 25px rgba(114, 46, 209, 0.35)",
+                        zIndex: 99999,
+                        pointerEvents: "none",
+                        willChange: "transform",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          color: "#333",
+                          fontSize: "16px",
+                        }}
+                      >
+                        {targetCard.name}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: "36px",
+                          fontWeight: "bold",
+                          textAlign: "center",
+                          color: "#722ed1",
+                          marginTop: "10px",
+                        }}
+                      >
+                        {targetCard.showVal ? targetCard.value : "?"}
+                      </div>
+                    </div>
+                  );
+                })()}
+            </DndContext>
+          </Col>
+        </>
+        {/* )} */}
       </Row>
 
       {isHost && isHost.is_host === true && (

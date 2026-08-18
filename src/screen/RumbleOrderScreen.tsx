@@ -51,6 +51,8 @@ interface SortableCardProps {
   score: number;
   note: string;
   notecolor: string;
+  heart: number;
+  mode: string;
 }
 
 const RumbleOrderScreen = () => {
@@ -76,6 +78,8 @@ const RumbleOrderScreen = () => {
     score: 0,
     note: "",
     notecolor: "",
+    heart: 3,
+    mode: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isNewGame, setIsNewGame] = useState(false);
@@ -208,7 +212,8 @@ const RumbleOrderScreen = () => {
           showVal: false,
           note: null,
         })
-        .eq("id", cards[i].id);
+        .eq("id", cards[i].id)
+        .eq("mode", "rumble");
     }
     setNote("");
     setNote("#00000");
@@ -250,6 +255,7 @@ const RumbleOrderScreen = () => {
       p_topic: hostBtn ? topic : "",
       p_order: cards.length + 1,
       p_mode: "rumble",
+      p_heart: 3,
     });
 
     if (!error) {
@@ -336,7 +342,8 @@ const RumbleOrderScreen = () => {
         supabase
           .from("itomic")
           .update({ active: card.active, score: score, showVal: true })
-          .eq("id", card.id),
+          .eq("id", card.id)
+          .eq("mode", "rumble"),
       ),
     );
 
@@ -354,7 +361,11 @@ const RumbleOrderScreen = () => {
   };
 
   const deleteAllRows = async () => {
-    const { error } = await supabase.from("itomic").delete().neq("id", 0);
+    const { error } = await supabase
+      .from("itomic")
+      .delete()
+      .neq("id", 0)
+      .eq("mode", "rumble");
     if (error) {
       console.error(error);
     } else {
@@ -370,7 +381,7 @@ const RumbleOrderScreen = () => {
           window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
-      <h3 style={{ fontSize: "50px", color: "magenta", marginBottom: "20px" }}>
+      <h3 style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}>
         iTOMIC{" "}
       </h3>
       <h2
@@ -509,96 +520,29 @@ const RumbleOrderScreen = () => {
           )}
         </Form>
       </Modal>
-      <Row justify={"center"}>
-        <Col xs={24} sm={24} md={4} lg={4} xl={2}>
-          <Row>
-            <h2
-              style={{
-                fontFamily: "Kanit, sans-serif",
-                fontSize: "30px",
-                color: "gray",
-              }}
-            >
-              Topic :
-            </h2>
-          </Row>
+      <Row justify={"space-between"}>
+        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+          <h1
+            style={{
+              fontFamily: "Kanit, sans-serif",
+              fontSize: "30px",
+            }}
+          >
+            Sort the numbers from smallest to largest .
+          </h1>
+
+          <h3
+            style={{
+              fontFamily: "Kanit, sans-serif",
+              fontSize: "30px",
+              color: "white",
+            }}
+          >
+            Score : {score}
+          </h3>
         </Col>
 
-        <Col xs={24} sm={24} md={20} lg={16} xl={18}>
-          {changeTopic === true ? (
-            <>
-              <Row gutter={4}>
-                <Col xs={16} sm={20} md={16} lg={16} xl={16}>
-                  {" "}
-                  <Input
-                    placeholder="Enter Topic"
-                    size="large"
-                    value={topic}
-                    onChange={(e) => {
-                      setTopic(e.target.value);
-                    }}
-                  />{" "}
-                </Col>
-                <Col xs={4} sm={4} md={4} lg={4} xl={4}>
-                  <Button
-                    variant="solid"
-                    color="purple"
-                    size="large"
-                    onClick={() => {
-                      handleRandomTopic();
-                    }}
-                    icon={<AiFillAlert />}
-                    style={{ marginRight: "10px" }}
-                  >
-                    Random
-                  </Button>
-                </Col>
-              </Row>
-              <Row style={{ marginTop: "10px" }}>
-                <Button
-                  variant="solid"
-                  size="large"
-                  color="green"
-                  onClick={() => {
-                    handleTopic(topic);
-                  }}
-                  icon={<AiFillCheckCircle />}
-                  style={{ marginRight: "10px" }}
-                >
-                  ok
-                </Button>
-              </Row>
-            </>
-          ) : (
-            <>
-              <Row>
-                <h2
-                  style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}
-                >
-                  {topic}
-                </h2>{" "}
-              </Row>
-              <Row>
-                <Button
-                  variant="solid"
-                  size="large"
-                  color="purple"
-                  onClick={() => {
-                    setChangeTopic(true);
-                  }}
-                  icon={<AiFillPlusSquare />}
-                  style={{
-                    marginRight: "10px",
-                  }}
-                >
-                  Change Topic
-                </Button>
-              </Row>
-            </>
-          )}
-        </Col>
-
-        <Col xs={20} sm={20} md={10} lg={4} xl={4}>
+        <Col xs={24} sm={24} md={10} lg={6} xl={6}>
           <Row justify={"center"}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               {" "}
@@ -651,12 +595,85 @@ const RumbleOrderScreen = () => {
           </Row>
         </Col>
       </Row>
+      <Divider
+        style={{ backgroundColor: "green", margin: "15px 0px 15px 0px" }}
+      />
 
-      <Divider style={{ backgroundColor: "green" }} />
       <Row justify={"center"}>
-        <h1 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-          Sort the numbers from smallest to largest .
-        </h1>
+        <h2
+          style={{
+            fontFamily: "Kanit, sans-serif",
+            fontSize: "30px",
+            color: "gray",
+            marginRight: "10px",
+          }}
+        >
+          Topic :
+        </h2>
+
+        {changeTopic === true ? (
+          <>
+            <Row>
+              {" "}
+              <Input
+                placeholder="Enter Topic"
+                size="large"
+                value={topic}
+                onChange={(e) => {
+                  setTopic(e.target.value);
+                }}
+              />{" "}
+              <Button
+                variant="solid"
+                color="purple"
+                size="large"
+                onClick={() => {
+                  handleRandomTopic();
+                }}
+                icon={<AiFillAlert />}
+                style={{ marginRight: "10px" }}
+              >
+                Random
+              </Button>
+              <Button
+                variant="solid"
+                size="large"
+                color="green"
+                onClick={() => {
+                  handleTopic(topic);
+                }}
+                icon={<AiFillCheckCircle />}
+                style={{ marginRight: "10px" }}
+              >
+                ok
+              </Button>
+            </Row>
+          </>
+        ) : (
+          <>
+            <Row>
+              <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+                {topic}
+              </h2>{" "}
+            </Row>
+            <Row>
+              <Button
+                variant="solid"
+                size="large"
+                color="purple"
+                onClick={() => {
+                  setChangeTopic(true);
+                }}
+                icon={<AiFillPlusSquare />}
+                style={{
+                  marginLeft: "20px",
+                }}
+              >
+                Change Topic
+              </Button>
+            </Row>
+          </>
+        )}
       </Row>
 
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
