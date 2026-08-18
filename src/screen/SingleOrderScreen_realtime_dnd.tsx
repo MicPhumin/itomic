@@ -10,6 +10,7 @@ import {
   Form,
   message,
   ColorPicker,
+  AutoComplete,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -564,6 +565,29 @@ const RumbleOrderScreen = () => {
     }
   };
 
+  // const handleSelectTopic = (value: string) => {
+  //   const filter = topicGame.find((item) => {
+  //     return item.id === value;
+  //   });
+  //   setTopic(filter?.topic);
+  // };
+
+  const groupedOptions = Object.values(
+    topicGame.reduce((acc, item) => {
+      if (!acc[item.category]) {
+        acc[item.category] = {
+          label: item.category, // Category header text
+          options: [],
+        };
+      }
+      acc[item.category].options.push({
+        label: item.topic,
+        value: item.topic,
+        id: item.id,
+      });
+      return acc;
+    }, {}),
+  );
   return (
     <div
       style={{
@@ -721,38 +745,57 @@ const RumbleOrderScreen = () => {
           {hostBtn === true && (
             <>
               {" "}
-              <Row gutter={[2, 16]}>
-                <h3>Enter topic</h3>
-                <Input
-                  disabled={isHost.topic !== ""}
-                  placeholder="Enter Topic"
+              <h3>Enter topic</h3>
+              <Row gutter={[2, 18]}>
+                <AutoComplete
+                  style={{
+                    width: "100%",
+                    margin: "0px 0px 10px 0px",
+                  }}
+                  styles={{
+                    input: {
+                      fontFamily: "Kanit, sans-serif",
+                      fontSize: "15px",
+                    },
+                  }}
+                  options={groupedOptions}
+                  placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
                   value={topic}
+                  filterOption={(inputValue, option) =>
+                    option?.label
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase())
+                  }
                   onChange={(e) => {
-                    setTopic(e.target.value);
+                    setTopic(e);
                   }}
-                />{" "}
-                <Button
-                  variant="solid"
-                  color="purple"
-                  onClick={() => {
-                    handleRandomTopic();
+                  onSelect={(value) => {
+                    setTopic(value);
                   }}
-                  icon={<AiFillAlert />}
-                  style={{ marginRight: "10px" }}
-                >
-                  Generate Topic
-                </Button>
-                <Button
-                  variant="solid"
-                  color="red"
-                  onClick={() => {
-                    deleteAllRows();
-                  }}
-                  icon={<AiOutlineReload />}
-                >
-                  Reset game
-                </Button>
+                  allowClear
+                />
               </Row>
+              <Button
+                variant="solid"
+                color="purple"
+                onClick={() => {
+                  handleRandomTopic();
+                }}
+                icon={<AiFillAlert />}
+                style={{ marginRight: "10px" }}
+              >
+                Generate Topic
+              </Button>
+              <Button
+                variant="solid"
+                color="red"
+                onClick={() => {
+                  deleteAllRows();
+                }}
+                icon={<AiOutlineReload />}
+              >
+                Reset game
+              </Button>
             </>
           )}
         </Form>
@@ -876,15 +919,33 @@ const RumbleOrderScreen = () => {
         {changeTopic === true ? (
           <>
             <Row>
-              {" "}
-              <Input
-                placeholder="Enter Topic"
-                size="large"
-                value={topic}
-                onChange={(e) => {
-                  setTopic(e.target.value);
+              <AutoComplete
+                style={{
+                  width: "500px",
+                  marginRight: "10px",
                 }}
-              />{" "}
+                styles={{
+                  input: {
+                    fontFamily: "Kanit, sans-serif",
+                    fontSize: "15px",
+                  },
+                }}
+                options={groupedOptions}
+                placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
+                value={topic}
+                filterOption={(inputValue, option) =>
+                  option?.label
+                    ?.toLowerCase()
+                    .includes(inputValue.toLowerCase())
+                }
+                onChange={(e) => {
+                  setTopic(e);
+                }}
+                onSelect={(value) => {
+                  setTopic(value);
+                }}
+                allowClear
+              />
               <Button
                 variant="solid"
                 color="purple"
