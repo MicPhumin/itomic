@@ -33,7 +33,7 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import loadingGIF from "../assets/loading.gif";
+// import loadingGIF from "../assets/loading.gif";
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
@@ -90,7 +90,7 @@ const RumbleOrderScreen = () => {
     heart: 3,
     mode: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [loseModal, setLoseModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
