@@ -50,7 +50,7 @@ const SpyOnMicScreen = () => {
   const [name, setName] = useState<string>("");
   const [location, setLocation] = useState<locationProp[] | null>([]);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
-  const [endAt, setEndAt] = useState<string | null>(null);
+  const [endAt, setEndAt] = useState<number | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [answer, setAnswer] = useState<string>("");
   const [answerModal, setAnswerModal] = useState<boolean>(false);
@@ -111,7 +111,7 @@ const SpyOnMicScreen = () => {
     }
 
     // ให้เครื่องคนกดเริ่มทำงานทันที
-    setEndAt(end.getTime().toString());
+    setEndAt(end.getTime());
   };
 
   const stopTimer = async () => {
@@ -172,7 +172,7 @@ const SpyOnMicScreen = () => {
       console.log("end_at:", data.end_at);
 
       if (data.end_at) {
-        setEndAt(new Date(data.end_at).getTime().toString());
+        setEndAt(new Date(data.end_at).getTime());
       }
     };
 
@@ -186,7 +186,7 @@ const SpyOnMicScreen = () => {
     }
 
     const tick = () => {
-      const diff = new Date(endAt).getTime() - Date.now();
+      const diff = endAt - Date.now();
 
       const seconds = Math.max(0, Math.ceil(diff / 1000));
 
@@ -228,7 +228,7 @@ const SpyOnMicScreen = () => {
               new Date(payload.new.end_at).getTime(),
             );
 
-            setEndAt(new Date(payload.new.end_at).getTime().toString());
+            setEndAt(new Date(payload.new.end_at).getTime());
           } else {
             setEndAt(null);
             setTimeLeft(0);
