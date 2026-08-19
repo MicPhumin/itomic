@@ -48,7 +48,7 @@ const SpyOnMicScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [name, setName] = useState<string>("");
-  const [location, setLocation] = useState<locationProp[]>([]);
+  const [location, setLocation] = useState<locationProp[] | null>([]);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [endAt, setEndAt] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState<number>(0);
@@ -111,7 +111,7 @@ const SpyOnMicScreen = () => {
     }
 
     // ให้เครื่องคนกดเริ่มทำงานทันที
-    setEndAt(end.getTime());
+    setEndAt(end.getTime().toString());
   };
 
   const stopTimer = async () => {
@@ -172,7 +172,7 @@ const SpyOnMicScreen = () => {
       console.log("end_at:", data.end_at);
 
       if (data.end_at) {
-        setEndAt(new Date(data.end_at).getTime());
+        setEndAt(new Date(data.end_at).getTime().toString());
       }
     };
 
@@ -186,7 +186,7 @@ const SpyOnMicScreen = () => {
     }
 
     const tick = () => {
-      const diff = endAt - Date.now();
+      const diff = new Date(endAt).getTime() - Date.now();
 
       const seconds = Math.max(0, Math.ceil(diff / 1000));
 
@@ -228,7 +228,7 @@ const SpyOnMicScreen = () => {
               new Date(payload.new.end_at).getTime(),
             );
 
-            setEndAt(new Date(payload.new.end_at).getTime());
+            setEndAt(new Date(payload.new.end_at).getTime().toString());
           } else {
             setEndAt(null);
             setTimeLeft(0);
@@ -367,7 +367,7 @@ const SpyOnMicScreen = () => {
     const spyIndex = Math.floor(Math.random() * cards.length);
     console.log("spyIndex", spyIndex);
 
-    const playerAssignments: SpyOnMicProps[] = [];
+    const playerAssignments: any[] = [];
     for (let i = 0; i < cards.length; i++) {
       if (i === spyIndex) {
         playerAssignments.push({
