@@ -1,7 +1,9 @@
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 import { Button, Modal, Row, Tooltip } from "antd";
 import { useState } from "react";
-import { AiFillAudio, AiOutlineOrderedList } from "react-icons/ai";
+import { AiFillAudio } from "react-icons/ai";
+import { GiSpy } from "react-icons/gi";
+import { TiSortNumericallyOutline } from "react-icons/ti";
 
 const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
@@ -92,7 +94,7 @@ const MainScreen = () => {
           color="cyan"
           href={window.location.origin + `/single`}
           onClick={() => {}}
-          icon={<AiOutlineOrderedList />}
+          icon={<TiSortNumericallyOutline />}
           style={{
             fontSize: "25px",
             width: "300px",
@@ -102,7 +104,20 @@ const MainScreen = () => {
           Single Sort Mode
         </Button>
 
-        <a href=""></a>
+        <Button
+          variant="solid"
+          color="default"
+          href={window.location.origin + `/spyonmic`}
+          icon={<GiSpy />}
+          style={{
+            marginLeft: "20px",
+            fontSize: "25px",
+            width: "300px",
+            height: "50px",
+          }}
+        >
+          Spy on Mic
+        </Button>
         <Button
           variant="solid"
           color="primary"
@@ -113,6 +128,7 @@ const MainScreen = () => {
             fontSize: "25px",
             width: "300px",
             height: "50px",
+            // backgroundColor: "darkgrey",
           }}
         >
           Rumble Sort Mode

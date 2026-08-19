@@ -4,6 +4,7 @@ import MainScreen from "./screen/MainScreen";
 // import SingleOrderScreen from "./screen/SingleOrderScreen";
 import RumbleOrderScreen from "./screen/RumbleOrderScreen";
 import SingleOrderScreen_realtime_dnd from "./screen/SingleOrderScreen_realtime_dnd";
+import SpyOnMicScreen from "./screen/SpyOnMicScreen";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/" element={<MainScreen />} />
         <Route path="/single" element={<SingleOrderScreen_realtime_dnd />} />
         <Route path="/rumble" element={<RumbleOrderScreen />} />
+        <Route path="/spyonmic" element={<SpyOnMicScreen />} />
       </Routes>
     </>
   );
