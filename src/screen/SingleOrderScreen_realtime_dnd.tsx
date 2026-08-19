@@ -46,6 +46,15 @@ type Color = Extract<
   GetProp<ColorPickerProps, "value">,
   string | { cleared: any }
 >;
+interface topicGame {
+  id: number;
+  label: string;
+  value: string;
+}
+interface CategoryGroup {
+  label: string;
+  options: topicGame[];
+}
 interface SortableCardProps {
   id: number;
   name: string;
@@ -573,20 +582,23 @@ const RumbleOrderScreen = () => {
   // };
 
   const groupedOptions = Object.values(
-    topicGame.reduce((acc, item) => {
-      if (!acc[item.category]) {
-        acc[item.category] = {
-          label: item.category, // Category header text
-          options: [],
-        };
-      }
-      acc[item.category].options.push({
-        label: item.topic,
-        value: item.topic,
-        id: item.id,
-      });
-      return acc;
-    }, {}),
+    topicGame.reduce(
+      (acc, item) => {
+        if (!acc[item.category]) {
+          acc[item.category] = {
+            label: item.category, // Category header text
+            options: [],
+          };
+        }
+        acc[item.category].options.push({
+          label: item.topic,
+          value: item.topic,
+          id: item.id,
+        });
+        return acc;
+      },
+      {} as Record<string, CategoryGroup>,
+    ),
   );
   return (
     <div
@@ -761,11 +773,14 @@ const RumbleOrderScreen = () => {
                   options={groupedOptions}
                   placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
                   value={topic}
-                  filterOption={(inputValue, option) =>
-                    option?.label
+                  filterOption={(
+                    inputValue: string,
+                    option: CategoryGroup | undefined,
+                  ): boolean => {
+                    return !!option?.label
                       ?.toLowerCase()
-                      .includes(inputValue.toLowerCase())
-                  }
+                      .includes(inputValue.toLowerCase());
+                  }}
                   onChange={(e) => {
                     setTopic(e);
                   }}
@@ -933,11 +948,14 @@ const RumbleOrderScreen = () => {
                 options={groupedOptions}
                 placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
                 value={topic}
-                filterOption={(inputValue, option) =>
-                  option?.label
+                filterOption={(
+                  inputValue: string,
+                  option: CategoryGroup | undefined,
+                ): boolean => {
+                  return !!option?.label
                     ?.toLowerCase()
-                    .includes(inputValue.toLowerCase())
-                }
+                    .includes(inputValue.toLowerCase());
+                }}
                 onChange={(e) => {
                   setTopic(e);
                 }}
