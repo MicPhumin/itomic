@@ -418,8 +418,9 @@ const SpyOnMicScreen = () => {
   }
   const handleStart = async () => {
     const { data } = await supabase.from("SpyOnMicLocation").select("*");
+    const locations: locationProp[] = data || [];
     setLocation(data);
-    getRandomSpyfallGame(data);
+    getRandomSpyfallGame(locations);
     startTimer();
   };
 
@@ -438,7 +439,7 @@ const SpyOnMicScreen = () => {
     value: user.id, // What the form submits
   }));
 
-  const selectLocationOptions = location.map((user) => ({
+  const selectLocationOptions = location?.map((user) => ({
     label: user.location, // What the user sees
     value: user.location, // What the form submits
   }));
