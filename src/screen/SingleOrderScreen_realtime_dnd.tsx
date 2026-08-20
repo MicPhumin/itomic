@@ -412,6 +412,13 @@ const RumbleOrderScreen = () => {
   const handleDragStart = async (event: DragStartEvent) => {
     const cardId = Number(event.active.id);
 
+    const card = cards.find((item) => item.id === cardId);
+
+    if (!card || card.showVal === true) {
+      console.log("🔒 Cannot drag: showVal=true");
+      return;
+    }
+
     dragPositionRef.current = { x: 0, y: 0 };
     lastDragMoveRef.current = Date.now();
 
@@ -441,6 +448,14 @@ const RumbleOrderScreen = () => {
   // -----------------------------
 
   const handleDragMove = async (event: DragMoveEvent) => {
+    const cardId = Number(event.active.id);
+
+    // 🔒 เช็กอีกครั้งระหว่างลาก
+    const card = cards.find((item) => item.id === cardId);
+
+    if (!card || card.showVal === true) {
+      return;
+    }
     const now = Date.now();
     if (now - lastDragMoveRef.current < 30) return;
     lastDragMoveRef.current = now;
@@ -463,7 +478,7 @@ const RumbleOrderScreen = () => {
   // -----------------------------
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
-
+    const cardId = Number(active.id);
     // แจ้ง browser อื่นว่าจบการลาก
     if (!over) {
       await channelRef.current?.send({
@@ -483,9 +498,39 @@ const RumbleOrderScreen = () => {
 
     const newIndex = cards.findIndex((card) => card.id === Number(over.id));
 
+    const activeCard = cards[oldIndex];
     const targetCard = cards[newIndex];
 
-    if (targetCard?.showVal === true) {
+    // 🔒 ตัวที่ลาก showVal=true
+    if (activeCard.showVal === true) {
+      console.log("🔒 Cannot move: active showVal=true");
+
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId,
+          cancelled: true,
+        },
+      });
+
+      return;
+    }
+
+    if (targetCard.showVal === true) {
+      console.log("🔒 Cannot replace: target showVal=true");
+
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId,
+          cancelled: true,
+        },
+      });
+
       return;
     }
     // ไม่ได้เปลี่ยนตำแหน่ง
