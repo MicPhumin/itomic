@@ -709,10 +709,16 @@ const SpyOnMicScreen = () => {
       }}
     >
       <Row justify={"center"}>
+        <GiSpy
+          style={{
+            margin: "32px 10px 0px 0px",
+            fontSize: "40px",
+            color: "magenta",
+          }}
+        />
         <h3
           style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
         >
-          <GiSpy style={{ marginRight: "10px" }} />
           Spy On Mic
         </h3>
       </Row>
@@ -781,10 +787,9 @@ const SpyOnMicScreen = () => {
               {" "}
               <GiSpy
                 style={{
-                  color: "magenta",
+                  margin: "0px 10px 0px 0px",
                   fontSize: "40px",
-                  fontWeight: "bold",
-                  marginRight: "10px",
+                  color: "magenta",
                 }}
               />
               <h2
@@ -881,11 +886,14 @@ const SpyOnMicScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <h2 style={{ color: "magenta" }}>
-                  {" "}
-                  <GiSpy style={{ marginRight: "10px" }} />
-                  Spy on Mic
-                </h2>
+                <GiSpy
+                  style={{
+                    margin: "0px 5px 0px 0px",
+                    fontSize: "30px",
+                    color: "magenta",
+                  }}
+                />
+                <h2 style={{ color: "magenta" }}> Spy on Mic</h2>
               </Row>
             </Col>
           </Row>
