@@ -699,7 +699,7 @@ const SpyOnMicScreen = () => {
 
   const handleLocationList = async () => {
     const { data } = await supabase.from("SpyOnMicLocation").select("*");
-    setLocationList(data);
+    setLocationList(data ? data : []);
   };
   return (
     <div
