@@ -19,7 +19,7 @@ import {
   Table,
   Checkbox,
 } from "antd";
-import { AiFillPlusSquare } from "react-icons/ai";
+import { AiFillPlusSquare, AiOutlineReload } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
 import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
@@ -973,8 +973,22 @@ const SpyOnMicScreen = () => {
                   onChange={(e) => {
                     setMinute(e ?? 0);
                   }}
+                  style={{ width: "470px" }}
                 />
               </Row>{" "}
+              <Row>
+                {" "}
+                <Button
+                  variant="solid"
+                  color="red"
+                  onClick={() => {
+                    deleteAllRows();
+                  }}
+                  icon={<AiOutlineReload />}
+                >
+                  Reset game
+                </Button>
+              </Row>
             </>
           )}
         </Form>
