@@ -471,6 +471,11 @@ const RumbleOrderScreen = () => {
 
     const newIndex = cards.findIndex((card) => card.id === Number(over.id));
 
+    const targetCard = cards[newIndex];
+
+    if (targetCard?.showVal === true) {
+      return;
+    }
     // ไม่ได้เปลี่ยนตำแหน่ง
     if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
       await channelRef.current?.send({
