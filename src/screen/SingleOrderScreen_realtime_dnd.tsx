@@ -293,6 +293,18 @@ const RumbleOrderScreen = () => {
             return currentCards;
           }
 
+          // 🔒 Card ที่กำลังลาก ถ้า showVal=true ห้ามขยับ
+          if (currentCards[oldIndex].showVal === true) {
+            console.log("🔒 Cannot move: showVal=true");
+            return currentCards;
+          }
+
+          // 🔒 ตำแหน่งปลายทาง ถ้า showVal=true ห้ามเอา Card มาทับ
+          if (currentCards[newIndex].showVal === true) {
+            console.log("🔒 Cannot replace: target showVal=true");
+            return currentCards;
+          }
+
           return arrayMove(currentCards, oldIndex, newIndex);
         });
       })
@@ -1094,7 +1106,13 @@ const RumbleOrderScreen = () => {
                   const targetCard = cards.find(
                     (card) => card.id === remoteDrag.cardId,
                   );
+
                   if (!targetCard) return null;
+
+                  // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
+                  if (targetCard.showVal === true) {
+                    return null;
+                  }
 
                   return (
                     <div
