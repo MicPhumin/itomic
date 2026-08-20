@@ -93,13 +93,13 @@ const MainScreen = () => {
           </Button>
         </Row>
       </Modal>
-      <Button
+      {/* <Button
         variant="solid"
         color="purple"
         onClick={() => setHowToPlayModal(true)}
       >
         How to play
-      </Button>
+      </Button> */}
       <Row justify={"center"}>
         <h1 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
           Select game
