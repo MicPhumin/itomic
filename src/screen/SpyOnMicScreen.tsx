@@ -14,10 +14,14 @@ import {
   Select,
   AutoComplete,
   InputNumber,
+  Tag,
+  type TableProps,
+  Table,
+  Checkbox,
 } from "antd";
 import { AiFillPlusSquare } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
-import { FaUserAlt, FaVoteYea } from "react-icons/fa";
+import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
 import { FaPlay } from "react-icons/fa6";
 import { MdTimer } from "react-icons/md";
@@ -42,7 +46,88 @@ interface locationProp {
   id: number;
   location: string;
   roles: string;
+  is_played?: boolean;
 }
+
+const presets = [
+  "#b8c3cf",
+  "#9cb1c5",
+  "#A8CBEA",
+  "#8BB8DE",
+  "#70A5D2",
+  "#5791C2",
+  "#4580B2",
+  "#376E9D",
+  "#2C5C86",
+  "#234A6D",
+];
+
+const columns: TableProps<locationProp>["columns"] = [
+  {
+    title: "id",
+    dataIndex: "id",
+    key: "id",
+  },
+  {
+    title: "สถานที่",
+    dataIndex: "location",
+    key: "location",
+    filterMode: "tree",
+    filterSearch: true,
+    onFilter: (value, record) => record.location.startsWith(value as string),
+  },
+  {
+    title: "บทบาท",
+    dataIndex: "roles",
+    key: "roles",
+    render: (_, { roles }) => {
+      const cleanedList = roles
+        .replace(/[\"\\]/g, "")
+        .trim()
+        .split(",");
+
+      return (
+        <>
+          {cleanedList.map((item, index) => (
+            <Tag
+              key={item}
+              color={presets[index]}
+              variant={"solid"}
+              style={{ marginRight: "5px" }}
+            >
+              {item}
+            </Tag>
+          ))}
+        </>
+      );
+    },
+  },
+  {
+    title: "เคยเล่นแล้ว",
+    key: "is_played",
+    dataIndex: "is_played",
+    filters: [
+      {
+        text: "เคยเล่นแล้ว",
+        value: true,
+      },
+      {
+        text: "ยังไม่เคยเล่นแล้ว",
+        value: false,
+      },
+    ],
+    onFilter: (value, record) => record.is_played === value,
+    render: (_, { is_played }) => (
+      <>
+        <Row justify={"center"}>
+          {" "}
+          <Checkbox checked={is_played}></Checkbox>
+        </Row>
+      </>
+    ),
+    width: "15%",
+  },
+];
 const SpyOnMicScreen = () => {
   const [cards, setCards] = useState<SpyOnMicProps[]>([]);
   const [myCards, setMyCards] = useState<SpyOnMicProps>();
@@ -56,6 +141,9 @@ const SpyOnMicScreen = () => {
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [answer, setAnswer] = useState<string>("");
   const [answerModal, setAnswerModal] = useState<boolean>(false);
+  const [locationList, setLocationList] = useState<locationProp[]>([]);
+  const [locationModal, setLocationModal] = useState<boolean>(false);
+  const [searchText, setSearchText] = useState("");
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
 
@@ -66,8 +154,20 @@ const SpyOnMicScreen = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
+  const filteredData = locationList.filter((record) =>
+    Object.values(record).some((value) =>
+      String(value).toLowerCase().includes(searchText.toLowerCase()),
+    ),
+  );
   // console.log("card", cards);
-
+  const onChange: TableProps<locationProp>["onChange"] = (
+    pagination,
+    filters,
+    sorter,
+    extra,
+  ) => {
+    console.log("params", pagination, filters, sorter, extra);
+  };
   const loadPlayers = async () => {
     const { data } = await supabase.from("spyonmic").select("*");
 
@@ -318,6 +418,12 @@ const SpyOnMicScreen = () => {
   async function getRandomSpyfallGame(data: locationProp[]) {
     const randomLocationIndex = Math.floor(Math.random() * data.length);
     const selectedLocation = data[randomLocationIndex];
+    await supabase
+      .from("SpyOnMicLocation")
+      .update({
+        is_played: true,
+      })
+      .eq("id", selectedLocation?.id);
     const roles = selectedLocation.roles.split(",");
 
     const cleanedList = roles.map((item) => item.replace(/[\"\\]/g, "").trim());
@@ -591,6 +697,10 @@ const SpyOnMicScreen = () => {
     }
   };
 
+  const handleLocationList = async () => {
+    const { data } = await supabase.from("SpyOnMicLocation").select("*");
+    setLocationList(data);
+  };
   return (
     <div
       style={{
@@ -606,6 +716,63 @@ const SpyOnMicScreen = () => {
           Spy On Mic
         </h3>
       </Row>
+      <Modal
+        title={
+          <>
+            {" "}
+            <Row justify={"center"}>
+              {" "}
+              <FaMapMarkedAlt
+                style={{
+                  color: "blueviolet",
+                  fontSize: "30px",
+                  fontWeight: "bold",
+                  marginRight: "10px",
+                }}
+              />
+              <h2
+                style={{
+                  color: "blueviolet",
+                  fontSize: "30px",
+                  fontWeight: "bold",
+                }}
+              >
+                Location List
+              </h2>
+            </Row>
+            <Row justify={"center"}> </Row>{" "}
+          </>
+        }
+        closeIcon={<div>X</div>}
+        onCancel={() => setLocationModal(false)}
+        open={locationModal}
+        footer={false}
+        width={{
+          xs: "80%",
+          sm: "80%",
+          md: "70%",
+          lg: "60%",
+          xl: "50%",
+          xxl: "40%",
+        }}
+        style={{ width: 1000 }}
+      >
+        <Row justify={"center"}>
+          <Input.Search
+            placeholder="Search Location..."
+            onChange={(e) => setSearchText(e.target.value)}
+            style={{ marginBottom: 16, width: 300 }}
+            allowClear
+          />
+        </Row>
+
+        <Table
+          columns={columns}
+          onChange={onChange}
+          dataSource={filteredData}
+          scroll={{ x: 800 }}
+        />
+      </Modal>
       <Modal
         title={
           <>
@@ -823,22 +990,42 @@ const SpyOnMicScreen = () => {
           >
             Time left : {timeLeft} seconds
           </h1>
-          <Row justify={"center"}>
-            {" "}
-            <h3>Change minutes </h3>
-          </Row>
+          <Button
+            variant="solid"
+            color="blue"
+            onClick={() => {
+              handleLocationList();
+              setLocationModal(true);
+            }}
+            icon={<FaMapMarkedAlt />}
+            style={{
+              fontSize: "20px",
+              width: "180px",
+              height: "30px",
+            }}
+          >
+            Location List
+          </Button>
+          {myCards?.is_host === true && (
+            <>
+              <Row justify={"center"}>
+                {" "}
+                <h3>Change minutes </h3>
+              </Row>
 
-          <Row justify={"center"} align={"middle"}>
-            {" "}
-            <InputNumber
-              placeholder="Enter Times"
-              defaultValue={minute}
-              onChange={(e) => {
-                setMinute(e ?? 0);
-              }}
-            />
-            <div style={{ marginLeft: "10px" }}> minutes </div>
-          </Row>
+              <Row justify={"center"} align={"middle"}>
+                {" "}
+                <InputNumber
+                  placeholder="Enter Times"
+                  defaultValue={minute}
+                  onChange={(e) => {
+                    setMinute(e ?? 0);
+                  }}
+                />
+                <div style={{ marginLeft: "10px" }}> minutes </div>
+              </Row>
+            </>
+          )}
         </Col>
 
         <Col xs={24} sm={24} md={10} lg={6} xl={6}>

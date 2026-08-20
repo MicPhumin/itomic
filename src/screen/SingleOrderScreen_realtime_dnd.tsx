@@ -673,7 +673,7 @@ const RumbleOrderScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <h2 style={{ color: "magenta" }}>iTOMIC Test</h2>
+                <h2 style={{ color: "magenta" }}>iTOMIC</h2>
               </Row>
               <Row justify={"center"}>
                 {" "}
