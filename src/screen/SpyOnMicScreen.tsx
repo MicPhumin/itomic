@@ -13,6 +13,7 @@ import {
   Form,
   Select,
   AutoComplete,
+  InputNumber,
 } from "antd";
 import { AiFillPlusSquare } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
@@ -20,7 +21,6 @@ import { FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
 import { FaPlay } from "react-icons/fa6";
 import { MdTimer } from "react-icons/md";
-import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 
 interface SpyOnMicProps {
   id: number;
@@ -52,6 +52,7 @@ const SpyOnMicScreen = () => {
   const [location, setLocation] = useState<locationProp[] | null>([]);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [endAt, setEndAt] = useState<number | null>(null);
+  const [minute, setMinute] = useState<number>(8);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [answer, setAnswer] = useState<string>("");
   const [answerModal, setAnswerModal] = useState<boolean>(false);
@@ -95,7 +96,8 @@ const SpyOnMicScreen = () => {
   };
 
   const startTimer = async () => {
-    const end = new Date(Date.now() + 480 * 1000);
+    const timer = minute * 60;
+    const end = new Date(Date.now() + timer * 1000);
 
     console.log("START:", end.toISOString());
 
@@ -785,25 +787,21 @@ const SpyOnMicScreen = () => {
             </Col>
           </Row>
 
-          {/* {hostBtn === true && (
+          {hostBtn === true && (
             <>
               <h3>How many minutes do you want to play each round?</h3>
               <Row>
                 {" "}
-                <Select
-                  defaultValue="8"
-                  style={{ width: 120 }}
-                  // onChange={handleChange}
-                  options={[
-                    { value: "1", label: "1" },
-                    { value: "2", label: "2" },
-                    { value: "3", label: "3" },
-                    { value: "4", label: "4" },
-                  ]}
-                />{" "}
+                <InputNumber
+                  placeholder="Enter Times"
+                  defaultValue={minute}
+                  onChange={(e) => {
+                    setMinute(e ?? 0);
+                  }}
+                />
               </Row>{" "}
             </>
-          )} */}
+          )}
         </Form>
       </Modal>
       <Row justify={"space-between"}>
@@ -825,6 +823,22 @@ const SpyOnMicScreen = () => {
           >
             Time left : {timeLeft} seconds
           </h1>
+          <Row justify={"center"}>
+            {" "}
+            <h3>Change minutes </h3>
+          </Row>
+
+          <Row justify={"center"} align={"middle"}>
+            {" "}
+            <InputNumber
+              placeholder="Enter Times"
+              defaultValue={minute}
+              onChange={(e) => {
+                setMinute(e ?? 0);
+              }}
+            />
+            <div style={{ marginLeft: "10px" }}> minutes </div>
+          </Row>
         </Col>
 
         <Col xs={24} sm={24} md={10} lg={6} xl={6}>
