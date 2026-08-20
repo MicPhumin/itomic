@@ -16,7 +16,7 @@ const MainScreen = () => {
           window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
-      <h3 style={{ fontSize: "50px", color: "magenta" }}>iTOMIC </h3>
+      <h3 style={{ fontSize: "50px", color: "magenta" }}>Mic's Arcade </h3>
       <Modal
         title={
           <Row justify={"center"}>
@@ -85,7 +85,7 @@ const MainScreen = () => {
       </Button>
       <Row justify={"center"}>
         <h1 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-          Select Mode
+          Select game
         </h1>
       </Row>
       <Row justify={"center"}>
@@ -101,7 +101,7 @@ const MainScreen = () => {
             height: "50px",
           }}
         >
-          Single Sort Mode
+          iTOMIC
         </Button>
 
         <Button

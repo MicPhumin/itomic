@@ -16,10 +16,11 @@ import {
 } from "antd";
 import { AiFillPlusSquare } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
-import { FaUserAlt } from "react-icons/fa";
+import { FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
 import { FaPlay } from "react-icons/fa6";
 import { MdTimer } from "react-icons/md";
+import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
 
 interface SpyOnMicProps {
   id: number;
@@ -56,6 +57,7 @@ const SpyOnMicScreen = () => {
   const [answerModal, setAnswerModal] = useState<boolean>(false);
   const [form] = Form.useForm();
   const values = Form.useWatch([], form);
+
   React.useEffect(() => {
     form
       .validateFields({ validateOnly: true })
@@ -63,7 +65,7 @@ const SpyOnMicScreen = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
-  console.log("card", cards);
+  // console.log("card", cards);
 
   const loadPlayers = async () => {
     const { data } = await supabase.from("spyonmic").select("*");
@@ -165,11 +167,11 @@ const SpyOnMicScreen = () => {
         .single();
 
       if (error) {
-        console.log("load timer error:", error);
+        // console.log("load timer error:", error);
         return;
       }
 
-      console.log("end_at:", data.end_at);
+      // console.log("end_at:", data.end_at);
 
       if (data.end_at) {
         setEndAt(new Date(data.end_at).getTime());
@@ -220,13 +222,13 @@ const SpyOnMicScreen = () => {
           filter: "id=eq.1",
         },
         (payload) => {
-          console.log("Timer update:", payload.new);
+          // console.log("Timer update:", payload.new);
 
           if (payload.new.end_at) {
-            console.log(
-              "Timer update:",
-              new Date(payload.new.end_at).getTime(),
-            );
+            // console.log(
+            //   "Timer update:",
+            //   new Date(payload.new.end_at).getTime(),
+            // );
 
             setEndAt(new Date(payload.new.end_at).getTime());
           } else {
@@ -243,35 +245,6 @@ const SpyOnMicScreen = () => {
       supabase.removeChannel(channel);
     };
   }, []);
-
-  async function checkCondition() {
-    const { data: nonShowPlays, error } = await supabase
-      .from("spyonmic")
-      .select("id")
-      .neq("is_vote", "show")
-      .limit(1);
-
-    const isAllShow = !error && nonShowPlays.length === 0;
-    console.log("isAllShow=>", isAllShow);
-    if (isAllShow) {
-      const highestPriceItem = cards.reduce((max, current) => {
-        console.log("max=>", max, "current", current);
-
-        return current.vote > (max.vote || 0) ? current : max;
-      });
-      console.log("highestPriceItem", highestPriceItem);
-
-      const data = await supabase
-        .from("spyonmic")
-        .update({
-          is_vote: "mostvote",
-        })
-        .eq("id", highestPriceItem?.id);
-      if (data) {
-        console.log("mostvote Complete");
-      }
-    }
-  }
 
   useEffect(() => {
     loadPlayers();
@@ -294,7 +267,6 @@ const SpyOnMicScreen = () => {
             localStorage.clear();
             window.location.reload();
           } else if (payload.eventType === "UPDATE") {
-            // setIsLoading(true);
             const player = payload.new as SpyOnMicProps;
             if (player.is_vote === "wrong") {
               setAnswerModal(true);
@@ -304,19 +276,6 @@ const SpyOnMicScreen = () => {
               setAnswerModal(true);
               setAnswer(player.is_vote);
             }
-            //   setScore(player.score);
-            //   if (player.showrole && player.showrole === true) {
-            //     console.log("Show Role");
-            //   }
-            //   if (player.topic) {
-            //     setTopic(player.topic);
-            //   }
-            //   if (player.active === "red") {
-            //     setHeart(player.heart);
-            //     if (player.heart === 0) {
-            //       setLoseModal(true);
-            //     }
-            //   }
           }
         },
       )
@@ -360,12 +319,10 @@ const SpyOnMicScreen = () => {
     const roles = selectedLocation.roles.split(",");
 
     const cleanedList = roles.map((item) => item.replace(/[\"\\]/g, "").trim());
-    console.log("selectedLocation=>cleanedList", cleanedList);
 
     const shuffledRoles = [...cleanedList].sort(() => Math.random() - 0.5);
 
     const spyIndex = Math.floor(Math.random() * cards.length);
-    console.log("spyIndex", spyIndex);
 
     const playerAssignments: any[] = [];
     for (let i = 0; i < cards.length; i++) {
@@ -395,7 +352,6 @@ const SpyOnMicScreen = () => {
         });
       }
     }
-    console.log("playerAssignments", playerAssignments);
 
     await Promise.all(
       playerAssignments.map((card) =>
@@ -434,7 +390,10 @@ const SpyOnMicScreen = () => {
     }
   };
 
-  const selectOptions = cards.map((user) => ({
+  const selectVote = cards.filter((item) => {
+    return item.id !== myCards?.id;
+  });
+  const selectOptions = selectVote.map((user) => ({
     label: user.name, // What the user sees
     value: user.id, // What the form submits
   }));
@@ -445,7 +404,6 @@ const SpyOnMicScreen = () => {
   }));
 
   const handleVote = async (event: number) => {
-    console.log("vote", event);
     const votePlayer = cards.find((item) => {
       return item.id === event;
     });
@@ -463,7 +421,28 @@ const SpyOnMicScreen = () => {
       })
       .eq("id", myCards?.id);
 
-    checkCondition();
+    const dataHasVote = await supabase
+      .from("spyonmic")
+      .select("*")
+      .eq("is_vote", "true");
+
+    if (dataHasVote.data?.length === 0) {
+      const { data } = await supabase
+        .from("spyonmic")
+        .select("*")
+        .order("vote", { ascending: false })
+        .limit(1)
+        .single();
+
+      if (data) {
+        await supabase
+          .from("spyonmic")
+          .update({
+            is_vote: "mostvote",
+          })
+          .eq("id", data?.id);
+      }
+    }
   };
 
   const handleShow = async () => {
@@ -475,7 +454,6 @@ const SpyOnMicScreen = () => {
       .from("spyonmic")
       .update({
         showrole: true,
-        is_vote: "show",
       })
       .eq("id", show?.id);
   };
@@ -497,7 +475,6 @@ const SpyOnMicScreen = () => {
   };
 
   const handleAns = async (event: string) => {
-    console.log("vote", event);
     const findLocation = cards.find((item) => {
       return item.location !== "???";
     });
@@ -529,6 +506,89 @@ const SpyOnMicScreen = () => {
       .neq("id", 0);
   };
 
+  const showdescription = () => {
+    const card = cards.find((item) => {
+      return item.is_vote === null;
+    });
+
+    const findMostVote = cards.find((item) => {
+      return item.is_vote === "mostvote";
+    });
+
+    const findVotePlayer = cards.filter((item) => {
+      return item.is_vote === "true";
+    });
+
+    if (card?.is_vote === null) {
+      return (
+        <>
+          <h3
+            style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
+          >
+            <GiSpy style={{ marginRight: "10px" }} />
+            Wait for player ...
+          </h3>
+        </>
+      );
+    }
+    if (
+      findMostVote &&
+      findMostVote.is_vote === "mostvote" &&
+      findMostVote.showrole === false
+    ) {
+      return (
+        <>
+          <Row justify={"center"} style={{ width: "100%" }}>
+            <h3
+              style={{
+                fontSize: "40px",
+                color: "magenta",
+                marginBottom: "0px",
+                width: "100%",
+              }}
+            >
+              {findMostVote.name} is the most voted ({findMostVote.vote})
+            </h3>
+          </Row>
+
+          <h3 style={{ fontSize: "25px", marginBottom: "20px" }}>
+            Time to show yourself .
+          </h3>
+        </>
+      );
+    }
+    if (myCards?.is_vote === "show" && findVotePlayer.length !== 0) {
+      return (
+        <>
+          <FaVoteYea
+            style={{
+              marginRight: "10px",
+              marginTop: "30px",
+              fontSize: "40px",
+              color: "skyblue",
+            }}
+          />
+          <h3
+            style={{ fontSize: "40px", color: "skyblue", marginBottom: "20px" }}
+          >
+            Wait for player for vote...
+          </h3>
+        </>
+      );
+    }
+
+    if (findMostVote?.showrole === true && findMostVote?.is_spy === false) {
+      return (
+        <>
+          <h3 style={{ fontSize: "40px", color: "red", marginBottom: "20px" }}>
+            <GiSpy style={{ marginRight: "10px" }} />
+            It's Spy Time to reveal yourself !!!
+          </h3>
+        </>
+      );
+    }
+  };
+
   return (
     <div
       style={{
@@ -540,6 +600,7 @@ const SpyOnMicScreen = () => {
         <h3
           style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
         >
+          <GiSpy style={{ marginRight: "10px" }} />
           Spy On Mic
         </h3>
       </Row>
@@ -549,10 +610,27 @@ const SpyOnMicScreen = () => {
             {" "}
             <Row justify={"center"}>
               {" "}
-              <h2 style={{ color: "magenta" }}>Spy On Mic</h2>
+              <GiSpy
+                style={{
+                  color: "magenta",
+                  fontSize: "40px",
+                  fontWeight: "bold",
+                  marginRight: "10px",
+                }}
+              />
+              <h2
+                style={{
+                  color: "magenta",
+                  fontSize: "30px",
+                  fontWeight: "bold",
+                }}
+              >
+                Spy On Mic
+              </h2>
             </Row>{" "}
           </>
         }
+        centered
         closeIcon={<div>X</div>}
         onCancel={() => setAnswerModal(false)}
         open={answerModal}
@@ -565,16 +643,65 @@ const SpyOnMicScreen = () => {
           xl: "50%",
           xxl: "40%",
         }}
+        styles={{
+          container: {
+            backgroundColor: answer === "correct" ? "darkred" : "darkgreen",
+          },
+          header: {
+            backgroundColor: "white",
+            padding: "5px 0px 5px 0px",
+            margin: "0px 100px 0px 100px",
+            borderRadius: "10px",
+          },
+        }}
       >
+        <Row justify={"center"} style={{ margin: "50px 0px 0px 0px" }}>
+          {answer === "correct" ? (
+            <>
+              <GiSpy
+                style={{
+                  color: "white",
+                  fontSize: "40px",
+                  fontWeight: "bold",
+                  marginBottom: "0px",
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <FaUserAlt
+                style={{
+                  color: "white",
+                  fontSize: "40px",
+                  fontWeight: "bold",
+                  marginBottom: "0px",
+                }}
+              />
+            </>
+          )}
+        </Row>
         <Row justify={"center"}>
           <h1
             style={{
               fontFamily: "Kanit, sans-serif",
               fontSize: "30px",
-              color: answer === "correct" ? "darkred" : "black",
+              color: "white",
+              margin: "0px",
             }}
           >
-            {answer === "correct" ? "Spy Win !!!" : "People Win !!!"}
+            {answer === "correct" ? "Spy Win " : "Player Win"}
+          </h1>
+        </Row>
+        <Row justify={"center"}>
+          <h1
+            style={{
+              fontFamily: "Kanit, sans-serif",
+              fontSize: "30px",
+              color: "white",
+              margin: "0px 0px 10px 0px",
+            }}
+          >
+            Location : {myCards?.location}
           </h1>
         </Row>
       </Modal>
@@ -585,20 +712,12 @@ const SpyOnMicScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <h2 style={{ color: "magenta" }}>Spy on Mic</h2>
-              </Row>
-              {/* <Row justify={"center"}>
-                {" "}
-                <h2
-                  style={{
-                    fontFamily: "Kanit, sans-serif",
-                    fontSize: "20px",
-                    color: "purple",
-                  }}
-                >
-                  Single Sort Mode
+                <h2 style={{ color: "magenta" }}>
+                  {" "}
+                  <GiSpy style={{ marginRight: "10px" }} />
+                  Spy on Mic
                 </h2>
-              </Row> */}
+              </Row>
             </Col>
           </Row>
         }
@@ -665,6 +784,26 @@ const SpyOnMicScreen = () => {
               />
             </Col>
           </Row>
+
+          {/* {hostBtn === true && (
+            <>
+              <h3>How many minutes do you want to play each round?</h3>
+              <Row>
+                {" "}
+                <Select
+                  defaultValue="8"
+                  style={{ width: 120 }}
+                  // onChange={handleChange}
+                  options={[
+                    { value: "1", label: "1" },
+                    { value: "2", label: "2" },
+                    { value: "3", label: "3" },
+                    { value: "4", label: "4" },
+                  ]}
+                />{" "}
+              </Row>{" "}
+            </>
+          )} */}
         </Form>
       </Modal>
       <Row justify={"space-between"}>
@@ -754,14 +893,13 @@ const SpyOnMicScreen = () => {
           Location :
         </h2>
 
-        <>
-          <Row>
-            <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-              {myCards?.location}
-            </h2>{" "}
-          </Row>
-        </>
+        <Row>
+          <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+            {myCards?.location}
+          </h2>{" "}
+        </Row>
       </Row>
+      <Row justify={"center"}>{showdescription()}</Row>
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
         <>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -840,6 +978,11 @@ const SpyOnMicScreen = () => {
                         lg={8}
                         xl={6}
                       >
+                        {card.is_vote === "show" && (
+                          <h2 style={{ fontSize: "20px" }}>
+                            Your Voted : {card?.vote !== 0 ? card?.vote : 0}
+                          </h2>
+                        )}
                         {card.is_vote === "mostvote" && (
                           <h2 style={{ fontSize: "20px" }}>
                             Your Voted : {card?.vote !== 0 ? card?.vote : 0}
@@ -926,7 +1069,7 @@ const SpyOnMicScreen = () => {
               onClick={() => {
                 handleReveal();
               }}
-              icon={<BiSolidShow />}
+              icon={<GiSpy />}
               style={{
                 fontSize: "25px",
                 width: "200px",
@@ -938,26 +1081,28 @@ const SpyOnMicScreen = () => {
           </Col>
         </Row>
       )}
-      {myCards?.is_vote === "mostvote" && (
-        <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
-          <Col>
-            <Button
-              variant="solid"
-              color="cyan"
-              onClick={() => {
-                handleShow();
-              }}
-              icon={<BiSolidShow />}
-              style={{
-                fontSize: "25px",
-                width: "200px",
-                height: "50px",
-              }}
-            >
-              Show
-            </Button>
-          </Col>
-        </Row>
+      {myCards?.is_vote === "mostvote" && myCards?.is_spy !== true && (
+        <>
+          <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
+            <Col>
+              <Button
+                variant="solid"
+                color="cyan"
+                onClick={() => {
+                  handleShow();
+                }}
+                icon={<BiSolidShow />}
+                style={{
+                  fontSize: "25px",
+                  width: "200px",
+                  height: "50px",
+                }}
+              >
+                Show
+              </Button>
+            </Col>
+          </Row>
+        </>
       )}
 
       {myCards?.is_host === true && (
@@ -1025,7 +1170,7 @@ const SpyOnMicScreen = () => {
             color: "magenta",
           }}
         >
-          Spy On Mic ver 1.0.0
+          Spy On Mic ver 1.0.1
         </h3>
       </Row>
     </div>
