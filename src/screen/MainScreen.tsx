@@ -3,6 +3,7 @@ import { Button, Modal, Row, Tooltip } from "antd";
 import { useState } from "react";
 import { AiFillAudio } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
+import { IoGameController } from "react-icons/io5";
 import { TiSortNumericallyOutline } from "react-icons/ti";
 
 const MainScreen = () => {
@@ -16,7 +17,23 @@ const MainScreen = () => {
           window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
-      <h3 style={{ fontSize: "50px", color: "magenta" }}>Mic's Arcade </h3>
+      <Row justify={"center"}>
+        <IoGameController
+          style={{
+            margin: "40px 10px 0px 0px",
+            fontSize: "50px",
+            color: "#ff4f64",
+          }}
+        />
+        <h3 style={{ fontSize: "50px", color: "#ff4f64" }}>Mic Play Hub </h3>
+        <IoGameController
+          style={{
+            margin: "40px 0px 0px 10px",
+            fontSize: "50px",
+            color: "#ff4f64",
+          }}
+        />
+      </Row>
       <Modal
         title={
           <Row justify={"center"}>
