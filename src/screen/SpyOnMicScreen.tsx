@@ -587,9 +587,9 @@ const SpyOnMicScreen = () => {
     const findLocation = cards.find((item) => {
       return item.location !== "???";
     });
-    const reveal = cards.find((item) => {
-      return item.is_spy === true;
-    });
+    // const reveal = cards.find((item) => {
+    //   return item.is_spy === true;
+    // });
     if (findLocation?.location === event) {
       await supabase
         .from("spyonmic")
