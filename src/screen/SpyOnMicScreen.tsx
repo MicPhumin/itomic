@@ -418,13 +418,14 @@ const SpyOnMicScreen = () => {
 
   async function getRandomSpyfallGame(data: locationProp[]) {
     const randomLocationIndex = Math.floor(Math.random() * data.length);
-    const selectedLocation = data[randomLocationIndex];
-    // await supabase
-    //   .from("SpyOnMicLocation")
-    //   .update({
-    //     is_played: true,
-    //   })
-    //   .eq("id", selectedLocation?.id);
+    const topTwenty = data.slice(0, 20);
+    const selectedLocation = topTwenty[randomLocationIndex];
+    await supabase
+      .from("SpyOnMicLocation")
+      .update({
+        is_played: true,
+      })
+      .eq("id", selectedLocation?.id);
     const roles = selectedLocation.roles.split(",");
 
     const cleanedList = roles.map((item) => item.replace(/[\"\\]/g, "").trim());
@@ -802,7 +803,8 @@ const SpyOnMicScreen = () => {
 
   const handleLocationList = async () => {
     const { data } = await supabase.from("SpyOnMicLocation").select("*");
-    setLocationList(data ? data : []);
+    const topTwenty = data?.slice(0, 20);
+    setLocationList(topTwenty ? topTwenty : []);
   };
   return (
     <div
