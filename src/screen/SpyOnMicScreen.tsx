@@ -25,6 +25,7 @@ import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
 import { FaPlay } from "react-icons/fa6";
 import { MdTimer } from "react-icons/md";
+import "./SpyOnMicScreen.css";
 
 interface SpyOnMicProps {
   id: number;
@@ -159,7 +160,7 @@ const SpyOnMicScreen = () => {
       String(value).toLowerCase().includes(searchText.toLowerCase()),
     ),
   );
-  // console.log("card", cards);
+  console.log("card", cards);
   const onChange: TableProps<locationProp>["onChange"] = (
     pagination,
     filters,
@@ -169,7 +170,7 @@ const SpyOnMicScreen = () => {
     console.log("params", pagination, filters, sorter, extra);
   };
   const loadPlayers = async () => {
-    const { data } = await supabase.from("spyonmic").select("*");
+    const { data } = await supabase.from("spyonmic").select("*").order("id");
 
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
 
@@ -418,12 +419,12 @@ const SpyOnMicScreen = () => {
   async function getRandomSpyfallGame(data: locationProp[]) {
     const randomLocationIndex = Math.floor(Math.random() * data.length);
     const selectedLocation = data[randomLocationIndex];
-    await supabase
-      .from("SpyOnMicLocation")
-      .update({
-        is_played: true,
-      })
-      .eq("id", selectedLocation?.id);
+    // await supabase
+    //   .from("SpyOnMicLocation")
+    //   .update({
+    //     is_played: true,
+    //   })
+    //   .eq("id", selectedLocation?.id);
     const roles = selectedLocation.roles.split(",");
 
     const cleanedList = roles.map((item) => item.replace(/[\"\\]/g, "").trim());
@@ -623,6 +624,10 @@ const SpyOnMicScreen = () => {
       return item.is_vote === "mostvote";
     });
 
+    const findSpy = cards.find((item) => {
+      return item.is_spy === true;
+    });
+
     const findVotePlayer = cards.filter((item) => {
       return item.is_vote === "true";
     });
@@ -646,22 +651,78 @@ const SpyOnMicScreen = () => {
     ) {
       return (
         <>
-          <Row justify={"center"} style={{ width: "100%" }}>
+          <Row
+            justify={"center"}
+            style={{ width: "100%", margin: "10px 0px 10px 0px" }}
+          >
+            <h3
+              style={{
+                fontSize: "40px",
+                color: "white",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {findMostVote.name}
+            </h3>
             <h3
               style={{
                 fontSize: "40px",
                 color: "magenta",
-                marginBottom: "0px",
-                width: "100%",
+                margin: "0px 10px 0px 0px",
               }}
             >
-              {findMostVote.name} is the most voted ({findMostVote.vote})
+              {" "}
+              is the most voted
+            </h3>
+            <FaVoteYea
+              style={{
+                fontSize: "40px",
+                color: "magenta",
+                margin: "-5px 10px 20px 0px",
+              }}
+            />
+            <h3
+              style={{
+                fontSize: "40px",
+                color: "magenta",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {" "}
+              ({findMostVote.vote})
             </h3>
           </Row>
-
-          <h3 style={{ fontSize: "25px", marginBottom: "20px" }}>
-            Time to show yourself .
-          </h3>
+          <Row
+            justify={"center"}
+            style={{ width: "100%", margin: "0px 0px 10px 0px" }}
+          >
+            <h3
+              style={{
+                fontSize: "30px",
+                color: "white",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {findMostVote.name}
+            </h3>
+            <h3
+              style={{
+                fontSize: "30px",
+                color: "cyan",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {" "}
+              show yourself
+            </h3>
+            <BiSolidShow
+              style={{
+                fontSize: "30px",
+                color: "cyan",
+                margin: "0px 10px 0px 0px",
+              }}
+            />
+          </Row>
         </>
       );
     }
@@ -688,9 +749,51 @@ const SpyOnMicScreen = () => {
     if (findMostVote?.showrole === true && findMostVote?.is_spy === false) {
       return (
         <>
+          <Row justify={"center"} style={{ width: "100%", marginTop: "30px" }}>
+            {" "}
+            <h3
+              style={{
+                fontSize: "40px",
+                color: "white",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {findMostVote.name}
+            </h3>
+            <h3
+              style={{
+                fontSize: "40px",
+                color: "cyan",
+                margin: "0px 10px 0px 0px",
+              }}
+            >
+              {" "}
+              is {findMostVote.role}
+            </h3>
+            {/* <h3
+              style={{ fontSize: "40px", color: "red", marginBottom: "20px" }}
+            >
+              <GiSpy style={{ marginRight: "10px" }} />
+              It's Spy Time to reveal yourself !!!
+            </h3> */}
+          </Row>
+          <Row justify={"center"} style={{ width: "100%" }}>
+            <h3
+              style={{ fontSize: "40px", color: "red", marginBottom: "20px" }}
+            >
+              <GiSpy style={{ marginRight: "10px" }} />
+              It's Spy Time to reveal yourself !!!
+            </h3>
+          </Row>
+        </>
+      );
+    }
+    if (myCards?.is_spy === false && findSpy?.is_vote === "reveal") {
+      return (
+        <>
           <h3 style={{ fontSize: "40px", color: "red", marginBottom: "20px" }}>
-            <GiSpy style={{ marginRight: "10px" }} />
-            It's Spy Time to reveal yourself !!!
+            <FaMapMarkedAlt style={{ marginRight: "10px" }} />
+            Wait for Spy choose location...
           </h3>
         </>
       );
@@ -782,26 +885,43 @@ const SpyOnMicScreen = () => {
       <Modal
         title={
           <>
-            {" "}
+            <Row justify={"center"} style={{ margin: "10px 0px 0px 0px" }}>
+              {answer === "correct" ? (
+                <>
+                  <GiSpy
+                    style={{
+                      color: "white",
+                      fontSize: "60px",
+                      fontWeight: "bold",
+                      marginBottom: "0px",
+                    }}
+                  />
+                </>
+              ) : (
+                <>
+                  <FaUserAlt
+                    style={{
+                      color: "white",
+                      fontSize: "60px",
+                      fontWeight: "bold",
+                      marginBottom: "0px",
+                    }}
+                  />
+                </>
+              )}
+            </Row>
             <Row justify={"center"}>
-              {" "}
-              <GiSpy
+              <div
                 style={{
-                  margin: "0px 10px 0px 0px",
-                  fontSize: "40px",
-                  color: "magenta",
-                }}
-              />
-              <h2
-                style={{
-                  color: "magenta",
+                  fontFamily: "Kanit, sans-serif",
                   fontSize: "30px",
-                  fontWeight: "bold",
+                  color: "white",
+                  margin: "0px",
                 }}
               >
-                Spy On Mic
-              </h2>
-            </Row>{" "}
+                {answer === "correct" ? "Spy Win !" : "Player Win !"}
+              </div>
+            </Row>
           </>
         }
         centered
@@ -817,67 +937,55 @@ const SpyOnMicScreen = () => {
           xl: "50%",
           xxl: "40%",
         }}
+        className={
+          answer === "correct" ? "glow-spy-modal" : "glow-player-modal"
+        }
         styles={{
-          container: {
-            backgroundColor: answer === "correct" ? "darkred" : "darkgreen",
+          body: {
+            backgroundColor: "#2E4540",
+            borderRadius: "10px",
+            margin: "10px 0px 10px 0px",
+            padding: "5px 20px 5px 20px",
           },
+
           header: {
-            backgroundColor: "white",
+            backgroundColor: answer === "correct" ? "#8B2626" : "#1B5E20",
             padding: "5px 0px 5px 0px",
-            margin: "0px 100px 0px 100px",
+            margin: "0px 100px 10px 100px",
             borderRadius: "10px",
           },
         }}
       >
-        <Row justify={"center"} style={{ margin: "50px 0px 0px 0px" }}>
-          {answer === "correct" ? (
-            <>
-              <GiSpy
-                style={{
-                  color: "white",
-                  fontSize: "40px",
-                  fontWeight: "bold",
-                  marginBottom: "0px",
-                }}
-              />
-            </>
-          ) : (
-            <>
-              <FaUserAlt
-                style={{
-                  color: "white",
-                  fontSize: "40px",
-                  fontWeight: "bold",
-                  marginBottom: "0px",
-                }}
-              />
-            </>
-          )}
-        </Row>
         <Row justify={"center"}>
-          <h1
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "white",
-              margin: "0px",
-            }}
-          >
-            {answer === "correct" ? "Spy Win " : "Player Win"}
-          </h1>
+          <Col>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "30px",
+                color: "white",
+                margin: "0px 10px 10px 0px",
+              }}
+            >
+              <FaMapMarkedAlt style={{ marginRight: "10px" }} />
+              Location :
+            </h1>
+          </Col>
+          <Col>
+            {" "}
+            <div
+              style={{
+                color: "white",
+                fontSize: "30px",
+                fontWeight: "bold",
+                whiteSpace: "pre-line",
+              }}
+            >
+              {/* {myCards?.location.replace(" (", "\n(")} */}
+              {myCards?.location}
+            </div>
+          </Col>
         </Row>
-        <Row justify={"center"}>
-          <h1
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "white",
-              margin: "0px 0px 10px 0px",
-            }}
-          >
-            Location : {myCards?.location}
-          </h1>
-        </Row>
+        <Row justify={"center"}></Row>
       </Modal>
       <Modal
         title={
@@ -1010,7 +1118,7 @@ const SpyOnMicScreen = () => {
               fontSize: "30px",
             }}
           >
-            Time left : {timeLeft} seconds
+            Time left : {Math.floor(timeLeft / 60)} : {timeLeft % 60}
           </h1>
           <Button
             variant="solid"
@@ -1028,26 +1136,6 @@ const SpyOnMicScreen = () => {
           >
             Location List
           </Button>
-          {myCards?.is_host === true && (
-            <>
-              <Row justify={"center"}>
-                {" "}
-                <h3>Change minutes </h3>
-              </Row>
-
-              <Row justify={"center"} align={"middle"}>
-                {" "}
-                <InputNumber
-                  placeholder="Enter Times"
-                  defaultValue={minute}
-                  onChange={(e) => {
-                    setMinute(e ?? 0);
-                  }}
-                />
-                <div style={{ marginLeft: "10px" }}> minutes </div>
-              </Row>
-            </>
-          )}
         </Col>
 
         <Col xs={24} sm={24} md={10} lg={6} xl={6}>
@@ -1092,6 +1180,7 @@ const SpyOnMicScreen = () => {
                     fontSize: "20px",
                     fontWeight: "bold",
                     whiteSpace: "pre-line",
+                    marginTop: "10px",
                   }}
                 >
                   {myCards?.role.replace(" (", "\n(")}
@@ -1176,7 +1265,7 @@ const SpyOnMicScreen = () => {
                 <Select
                   size="large"
                   style={{ width: 400 }}
-                  placeholder="Select a user"
+                  placeholder="Select a player"
                   options={selectOptions}
                   onChange={handleVote}
                 />
@@ -1203,12 +1292,26 @@ const SpyOnMicScreen = () => {
                       >
                         {card.is_vote === "show" && (
                           <h2 style={{ fontSize: "20px" }}>
-                            Your Voted : {card?.vote !== 0 ? card?.vote : 0}
+                            Number of Votes :{" "}
+                            {card?.vote !== 0 ? card?.vote : 0}
                           </h2>
                         )}
                         {card.is_vote === "mostvote" && (
                           <h2 style={{ fontSize: "20px" }}>
-                            Your Voted : {card?.vote !== 0 ? card?.vote : 0}
+                            Number of Votes :{" "}
+                            {card?.vote !== 0 ? card?.vote : 0}
+                          </h2>
+                        )}
+                        {card.is_vote === "correct" && (
+                          <h2 style={{ fontSize: "20px" }}>
+                            Number of Votes :{" "}
+                            {card?.vote !== 0 ? card?.vote : 0}
+                          </h2>
+                        )}
+                        {card.is_vote === "wrong" && (
+                          <h2 style={{ fontSize: "20px" }}>
+                            Number of Votes :{" "}
+                            {card?.vote !== 0 ? card?.vote : 0}
                           </h2>
                         )}
                         <Card
@@ -1264,6 +1367,7 @@ const SpyOnMicScreen = () => {
                                 fontSize: "20px",
                                 fontWeight: "bold",
                                 whiteSpace: "pre-line",
+                                marginTop: "10px",
                               }}
                             >
                               {card.showrole === true
@@ -1287,6 +1391,7 @@ const SpyOnMicScreen = () => {
         <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
           <Col>
             <Button
+              disabled={myCards.is_vote === "true" ? true : false}
               variant="solid"
               color="red"
               onClick={() => {
@@ -1330,6 +1435,30 @@ const SpyOnMicScreen = () => {
 
       {myCards?.is_host === true && (
         <>
+          <Divider
+            style={{ backgroundColor: "green", margin: "30px 0px 10px 0px" }}
+          />
+
+          <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
+            <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+              Host Control Panel
+            </h2>{" "}
+          </Row>
+          <Row justify={"center"}>
+            {" "}
+            <h3 style={{ margin: "0px" }}>Change minutes </h3>
+          </Row>
+          <Row justify={"center"} align={"middle"}>
+            {" "}
+            <InputNumber
+              placeholder="Enter Times"
+              defaultValue={minute}
+              onChange={(e) => {
+                setMinute(e ?? 0);
+              }}
+            />
+            <div style={{ marginLeft: "10px" }}> minutes </div>
+          </Row>
           <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
             <Col>
               <Button

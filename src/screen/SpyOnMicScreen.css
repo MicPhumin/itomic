@@ -1,0 +1,45 @@
+.glow-player-modal .ant-modal-container {
+  border: 2px solid #2E4540;
+  border-radius: 16px;
+
+  animation: modalWrongGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes modalWrongGlow {
+  from {
+    box-shadow:
+      0 0 5px #2E4540,
+      0 0 10px #2E4540;
+  }
+
+  to {
+    box-shadow:
+      0 0 10px #2E4540,
+      0 0 25px #2E4540,
+      0 0 50px #2E4540,
+      0 0 80px rgba(0, 255, 13, 0.5);
+  }
+}
+
+.glow-spy-modal .ant-modal-container {
+  border: 2px solid #8B2626;
+  border-radius: 16px;
+
+  animation: modalCorrectGlow 1.5s ease-in-out infinite alternate;
+}
+
+@keyframes modalCorrectGlow {
+  from {
+    box-shadow:
+      0 0 5px #8B2626,
+      0 0 10px #8B2626;
+  }
+
+  to {
+    box-shadow:
+      0 0 10px #8B2626,
+      0 0 25px #8B2626,
+      0 0 50px #8B2626,
+      0 0 80px rgba(255, 0, 0, 0.5);
+  }
+}
