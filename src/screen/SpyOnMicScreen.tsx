@@ -160,7 +160,7 @@ const SpyOnMicScreen = () => {
       String(value).toLowerCase().includes(searchText.toLowerCase()),
     ),
   );
-  console.log("card", cards);
+  // console.log("card", cards);
   const onChange: TableProps<locationProp>["onChange"] = (
     pagination,
     filters,
@@ -597,7 +597,7 @@ const SpyOnMicScreen = () => {
           is_vote: "correct",
           location: findLocation?.location,
         })
-        .eq("id", reveal?.id);
+        .neq("id", 0);
     } else {
       await supabase
         .from("spyonmic")
@@ -605,7 +605,7 @@ const SpyOnMicScreen = () => {
           is_vote: "wrong",
           location: findLocation?.location,
         })
-        .eq("id", reveal?.id);
+        .neq("id", 0);
     }
     await supabase
       .from("spyonmic")
@@ -1387,28 +1387,29 @@ const SpyOnMicScreen = () => {
         {/* )} */}
       </Row>
 
-      {myCards?.is_spy === true && myCards?.location === "???" && (
-        <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
-          <Col>
-            <Button
-              disabled={myCards.is_vote === "true" ? true : false}
-              variant="solid"
-              color="red"
-              onClick={() => {
-                handleReveal();
-              }}
-              icon={<GiSpy />}
-              style={{
-                fontSize: "25px",
-                width: "200px",
-                height: "50px",
-              }}
-            >
-              Reveal
-            </Button>
-          </Col>
-        </Row>
-      )}
+      {myCards?.is_spy === true &&
+        myCards?.location === "???" &&
+        myCards?.is_vote !== "true" && (
+          <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
+            <Col>
+              <Button
+                variant="solid"
+                color="red"
+                onClick={() => {
+                  handleReveal();
+                }}
+                icon={<GiSpy />}
+                style={{
+                  fontSize: "25px",
+                  width: "200px",
+                  height: "50px",
+                }}
+              >
+                Reveal
+              </Button>
+            </Col>
+          </Row>
+        )}
       {myCards?.is_vote === "mostvote" && myCards?.is_spy !== true && (
         <>
           <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
