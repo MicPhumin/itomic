@@ -11,8 +11,8 @@ function App() {
     <>
       <Routes>
         <Route path="/" element={<MainScreen />} />
-        <Route path="/single" element={<SingleOrderScreen_realtime_dnd />} />
-        <Route path="/rumble" element={<RumbleOrderScreen />} />
+        <Route path="/itomic" element={<SingleOrderScreen_realtime_dnd />} />
+        <Route path="/itomicRumble" element={<RumbleOrderScreen />} />
         <Route path="/spyonmic" element={<SpyOnMicScreen />} />
       </Routes>
     </>

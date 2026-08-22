@@ -39,8 +39,9 @@ import {
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import topicGame from "../assets/topic.json";
-import type { ColorPickerProps, GetProp } from "antd";
+import type { ColorPickerProps, GetProp, InputRef } from "antd";
 import { IoIosHeart } from "react-icons/io";
+import { MdCancel } from "react-icons/md";
 
 type Color = Extract<
   GetProp<ColorPickerProps, "value">,
@@ -78,8 +79,6 @@ const RumbleOrderScreen = () => {
   const [finishCheck, setfinishCheck] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
-  const [note, setNote] = useState<string>("");
-  const [noteColor, setNoteColor] = useState<Color>("#000");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [globalIndex, setGlobalIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
@@ -121,13 +120,9 @@ const RumbleOrderScreen = () => {
   } | null>(null);
 
   console.log("card", cards);
-  console.log("remoteDrag", remoteDrag);
+  // console.log("myCard", myCards);
 
-  const hexString = React.useMemo<string>(
-    () =>
-      typeof noteColor === "string" ? noteColor : noteColor?.toHexString(),
-    [noteColor],
-  );
+  const inputRef = useRef<InputRef>(null);
 
   const values = Form.useWatch([], form);
   React.useEffect(() => {
@@ -161,8 +156,6 @@ const RumbleOrderScreen = () => {
 
       setMyCards(findPlayer);
       setHeart(findPlayer ? findPlayer.heart : 3);
-      setNote(findPlayer.note);
-      setNoteColor(findPlayer.notecolor);
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
@@ -213,15 +206,11 @@ const RumbleOrderScreen = () => {
             }
 
             if (player.topic) {
-              setTopic(player.topic);
+              setChangeTopic(false);
             }
 
             if (player.active === "red") {
               setHeart(player.heart);
-
-              if (player.heart === 0) {
-                setLoseModal(true);
-              }
             }
           }
         },
@@ -345,28 +334,20 @@ const RumbleOrderScreen = () => {
         .eq("id", cards[i].id)
         .eq("mode", "single");
     }
-    setNote("");
-    setNote("#00000");
     setGlobalIndex(0);
     setfinishCheck(false);
+    setLoseModal(false);
   };
 
   const handleTopic = async (topicName: string) => {
-    const host = cards.find((item) => {
-      return item.is_host === true;
-    });
-    await supabase
-      .from("itomic")
-      .update({ topic: topicName })
-      .eq("id", host?.id);
-
+    await supabase.from("itomic").update({ topic: topicName }).neq("id", 0);
     setChangeTopic(false);
   };
 
-  const handleRandomTopic = () => {
+  const handleRandomTopic = async () => {
     const index = Math.floor(Math.random() * topicGame.length);
     const item = topicGame.splice(index, 1)[0];
-    setTopic(item.topic);
+    await supabase.from("itomic").update({ topic: item.topic }).neq("id", 0);
   };
 
   const handleOk = async () => {
@@ -577,20 +558,26 @@ const RumbleOrderScreen = () => {
   };
 
   const handleSingle = async () => {
-    const sorted = [...cards].sort((a, b) => a.value - b.value);
+    const getNull = cards.filter((item) => {
+      return item.active === null;
+    });
 
-    const oldCardIndex = cards[globalIndex - 1];
-    const getCardIndex = cards[globalIndex];
-
+    const sorted = [...getNull].sort((a, b) => a.value - b.value);
+    const getCardIndex = getNull[globalIndex];
     if (getCardIndex.value === sorted[globalIndex].value) {
       await supabase
         .from("itomic")
         .update({
           active: "green",
-          score: oldCardIndex ? oldCardIndex.score + 1 : 1,
           showVal: true,
         })
         .eq("id", getCardIndex.id);
+      await supabase
+        .from("itomic")
+        .update({
+          score: getCardIndex ? getCardIndex.score + 1 : 1,
+        })
+        .neq("id", 0);
     } else {
       await supabase
         .from("itomic")
@@ -601,25 +588,77 @@ const RumbleOrderScreen = () => {
         })
         .eq("id", getCardIndex.id);
 
+      const getRed = getNull.filter((item) => {
+        return item.value <= getCardIndex.value;
+      });
+
+      const getRedOrder = cards.filter((item) => {
+        return item.active === "red";
+      });
+      if (getRed) {
+        await Promise.all(
+          getRed.map((card, index) =>
+            supabase
+              .from("itomic")
+              .update({
+                active: "red",
+                score: card.score ? card.score : 0,
+                showVal: true,
+                player_order:
+                  getRed.length !== 0
+                    ? card.player_order
+                    : getRed[index].player_order + card.player_order,
+                heart: card.heart - 1,
+              })
+              .eq("id", card.id),
+          ),
+        );
+      }
       await supabase
         .from("itomic")
         .update({
-          heart: oldCardIndex ? oldCardIndex.heart - 1 : getCardIndex.heart - 1,
+          heart:
+            getRedOrder.length !== 0
+              ? getCardIndex.heart - getRedOrder.length
+              : getCardIndex.heart - getRed.length,
         })
         .gt("id", 0);
+
+      const getZeroHeart = cards.find((item) => {
+        return item.heart <= 0;
+      });
+
+      if (getZeroHeart === undefined) {
+        await Promise.all(
+          getNull.map((card) =>
+            supabase
+              .from("itomic")
+              .update({
+                showVal: true,
+                active: "red",
+              })
+              .eq("id", card.id),
+          ),
+        );
+      }
     }
-    setGlobalIndex((prev) => prev + 1);
 
     if (globalIndex + 1 >= cards.length) {
       setfinishCheck(true);
+      setLoseModal(true);
     }
   };
 
-  const handleNote = async () => {
+  const handleNote = async (note: string | undefined) => {
+    const player = JSON.parse(localStorage.getItem("player") ?? "null");
+    await supabase.from("itomic").update({ note: note }).eq("id", player.id);
+  };
+
+  const handleColorNote = async (noteColor: string) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
       .from("itomic")
-      .update({ note: note, notecolor: hexString })
+      .update({ notecolor: noteColor })
       .eq("id", player.id);
   };
 
@@ -635,13 +674,6 @@ const RumbleOrderScreen = () => {
       console.log("Deleted all rows");
     }
   };
-
-  // const handleSelectTopic = (value: string) => {
-  //   const filter = topicGame.find((item) => {
-  //     return item.id === value;
-  //   });
-  //   setTopic(filter?.topic);
-  // };
 
   const groupedOptions = Object.values(
     topicGame.reduce(
@@ -662,6 +694,112 @@ const RumbleOrderScreen = () => {
       {} as Record<string, CategoryGroup>,
     ),
   );
+
+  const showDescription = () => {
+    if (myCards && myCards?.heart <= 0 && myCards?.score <= 0) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "red",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              You Lose !!!
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "red",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              กากเกิน ไปคุยกันใหม่นะ
+            </h1>
+          </Row>
+        </>
+      );
+    }
+    if (myCards?.score === cards.length) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "magenta",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              You Win !!!
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "magenta",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Perfect game
+            </h1>
+          </Row>
+        </>
+      );
+    }
+    const getActive = cards.filter((item) => {
+      return item.active === null;
+    });
+    if (
+      myCards?.score !== 0 &&
+      myCards?.heart !== 3 &&
+      getActive.length === 0
+    ) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "cyan",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Try Again
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "cyan",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Score : {myCards?.score}
+            </h1>
+          </Row>
+        </>
+      );
+    }
+  };
   return (
     <div
       style={{
@@ -672,7 +810,8 @@ const RumbleOrderScreen = () => {
       <h3 style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}>
         iTOMIC{" "}
       </h3>
-      <h2
+
+      {/* <h2
         style={{
           fontFamily: "Kanit, sans-serif",
           fontSize: "30px",
@@ -680,54 +819,8 @@ const RumbleOrderScreen = () => {
         }}
       >
         Single Sort Mode
-      </h2>
-      <Modal
-        title={
-          <>
-            {" "}
-            <Row justify={"center"}>
-              {" "}
-              <h2 style={{ color: "magenta" }}>iTOMIC</h2>
-            </Row>{" "}
-            <Row justify={"center"}>
-              {" "}
-              <h2
-                style={{
-                  fontFamily: "Kanit, sans-serif",
-                  fontSize: "20px",
-                  color: "cyan",
-                }}
-              >
-                Single Sort Mode
-              </h2>
-            </Row>
-          </>
-        }
-        closeIcon={<div>X</div>}
-        onCancel={() => setLoseModal(false)}
-        open={loseModal}
-        footer={false}
-        width={{
-          xs: "80%",
-          sm: "80%",
-          md: "70%",
-          lg: "60%",
-          xl: "50%",
-          xxl: "40%",
-        }}
-      >
-        <Row justify={"center"}>
-          <h1
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "black",
-            }}
-          >
-            กาก
-          </h1>
-        </Row>
-      </Modal>
+      </h2> */}
+
       <Modal
         title={
           <Row>
@@ -739,7 +832,7 @@ const RumbleOrderScreen = () => {
               </Row>
               <Row justify={"center"}>
                 {" "}
-                <h2
+                {/* <h2
                   style={{
                     fontFamily: "Kanit, sans-serif",
                     fontSize: "20px",
@@ -747,7 +840,7 @@ const RumbleOrderScreen = () => {
                   }}
                 >
                   Single Sort Mode
-                </h2>
+                </h2> */}
               </Row>
             </Col>
           </Row>
@@ -823,8 +916,8 @@ const RumbleOrderScreen = () => {
               <Row gutter={[2, 18]}>
                 <AutoComplete
                   style={{
-                    width: "100%",
-                    margin: "0px 0px 10px 0px",
+                    width: "500px",
+                    marginRight: "10px",
                   }}
                   styles={{
                     input: {
@@ -834,7 +927,7 @@ const RumbleOrderScreen = () => {
                   }}
                   options={groupedOptions}
                   placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
-                  value={topic}
+                  defaultValue={myCards?.topic}
                   filterOption={(
                     inputValue: string,
                     option: CategoryGroup | undefined,
@@ -843,11 +936,11 @@ const RumbleOrderScreen = () => {
                       ?.toLowerCase()
                       .includes(inputValue.toLowerCase());
                   }}
-                  onChange={(e) => {
-                    setTopic(e);
+                  onBlur={(e) => {
+                    handleTopic(e.target.value);
                   }}
                   onSelect={(value) => {
-                    setTopic(value);
+                    handleTopic(value);
                   }}
                   allowClear
                 />
@@ -945,23 +1038,32 @@ const RumbleOrderScreen = () => {
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
                     <Input
                       placeholder="Enter Note"
-                      value={note}
+                      defaultValue={myCards?.note}
+                      ref={inputRef}
                       allowClear
-                      onChange={(e) => {
-                        setNote(e.target.value);
+                      onBlur={() => {
+                        handleNote(inputRef.current?.input?.value);
+                      }}
+                      onPressEnter={() => {
+                        handleNote(inputRef.current?.input?.value);
                       }}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
                     <ColorPicker
                       format="hex"
-                      value={noteColor}
-                      onChangeComplete={setNoteColor}
+                      defaultValue={
+                        myCards?.notecolor ? myCards?.notecolor : "#000"
+                      }
+                      onChangeComplete={(color) => {
+                        const hex = color.toHexString();
+                        handleColorNote(hex);
+                      }}
                     />
                   </Col>
                 </Row>
 
-                <Button
+                {/* <Button
                   variant="solid"
                   color="purple"
                   onClick={() => {
@@ -971,7 +1073,7 @@ const RumbleOrderScreen = () => {
                   style={{ marginTop: "10px" }}
                 >
                   Save Note
-                </Button>
+                </Button> */}
               </Card>
             </Col>
           </Row>
@@ -992,93 +1094,104 @@ const RumbleOrderScreen = () => {
         >
           Topic :
         </h2>
-
-        {changeTopic === true ? (
-          <>
-            <Row>
-              <AutoComplete
-                style={{
-                  width: "500px",
-                  marginRight: "10px",
-                }}
-                styles={{
-                  input: {
-                    fontFamily: "Kanit, sans-serif",
-                    fontSize: "15px",
-                  },
-                }}
-                options={groupedOptions}
-                placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
-                value={topic}
-                filterOption={(
-                  inputValue: string,
-                  option: CategoryGroup | undefined,
-                ): boolean => {
-                  return !!option?.label
-                    ?.toLowerCase()
-                    .includes(inputValue.toLowerCase());
-                }}
-                onChange={(e) => {
-                  setTopic(e);
-                }}
-                onSelect={(value) => {
-                  setTopic(value);
-                }}
-                allowClear
-              />
-              <Button
-                variant="solid"
-                color="purple"
-                size="large"
-                onClick={() => {
-                  handleRandomTopic();
-                }}
-                icon={<AiFillAlert />}
-                style={{ marginRight: "10px" }}
-              >
-                Random
-              </Button>
-              <Button
-                variant="solid"
-                size="large"
-                color="green"
-                onClick={() => {
-                  handleTopic(topic);
-                }}
-                icon={<AiFillCheckCircle />}
-                style={{ marginRight: "10px" }}
-              >
-                ok
-              </Button>
-            </Row>
-          </>
-        ) : (
-          <>
-            <Row>
-              <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-                {topic}
-              </h2>{" "}
-            </Row>
-            <Row>
-              <Button
-                variant="solid"
-                size="large"
-                color="purple"
-                onClick={() => {
-                  setChangeTopic(true);
-                }}
-                icon={<AiFillPlusSquare />}
-                style={{
-                  marginLeft: "20px",
-                }}
-              >
-                Change Topic
-              </Button>
-            </Row>
-          </>
+        <Row>
+          <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+            {myCards?.topic}
+          </h2>{" "}
+        </Row>
+        {changeTopic === false && (
+          <Row>
+            <Button
+              variant="solid"
+              size="large"
+              color="purple"
+              onClick={() => {
+                setChangeTopic(true);
+              }}
+              icon={<AiFillPlusSquare />}
+              style={{
+                marginLeft: "20px",
+              }}
+            >
+              Change Topic
+            </Button>
+          </Row>
         )}
       </Row>
 
+      {changeTopic === true && (
+        <>
+          <Row justify={"center"}>
+            <AutoComplete
+              style={{
+                width: "500px",
+                marginRight: "10px",
+              }}
+              styles={{
+                input: {
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: "15px",
+                },
+              }}
+              options={groupedOptions}
+              placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
+              defaultValue={myCards?.topic}
+              filterOption={(
+                inputValue: string,
+                option: CategoryGroup | undefined,
+              ): boolean => {
+                return !!option?.label
+                  ?.toLowerCase()
+                  .includes(inputValue.toLowerCase());
+              }}
+              onBlur={(e) => {
+                setTopic(e.target.value);
+              }}
+              onSelect={(value) => {
+                setTopic(value);
+              }}
+              allowClear
+            />
+            <Button
+              variant="solid"
+              color="purple"
+              size="large"
+              onClick={() => {
+                handleRandomTopic();
+              }}
+              icon={<AiFillAlert />}
+              style={{ marginRight: "10px" }}
+            >
+              Random
+            </Button>
+            <Button
+              variant="solid"
+              size="large"
+              color="green"
+              onClick={() => {
+                handleTopic(topic);
+              }}
+              icon={<AiFillCheckCircle />}
+              style={{ marginRight: "10px" }}
+            >
+              Ok
+            </Button>
+            <Button
+              variant="solid"
+              size="large"
+              color="red"
+              onClick={() => {
+                setChangeTopic(false);
+              }}
+              icon={<MdCancel />}
+              style={{ marginRight: "10px" }}
+            >
+              cancel
+            </Button>
+          </Row>
+        </>
+      )}
+      {showDescription()}
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
         {/* {isLoading === true ? (
           <>
@@ -1275,7 +1388,7 @@ const RumbleOrderScreen = () => {
             color: "magenta",
           }}
         >
-          iTOMIC ver 1.8.5
+          iTOMIC ver 1.8.6
         </h3>
       </Row>
     </div>

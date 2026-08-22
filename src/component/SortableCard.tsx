@@ -23,6 +23,7 @@ export default function SortableCard({
   active,
   note,
   noteColor,
+  is_host,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -42,7 +43,18 @@ export default function SortableCard({
       <Card
         aria-disabled={true}
         className=""
-        title={name}
+        title={
+          <>
+            <div style={{ marginTop: "5px" }}>
+              {name}{" "}
+              {is_host === true ? (
+                <div style={{ color: "goldenrod" }}>(Host)</div>
+              ) : (
+                <div></div>
+              )}
+            </div>
+          </>
+        }
         style={{
           borderColor: active ? active : "",
           borderWidth: active ? "5px" : "",

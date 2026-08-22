@@ -109,7 +109,7 @@ const MainScreen = () => {
         <Button
           variant="solid"
           color="cyan"
-          href={window.location.origin + `/single`}
+          href={window.location.origin + `/itomic`}
           onClick={() => {}}
           icon={<TiSortNumericallyOutline />}
           style={{
@@ -136,19 +136,20 @@ const MainScreen = () => {
           Spy on Mic
         </Button>
         <Button
+          disabled
           variant="solid"
           color="primary"
-          href={window.location.origin + `/rumble`}
+          href={window.location.origin + `/itomicRumble`}
           icon={<AiFillAudio />}
           style={{
             marginLeft: "20px",
             fontSize: "25px",
             width: "300px",
             height: "50px",
-            // backgroundColor: "darkgrey",
+            backgroundColor: "darkgrey",
           }}
         >
-          Rumble Sort Mode
+          iTOMIC Rumble (Old)
         </Button>
       </Row>
     </div>
