@@ -562,6 +562,7 @@ const RumbleOrderScreen = () => {
 
     const sorted = [...getNull].sort((a, b) => a.value - b.value);
     const getCardIndex = getNull[globalIndex];
+
     if (getCardIndex.value === sorted[globalIndex].value) {
       await supabase
         .from("itomic")
@@ -593,6 +594,7 @@ const RumbleOrderScreen = () => {
       const getRedOrder = cards.filter((item) => {
         return item.active === "red";
       });
+
       if (getRed) {
         await Promise.all(
           getRed.map((card, index) =>
@@ -622,22 +624,48 @@ const RumbleOrderScreen = () => {
         })
         .gt("id", 0);
 
-      const getZeroHeart = cards.find((item) => {
-        return item.heart <= 0;
-      });
+      const { data } = await supabase
+        .from("itomic")
+        .select("*")
+        .eq("mode", "single");
 
-      if (getZeroHeart === undefined) {
+      const getZeroHeart =
+        data &&
+        data.find((item) => {
+          return item.heart <= 0 && item.showVal === false;
+        });
+
+      const nonOrder =
+        data &&
+        data.filter((item) => {
+          return item.value > getCardIndex.value;
+        });
+
+      if (getZeroHeart.heart === 0 && nonOrder && nonOrder.length !== 0) {
         await Promise.all(
-          getNull.map((card) =>
+          nonOrder.map((card) =>
             supabase
               .from("itomic")
               .update({
                 showVal: true,
-                active: "red",
+                active: "green",
+                score: card.score + 1,
               })
               .eq("id", card.id),
           ),
         );
+        await supabase
+          .from("itomic")
+          .update({
+            score: getZeroHeart.score + nonOrder.length,
+          })
+          .gt("id", 0);
+      } else if (
+        getZeroHeart === undefined &&
+        nonOrder &&
+        nonOrder.length !== 0
+      ) {
+        return;
       }
     }
 
