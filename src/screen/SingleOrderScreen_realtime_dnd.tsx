@@ -43,10 +43,10 @@ import type { ColorPickerProps, GetProp, InputRef } from "antd";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 
-type Color = Extract<
-  GetProp<ColorPickerProps, "value">,
-  string | { cleared: any }
->;
+// type Color = Extract<
+//   GetProp<ColorPickerProps, "value">,
+//   string | { cleared: any }
+// >;
 interface topicGame {
   id: number;
   label: string;
@@ -100,7 +100,6 @@ const RumbleOrderScreen = () => {
     mode: "",
   });
   // const [isLoading, setIsLoading] = useState(false);
-  const [loseModal, setLoseModal] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
@@ -336,10 +335,9 @@ const RumbleOrderScreen = () => {
     }
     setGlobalIndex(0);
     setfinishCheck(false);
-    setLoseModal(false);
   };
 
-  const handleTopic = async (topicName: string) => {
+  const handleTopic = async (topicName: string | undefined) => {
     await supabase.from("itomic").update({ topic: topicName }).neq("id", 0);
     setChangeTopic(false);
   };
@@ -645,7 +643,6 @@ const RumbleOrderScreen = () => {
 
     if (globalIndex + 1 >= cards.length) {
       setfinishCheck(true);
-      setLoseModal(true);
     }
   };
 
@@ -937,10 +934,11 @@ const RumbleOrderScreen = () => {
                       .includes(inputValue.toLowerCase());
                   }}
                   onBlur={(e) => {
-                    handleTopic(e.target.value);
+                    const value = (e.target as HTMLInputElement).value;
+                    setTopic(value);
                   }}
                   onSelect={(value) => {
-                    handleTopic(value);
+                    setTopic(value);
                   }}
                   allowClear
                 />
@@ -1145,7 +1143,8 @@ const RumbleOrderScreen = () => {
                   .includes(inputValue.toLowerCase());
               }}
               onBlur={(e) => {
-                setTopic(e.target.value);
+                const value = (e.target as HTMLInputElement).value;
+                setTopic(value);
               }}
               onSelect={(value) => {
                 setTopic(value);
