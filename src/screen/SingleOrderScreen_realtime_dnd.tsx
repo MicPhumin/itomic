@@ -39,7 +39,7 @@ import {
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import topicGame from "../assets/topic.json";
-import type { ColorPickerProps, GetProp, InputRef } from "antd";
+import type { InputRef } from "antd";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 
