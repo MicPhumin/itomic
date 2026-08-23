@@ -1,5 +1,5 @@
 import { InstagramOutlined, TikTokOutlined } from "@ant-design/icons";
-import { Button, Modal, Row, Tooltip } from "antd";
+import { Button, Col, Modal, Row, Tooltip } from "antd";
 import { useState } from "react";
 import { AiFillAudio } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
@@ -18,21 +18,30 @@ const MainScreen = () => {
       }}
     >
       <Row justify={"center"}>
-        <IoGameController
-          style={{
-            margin: "40px 10px 0px 0px",
-            fontSize: "50px",
-            color: "#ff4f64",
-          }}
-        />
-        <h3 style={{ fontSize: "50px", color: "#ff4f64" }}>Mic Play Hub </h3>
-        <IoGameController
-          style={{
-            margin: "40px 0px 0px 10px",
-            fontSize: "50px",
-            color: "#ff4f64",
-          }}
-        />
+        <Col xs={24} sm={2} md={2} lg={2} xl={2}>
+          {" "}
+          <IoGameController
+            style={{
+              margin: "40px 10px 0px 0px",
+              fontSize: "50px",
+              color: "#ff4f64",
+            }}
+          />
+        </Col>
+        <Col xs={24} sm={22} md={13} lg={8} xl={4}>
+          {" "}
+          <h3 style={{ fontSize: "50px", color: "#ff4f64" }}>Mic Play Hub </h3>
+        </Col>
+        <Col xs={24} sm={2} md={2} lg={2} xl={2}>
+          {" "}
+          <IoGameController
+            style={{
+              margin: "40px 0px 0px 10px",
+              fontSize: "50px",
+              color: "#ff4f64",
+            }}
+          />
+        </Col>
       </Row>
       <Modal
         title={
@@ -105,52 +114,58 @@ const MainScreen = () => {
           Select game
         </h1>
       </Row>
-      <Row justify={"center"}>
-        <Button
-          variant="solid"
-          color="cyan"
-          href={window.location.origin + `/itomic`}
-          onClick={() => {}}
-          icon={<TiSortNumericallyOutline />}
-          style={{
-            fontSize: "25px",
-            width: "300px",
-            height: "50px",
-          }}
-        >
-          iTOMIC
-        </Button>
-
-        <Button
-          variant="solid"
-          color="default"
-          href={window.location.origin + `/spyonmic`}
-          icon={<GiSpy />}
-          style={{
-            marginLeft: "20px",
-            fontSize: "25px",
-            width: "300px",
-            height: "50px",
-          }}
-        >
-          Spy on Mic
-        </Button>
-        <Button
-          disabled
-          variant="solid"
-          color="primary"
-          href={window.location.origin + `/itomicRumble`}
-          icon={<AiFillAudio />}
-          style={{
-            marginLeft: "20px",
-            fontSize: "25px",
-            width: "300px",
-            height: "50px",
-            backgroundColor: "darkgrey",
-          }}
-        >
-          iTOMIC Rumble (Old)
-        </Button>
+      <Row justify={"center"} gutter={[24, 2]}>
+        <Col xs={22} sm={24} md={14} lg={8} xl={5}>
+          <Button
+            variant="solid"
+            color="cyan"
+            href={window.location.origin + `/itomic`}
+            onClick={() => {}}
+            icon={<TiSortNumericallyOutline />}
+            style={{
+              fontSize: "25px",
+              width: "100%",
+              height: "50px",
+              marginBottom: "10px",
+            }}
+          >
+            iTOMIC
+          </Button>
+        </Col>
+        <Col xs={22} sm={24} md={14} lg={8} xl={5}>
+          <Button
+            variant="solid"
+            color="default"
+            href={window.location.origin + `/spyonmic`}
+            icon={<GiSpy />}
+            style={{
+              fontSize: "25px",
+              width: "100%",
+              height: "50px",
+              marginBottom: "10px",
+            }}
+          >
+            Spy on Mic
+          </Button>
+        </Col>
+        <Col xs={22} sm={24} md={14} lg={8} xl={5}>
+          <Button
+            disabled
+            variant="solid"
+            color="primary"
+            href={window.location.origin + `/itomicRumble`}
+            icon={<AiFillAudio />}
+            style={{
+              fontSize: "25px",
+              width: "100%",
+              height: "50px",
+              backgroundColor: "darkgrey",
+              marginBottom: "10px",
+            }}
+          >
+            iTOMIC Rumble (Old)
+          </Button>
+        </Col>
       </Row>
     </div>
   );

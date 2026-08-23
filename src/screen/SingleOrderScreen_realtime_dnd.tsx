@@ -118,9 +118,9 @@ const RumbleOrderScreen = () => {
     y: number;
   } | null>(null);
 
-  console.log("card", cards);
+  // console.log("card", cards);
   // console.log("myCard", myCards);
-
+  // console.log("topic", topic);
   const inputRef = useRef<InputRef>(null);
 
   const values = Form.useWatch([], form);
@@ -155,19 +155,18 @@ const RumbleOrderScreen = () => {
 
       setMyCards(findPlayer);
       setHeart(findPlayer ? findPlayer.heart : 3);
+
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
     if (data) {
       setCards(data);
-
       const findTopic = data.find((item) => {
         return item?.topic !== "";
       });
       setTopic(findTopic.topic ? findTopic.topic : topic);
     }
-    // setIsLoading(false);
   };
 
   useEffect(() => {
@@ -197,16 +196,16 @@ const RumbleOrderScreen = () => {
           } else if (payload.eventType === "UPDATE") {
             // setIsLoading(true);
             const player = payload.new as SortableCardProps;
-
+            setTopic(player.topic);
             setScore(player.score);
 
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
             }
 
-            if (player.topic) {
-              setChangeTopic(false);
-            }
+            // if (player.topic) {
+            //   setChangeTopic(false);
+            // }
 
             if (player.active === "red") {
               setHeart(player.heart);
@@ -345,7 +344,8 @@ const RumbleOrderScreen = () => {
   const handleRandomTopic = async () => {
     const index = Math.floor(Math.random() * topicGame.length);
     const item = topicGame.splice(index, 1)[0];
-    await supabase.from("itomic").update({ topic: item.topic }).neq("id", 0);
+    setTopic(item.topic);
+    // await supabase.from("itomic").update({ topic: item.topic }).neq("id", 0);
   };
 
   const handleOk = async () => {
@@ -943,6 +943,7 @@ const RumbleOrderScreen = () => {
                   style={{
                     width: "500px",
                     marginRight: "10px",
+                    marginBottom: "10px",
                   }}
                   styles={{
                     input: {
@@ -952,7 +953,7 @@ const RumbleOrderScreen = () => {
                   }}
                   options={groupedOptions}
                   placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
-                  defaultValue={myCards?.topic}
+                  value={topic}
                   filterOption={(
                     inputValue: string,
                     option: CategoryGroup | undefined,
@@ -961,27 +962,32 @@ const RumbleOrderScreen = () => {
                       ?.toLowerCase()
                       .includes(inputValue.toLowerCase());
                   }}
-                  onBlur={(e) => {
-                    const value = (e.target as HTMLInputElement).value;
+                  // onBlur={(e) => {
+                  //   const value = (e.target as HTMLInputElement).value;
+                  //   setTopic(value);
+                  // }}
+                  onChange={(value) => {
                     setTopic(value);
                   }}
                   onSelect={(value) => {
                     setTopic(value);
                   }}
+                  prefix={
+                    <Button
+                      variant="outlined"
+                      type="text"
+                      color="purple"
+                      onClick={() => {
+                        handleRandomTopic();
+                      }}
+                      style={{ marginRight: "10px" }}
+                    >
+                      🎲 Random
+                    </Button>
+                  }
                   allowClear
                 />
               </Row>
-              <Button
-                variant="solid"
-                color="purple"
-                onClick={() => {
-                  handleRandomTopic();
-                }}
-                icon={<AiFillAlert />}
-                style={{ marginRight: "10px" }}
-              >
-                Generate Topic
-              </Button>
               <Button
                 variant="solid"
                 color="red"
@@ -1147,50 +1153,55 @@ const RumbleOrderScreen = () => {
 
       {changeTopic === true && (
         <>
+          <AutoComplete
+            style={{
+              width: "500px",
+              marginRight: "10px",
+              marginBottom: "10px",
+            }}
+            styles={{
+              input: {
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "15px",
+              },
+            }}
+            options={groupedOptions}
+            placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
+            value={topic}
+            filterOption={(
+              inputValue: string,
+              option: CategoryGroup | undefined,
+            ): boolean => {
+              return !!option?.label
+                ?.toLowerCase()
+                .includes(inputValue.toLowerCase());
+            }}
+            // onBlur={(e) => {
+            //   const value = (e.target as HTMLInputElement).value;
+            //   setTopic(value);
+            // }}
+            onChange={(value) => {
+              setTopic(value);
+            }}
+            onSelect={(value) => {
+              setTopic(value);
+            }}
+            prefix={
+              <Button
+                variant="outlined"
+                type="text"
+                color="purple"
+                onClick={() => {
+                  handleRandomTopic();
+                }}
+                style={{ marginRight: "10px" }}
+              >
+                🎲 Random
+              </Button>
+            }
+            allowClear
+          />
           <Row justify={"center"}>
-            <AutoComplete
-              style={{
-                width: "500px",
-                marginRight: "10px",
-              }}
-              styles={{
-                input: {
-                  fontFamily: "Kanit, sans-serif",
-                  fontSize: "15px",
-                },
-              }}
-              options={groupedOptions}
-              placeholder="พิมพ์เพื่อค้นหา หรือพิมพ์ข้อความใหม่..."
-              defaultValue={myCards?.topic}
-              filterOption={(
-                inputValue: string,
-                option: CategoryGroup | undefined,
-              ): boolean => {
-                return !!option?.label
-                  ?.toLowerCase()
-                  .includes(inputValue.toLowerCase());
-              }}
-              onBlur={(e) => {
-                const value = (e.target as HTMLInputElement).value;
-                setTopic(value);
-              }}
-              onSelect={(value) => {
-                setTopic(value);
-              }}
-              allowClear
-            />
-            <Button
-              variant="solid"
-              color="purple"
-              size="large"
-              onClick={() => {
-                handleRandomTopic();
-              }}
-              icon={<AiFillAlert />}
-              style={{ marginRight: "10px" }}
-            >
-              Random
-            </Button>
             <Button
               variant="solid"
               size="large"
@@ -1367,7 +1378,7 @@ const RumbleOrderScreen = () => {
                   height: "50px",
                 }}
               >
-                Check No.{globalIndex + 1}
+                Check
               </Button>
             </Col>
           )}
@@ -1415,7 +1426,7 @@ const RumbleOrderScreen = () => {
             color: "magenta",
           }}
         >
-          iTOMIC ver 1.8.6
+          iTOMIC ver 1.8.7
         </h3>
       </Row>
     </div>

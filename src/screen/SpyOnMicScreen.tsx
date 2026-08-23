@@ -160,7 +160,8 @@ const SpyOnMicScreen = () => {
       String(value).toLowerCase().includes(searchText.toLowerCase()),
     ),
   );
-  // console.log("card", cards);
+  console.log("card", cards);
+
   const onChange: TableProps<locationProp>["onChange"] = (
     pagination,
     filters,
@@ -371,13 +372,24 @@ const SpyOnMicScreen = () => {
             window.location.reload();
           } else if (payload.eventType === "UPDATE") {
             const player = payload.new as SpyOnMicProps;
-            if (player.is_vote === "wrong") {
-              setAnswerModal(true);
-              setAnswer(player.is_vote);
+            if (player.is_vote === "false") {
+              setAnswerModal(false);
             }
-            if (player.is_vote === "correct") {
-              setAnswerModal(true);
-              setAnswer(player.is_vote);
+            if (
+              myCards?.is_vote !== null &&
+              player.is_vote !== "true" &&
+              player.is_vote !== "false" &&
+              player.is_vote !== "mostvote" &&
+              player.is_vote !== "show" &&
+              player.is_vote !== "reveal"
+            ) {
+              if (player.is_vote === player.location) {
+                setAnswerModal(true);
+                setAnswer("correct");
+              } else if (player.is_vote !== player.location) {
+                setAnswerModal(true);
+                setAnswer("wrong");
+              }
             }
           }
         },
@@ -419,12 +431,12 @@ const SpyOnMicScreen = () => {
   async function getRandomSpyfallGame(data: locationProp[]) {
     const randomLocation = data[Math.floor(Math.random() * data.length)];
 
-    await supabase
-      .from("SpyOnMicLocation")
-      .update({
-        is_played: true,
-      })
-      .eq("id", randomLocation?.id);
+    // await supabase
+    //   .from("SpyOnMicLocation")
+    //   .update({
+    //     is_played: true,
+    //   })
+    //   .eq("id", randomLocation?.id);
 
     const roles = randomLocation.roles.split(",");
 
@@ -453,7 +465,7 @@ const SpyOnMicScreen = () => {
           id: cards[i].id,
           name: cards[i].name,
           is_spy: false,
-          location: selectedLocation.location,
+          location: randomLocation.location,
           role: shuffledRoles.pop(),
           is_host: cards[i].is_host,
           showrole: false,
@@ -493,6 +505,7 @@ const SpyOnMicScreen = () => {
     setLocation(data);
     getRandomSpyfallGame(locations);
     startTimer();
+    setAnswerModal(false);
   };
 
   const deleteAllRows = async () => {
@@ -601,11 +614,12 @@ const SpyOnMicScreen = () => {
     // const reveal = cards.find((item) => {
     //   return item.is_spy === true;
     // });
+
     if (findLocation?.location === event) {
       await supabase
         .from("spyonmic")
         .update({
-          is_vote: "correct",
+          is_vote: event,
           location: findLocation?.location,
         })
         .neq("id", 0);
@@ -613,7 +627,7 @@ const SpyOnMicScreen = () => {
       await supabase
         .from("spyonmic")
         .update({
-          is_vote: "wrong",
+          is_vote: event,
           location: findLocation?.location,
         })
         .neq("id", 0);
@@ -1001,7 +1015,35 @@ const SpyOnMicScreen = () => {
             </div>
           </Col>
         </Row>
-        <Row justify={"center"}></Row>
+        {answer === "wrong" && (
+          <Row justify={"center"}>
+            <Col>
+              <h1
+                style={{
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: "30px",
+                  color: "red",
+                  margin: "0px 10px 10px 0px",
+                }}
+              >
+                Spy Choose :
+              </h1>
+            </Col>
+            <Col>
+              {" "}
+              <div
+                style={{
+                  color: "red",
+                  fontSize: "30px",
+                  fontWeight: "bold",
+                  whiteSpace: "pre-line",
+                }}
+              >
+                {myCards?.is_vote}
+              </div>
+            </Col>
+          </Row>
+        )}
       </Modal>
       <Modal
         title={
@@ -1539,7 +1581,7 @@ const SpyOnMicScreen = () => {
             color: "magenta",
           }}
         >
-          Spy On Mic ver 1.0.1
+          Spy On Mic ver 1.0.2
         </h3>
       </Row>
     </div>
