@@ -22,7 +22,6 @@ import {
 } from "@dnd-kit/core";
 import { supabase } from "../supabase";
 import {
-  AiFillAlert,
   AiFillCheckCircle,
   AiFillPlusSquare,
   AiOutlineReload,
