@@ -417,16 +417,16 @@ const SpyOnMicScreen = () => {
   };
 
   async function getRandomSpyfallGame(data: locationProp[]) {
-    const randomLocationIndex = Math.floor(Math.random() * data.length);
-    const topTwenty = data.slice(0, 20);
-    const selectedLocation = topTwenty[randomLocationIndex];
+    const randomLocation = data[Math.floor(Math.random() * data.length)];
+
     await supabase
       .from("SpyOnMicLocation")
       .update({
         is_played: true,
       })
-      .eq("id", selectedLocation?.id);
-    const roles = selectedLocation.roles.split(",");
+      .eq("id", randomLocation?.id);
+
+    const roles = randomLocation.roles.split(",");
 
     const cleanedList = roles.map((item) => item.replace(/[\"\\]/g, "").trim());
 
@@ -483,7 +483,12 @@ const SpyOnMicScreen = () => {
     };
   }
   const handleStart = async () => {
-    const { data } = await supabase.from("SpyOnMicLocation").select("*");
+    const { data } = await supabase
+      .from("SpyOnMicLocation")
+      .select("*")
+      .gte("id", 1)
+      .lte("id", 20)
+      .eq("is_played", false);
     const locations: locationProp[] = data || [];
     setLocation(data);
     getRandomSpyfallGame(locations);
@@ -580,7 +585,12 @@ const SpyOnMicScreen = () => {
         is_vote: "reveal",
       })
       .eq("id", reveal?.id);
-    const { data } = await supabase.from("SpyOnMicLocation").select("*");
+    const { data } = await supabase
+      .from("SpyOnMicLocation")
+      .select("*")
+      .gte("id", 1)
+      .lte("id", 20)
+      .eq("is_played", false);
     setLocation(data);
   };
 
@@ -802,10 +812,14 @@ const SpyOnMicScreen = () => {
   };
 
   const handleLocationList = async () => {
-    const { data } = await supabase.from("SpyOnMicLocation").select("*");
-    const topTwenty = data?.slice(0, 20);
-    setLocationList(topTwenty ? topTwenty : []);
+    const { data } = await supabase
+      .from("SpyOnMicLocation")
+      .select("*")
+      .gte("id", 1)
+      .lte("id", 20);
+    setLocationList(data ? data : []);
   };
+
   return (
     <div
       style={{
