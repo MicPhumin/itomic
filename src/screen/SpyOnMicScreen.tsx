@@ -19,7 +19,7 @@ import {
   Table,
   Checkbox,
 } from "antd";
-import { AiFillPlusSquare, AiOutlineReload } from "react-icons/ai";
+import { AiFillPlusSquare } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
 import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
@@ -51,16 +51,16 @@ interface locationProp {
 }
 
 const presets = [
-  "#b8c3cf",
-  "#9cb1c5",
-  "#A8CBEA",
-  "#8BB8DE",
-  "#70A5D2",
-  "#5791C2",
-  "#4580B2",
-  "#376E9D",
-  "#2C5C86",
   "#234A6D",
+  "#2C5C86",
+  "#376E9D",
+  "#4580B2",
+  "#5791C2",
+  "#70A5D2",
+  "#8BB8DE",
+  "#9fbeda",
+  "#9cb1c5",
+  "#b8c3cf",
 ];
 
 const columns: TableProps<locationProp>["columns"] = [
@@ -139,6 +139,8 @@ const SpyOnMicScreen = () => {
   const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [endAt, setEndAt] = useState<number | null>(null);
   const [minute, setMinute] = useState<number>(8);
+  const [beginData, setBeginData] = useState<number>(1);
+  const [toData, setToData] = useState<number>(20);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [answer, setAnswer] = useState<string>("");
   const [answerModal, setAnswerModal] = useState<boolean>(false);
@@ -160,7 +162,7 @@ const SpyOnMicScreen = () => {
       String(value).toLowerCase().includes(searchText.toLowerCase()),
     ),
   );
-  console.log("card", cards);
+  // console.log("card", cards);
 
   const onChange: TableProps<locationProp>["onChange"] = (
     pagination,
@@ -498,8 +500,8 @@ const SpyOnMicScreen = () => {
     const { data } = await supabase
       .from("SpyOnMicLocation")
       .select("*")
-      .gte("id", 1)
-      .lte("id", 20)
+      .gte("id", beginData)
+      .lte("id", toData)
       .eq("is_played", false);
     const locations: locationProp[] = data || [];
     setLocation(data);
@@ -521,6 +523,7 @@ const SpyOnMicScreen = () => {
   const selectVote = cards.filter((item) => {
     return item.id !== myCards?.id;
   });
+
   const selectOptions = selectVote.map((user) => ({
     label: user.name, // What the user sees
     value: user.id, // What the form submits
@@ -601,8 +604,8 @@ const SpyOnMicScreen = () => {
     const { data } = await supabase
       .from("SpyOnMicLocation")
       .select("*")
-      .gte("id", 1)
-      .lte("id", 20)
+      .gte("id", beginData)
+      .lte("id", toData)
       .eq("is_played", false);
     setLocation(data);
   };
@@ -829,8 +832,8 @@ const SpyOnMicScreen = () => {
     const { data } = await supabase
       .from("SpyOnMicLocation")
       .select("*")
-      .gte("id", 1)
-      .lte("id", 20);
+      .gte("id", beginData)
+      .lte("id", toData);
     setLocationList(data ? data : []);
   };
 
@@ -1128,7 +1131,7 @@ const SpyOnMicScreen = () => {
             </Col>
           </Row>
 
-          {hostBtn === true && (
+          {/* {hostBtn === true && (
             <>
               <h3>How many minutes do you want to play each round?</h3>
               <Row>
@@ -1156,7 +1159,7 @@ const SpyOnMicScreen = () => {
                 </Button>
               </Row>
             </>
-          )}
+          )} */}
         </Form>
       </Modal>
       <Row justify={"space-between"}>
@@ -1373,7 +1376,14 @@ const SpyOnMicScreen = () => {
                           </h2>
                         )}
                         <Card
-                          title={card.name}
+                          title={
+                            <>
+                              {card.name}
+                              {card.is_host === true && (
+                                <div style={{ color: "goldenrod" }}>(Host)</div>
+                              )}
+                            </>
+                          }
                           style={{
                             backgroundColor:
                               card?.is_spy === true && card?.showrole === true
@@ -1503,21 +1513,56 @@ const SpyOnMicScreen = () => {
               Host Control Panel
             </h2>{" "}
           </Row>
-          <Row justify={"center"}>
-            {" "}
-            <h3 style={{ margin: "0px" }}>Change minutes </h3>
+          <Row justify={"center"} gutter={[64, 0]}>
+            <Col xs={24} sm={24} md={10} lg={10} xl={10}>
+              <Row justify={window.innerWidth <= 426 ? "center" : "end"}>
+                {" "}
+                <h3 style={{ margin: "0px" }}>Change minutes </h3>
+              </Row>
+              <Row
+                justify={window.innerWidth <= 426 ? "center" : "end"}
+                align={"middle"}
+              >
+                {" "}
+                <InputNumber
+                  placeholder="Enter Times"
+                  defaultValue={minute}
+                  onChange={(e) => {
+                    setMinute(e ?? 0);
+                  }}
+                />
+                <div style={{ marginLeft: "10px" }}> minutes </div>
+              </Row>
+            </Col>
+            <Col xs={24} sm={24} md={10} lg={10} xl={10}>
+              <Row justify={window.innerWidth <= 426 ? "center" : "start"}>
+                {" "}
+                <h3 style={{ margin: "0px" }}>
+                  Change Location Dataset (1 - 100)
+                </h3>
+              </Row>
+              <Row justify={window.innerWidth <= 426 ? "center" : "start"}>
+                <Col>
+                  <InputNumber
+                    value={beginData}
+                    onChange={(e) => {
+                      setBeginData(e ?? 0);
+                    }}
+                  />
+                </Col>
+                <div style={{ margin: "0px 10px 0px 10px" }}> - </div>
+                <Col>
+                  <InputNumber
+                    value={toData}
+                    onChange={(e) => {
+                      setToData(e ?? 0);
+                    }}
+                  />
+                </Col>
+              </Row>
+            </Col>
           </Row>
-          <Row justify={"center"} align={"middle"}>
-            {" "}
-            <InputNumber
-              placeholder="Enter Times"
-              defaultValue={minute}
-              onChange={(e) => {
-                setMinute(e ?? 0);
-              }}
-            />
-            <div style={{ marginLeft: "10px" }}> minutes </div>
-          </Row>
+
           <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
             <Col>
               <Button
@@ -1531,6 +1576,7 @@ const SpyOnMicScreen = () => {
                   fontSize: "25px",
                   width: "200px",
                   height: "50px",
+                  marginBottom: "10px",
                 }}
               >
                 Start
@@ -1548,6 +1594,7 @@ const SpyOnMicScreen = () => {
                   fontSize: "25px",
                   width: "200px",
                   height: "50px",
+                  marginBottom: "10px",
                 }}
               >
                 Time'up
@@ -1565,6 +1612,7 @@ const SpyOnMicScreen = () => {
                   fontSize: "25px",
                   width: "200px",
                   height: "50px",
+                  marginBottom: "10px",
                 }}
               >
                 New Game
@@ -1581,7 +1629,7 @@ const SpyOnMicScreen = () => {
             color: "magenta",
           }}
         >
-          Spy On Mic ver 1.0.2
+          Spy On Mic ver 1.0.3
         </h3>
       </Row>
     </div>
