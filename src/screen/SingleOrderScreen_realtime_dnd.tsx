@@ -38,7 +38,6 @@ import {
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import topicGame from "../assets/topic.json";
-import type { InputRef } from "antd";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 
