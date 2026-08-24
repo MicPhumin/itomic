@@ -78,6 +78,7 @@ const RumbleOrderScreen = () => {
   const [finishCheck, setfinishCheck] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
+  const [note, setNote] = useState("");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [globalIndex, setGlobalIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
@@ -119,8 +120,6 @@ const RumbleOrderScreen = () => {
 
   // console.log("card", cards);
   // console.log("myCard", myCards);
-  // console.log("topic", topic);
-  const inputRef = useRef<InputRef>(null);
 
   const values = Form.useWatch([], form);
   React.useEffect(() => {
@@ -164,7 +163,7 @@ const RumbleOrderScreen = () => {
       const findTopic = data.find((item) => {
         return item?.topic !== "";
       });
-      setTopic(findTopic.topic ? findTopic.topic : topic);
+      setTopic(findTopic ? findTopic.topic : topic);
     }
   };
 
@@ -333,6 +332,7 @@ const RumbleOrderScreen = () => {
     }
     setGlobalIndex(0);
     setfinishCheck(false);
+    setNote("");
   };
 
   const handleTopic = async (topicName: string | undefined) => {
@@ -631,7 +631,7 @@ const RumbleOrderScreen = () => {
       const getZeroHeart =
         data &&
         data.find((item) => {
-          return item.heart <= 0 && item.showVal === false;
+          return (item.heart <= 0 && item.showVal === false) || null;
         });
 
       const nonOrder =
@@ -640,7 +640,7 @@ const RumbleOrderScreen = () => {
           return item.value > getCardIndex.value;
         });
 
-      if (getZeroHeart.heart === 0 && nonOrder && nonOrder.length !== 0) {
+      if (getZeroHeart.heart <= 0 && nonOrder && nonOrder.length !== 0) {
         await Promise.all(
           nonOrder.map((card) =>
             supabase
@@ -787,7 +787,9 @@ const RumbleOrderScreen = () => {
     const getActive = cards.filter((item) => {
       return item.active === null;
     });
+
     if (
+      myCards &&
       myCards?.score !== 0 &&
       myCards?.heart !== 3 &&
       getActive.length === 0
@@ -799,7 +801,7 @@ const RumbleOrderScreen = () => {
               style={{
                 fontFamily: "Kanit, sans-serif",
                 fontSize: "50px",
-                color: "cyan",
+                color: "wheat",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
@@ -812,7 +814,7 @@ const RumbleOrderScreen = () => {
               style={{
                 fontFamily: "Kanit, sans-serif",
                 fontSize: "50px",
-                color: "cyan",
+                color: "wheat",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
@@ -1069,15 +1071,9 @@ const RumbleOrderScreen = () => {
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
                     <Input
                       placeholder="Enter Note"
-                      defaultValue={myCards?.note}
-                      ref={inputRef}
+                      value={note}
                       allowClear
-                      onBlur={() => {
-                        handleNote(inputRef.current?.input?.value);
-                      }}
-                      onPressEnter={() => {
-                        handleNote(inputRef.current?.input?.value);
-                      }}
+                      onChange={(e) => setNote(e.target.value)}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
@@ -1094,17 +1090,17 @@ const RumbleOrderScreen = () => {
                   </Col>
                 </Row>
 
-                {/* <Button
+                <Button
                   variant="solid"
                   color="purple"
                   onClick={() => {
-                    handleNote();
+                    handleNote(note);
                   }}
                   icon={<AiFillCheckCircle />}
                   style={{ marginTop: "10px" }}
                 >
                   Save Note
-                </Button> */}
+                </Button>
               </Card>
             </Col>
           </Row>
