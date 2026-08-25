@@ -10,12 +10,19 @@ import {
   Form,
   message,
   ColorPicker,
+  AutoComplete,
+  Empty,
 } from "antd";
-import { useEffect, useState } from "react";
-import { DndContext, closestCenter } from "@dnd-kit/core";
+import { useEffect, useRef, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  type DragMoveEvent,
+  type DragStartEvent,
+} from "@dnd-kit/core";
 import { supabase } from "../supabase";
 import {
-  AiFillAlert,
   AiFillCheckCircle,
   AiFillPlusSquare,
   AiOutlineReload,
@@ -27,18 +34,30 @@ import {
   horizontalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
-import loadingGIF from "../assets/loading.gif";
+// import loadingGIF from "../assets/loading.gif";
 
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import topicGame from "../assets/topic.json";
-import type { ColorPickerProps, GetProp } from "antd";
 import { IoIosHeart } from "react-icons/io";
+import { MdCancel } from "react-icons/md";
+import { TiSortNumericallyOutline } from "react-icons/ti";
 
-type Color = Extract<
-  GetProp<ColorPickerProps, "value">,
-  string | { cleared: any }
->;
+interface topicGame {
+  id: number;
+  label: string;
+  value: string;
+}
+interface CategoryGroup {
+  label: string;
+  options: topicGame[];
+}
+
+interface RoomList {
+  room: string;
+  host: string;
+  numberOfPlay: number;
+}
 interface SortableCardProps {
   id: number;
   name: string;
@@ -56,16 +75,16 @@ interface SortableCardProps {
   mode: string;
 }
 
-const RumbleOrderScreen = () => {
+const SingleOrderScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
-  const [finishCheck, setfinishCheck] = useState<boolean>(false);
   const [name, setName] = useState<string>("");
+  const [room, setRoom] = useState<string>("");
+  const [roomList, setRoomList] = useState<RoomList[]>([]);
+  const [selectRoom, setSelectRoom] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
-  const [note, setNote] = useState<string>("");
-  const [noteColor, setNoteColor] = useState<Color>("#000");
+  const [note, setNote] = useState("");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
-  const [globalIndex, setGlobalIndex] = useState<number>(0);
   const [score, setScore] = useState<number>(0);
   const [heart, setHeart] = useState<number>(0);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
@@ -84,19 +103,28 @@ const RumbleOrderScreen = () => {
     heart: 3,
     mode: "",
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [loseModal, setLoseModal] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
 
-  console.log("card", cards);
+  // ---------------- Realtime Drag (ง่าย ๆ) ----------------
+  const channelRef = useRef<any>(null);
+  const playerIdRef = useRef<string>(crypto.randomUUID());
+  const dragPositionRef = useRef({ x: 0, y: 0 });
+  const lastDragMoveRef = useRef(0);
 
-  const hexString = React.useMemo<string>(
-    () =>
-      typeof noteColor === "string" ? noteColor : noteColor?.toHexString(),
-    [noteColor],
-  );
+  const [remoteDrag, setRemoteDrag] = useState<{
+    cardId: number;
+    left: number;
+    top: number;
+    x: number;
+    y: number;
+  } | null>(null);
+
+  // console.log("card", cards);
+  // console.log("myCard", myCards);
+  // console.log("topic", topic);
 
   const values = Form.useWatch([], form);
   React.useEffect(() => {
@@ -106,13 +134,51 @@ const RumbleOrderScreen = () => {
       .catch(() => setSubmittable(false));
   }, [form, values]);
 
+  const showRoomList = async () => {
+    const { data } = await supabase
+      .from("itomic")
+      .select("room, name, is_host");
+    if (data) {
+      const rooms = Object.values(
+        data.reduce(
+          (acc, player) => {
+            if (!acc[player.room]) {
+              acc[player.room] = {
+                room: player.room,
+                host: player.name,
+                numberOfPlay: 0,
+              };
+            }
+            acc[player.room].numberOfPlay++;
+            if (player.is_host) {
+              acc[player.room].host = player.name;
+            }
+
+            return acc;
+          },
+          {} as Record<
+            string,
+            {
+              room: string;
+              host: string;
+              numberOfPlay: number;
+            }
+          >,
+        ),
+      );
+      setRoomList(rooms);
+    }
+  };
+
   const loadPlayers = async () => {
+    const player = JSON.parse(localStorage.getItem("player") ?? "null");
+
     const { data } = await supabase
       .from("itomic")
       .select("*")
-      .order("player_order")
-      .eq("mode", "single");
-    const player = JSON.parse(localStorage.getItem("player") ?? "null");
+      .eq("room", player ? player.room : room)
+      .eq("mode", "single")
+      .order("player_order");
 
     if (player) {
       const findHost = data?.find((item) => {
@@ -130,29 +196,31 @@ const RumbleOrderScreen = () => {
 
       setMyCards(findPlayer);
       setHeart(findPlayer ? findPlayer.heart : 3);
-      setNote(findPlayer.note);
-      setNoteColor(findPlayer.notecolor);
-      localStorage.setItem("player", JSON.stringify(findPlayer));
+      setRoom(findPlayer ? findPlayer.room : room);
+      // localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
     if (data) {
       setCards(data);
-
       const findTopic = data.find((item) => {
         return item?.topic !== "";
       });
-      setTopic(findTopic.topic ? findTopic.topic : topic);
+      showRoomList();
+      setTopic(findTopic ? findTopic.topic : topic);
     }
-    setIsLoading(false);
   };
 
   useEffect(() => {
     loadPlayers();
     console.log("Run at First");
+
     const channel = supabase
       .channel("players")
 
+      // -----------------------------
+      // Database Realtime
+      // -----------------------------
       .on(
         "postgres_changes",
         {
@@ -165,36 +233,121 @@ const RumbleOrderScreen = () => {
           loadPlayers();
 
           if (payload.eventType === "DELETE") {
-            localStorage.clear();
-            window.location.reload();
-          } else if (payload.eventType === "UPDATE") {
-            setIsLoading(true);
-            const player = payload.new as SortableCardProps;
+            const player = JSON.parse(localStorage.getItem("player") ?? "null");
 
+            if (payload.old.id === player.id) {
+              localStorage.removeItem("player");
+              window.location.reload();
+            }
+          } else if (payload.eventType === "UPDATE") {
+            // setIsLoading(true);
+            const player = payload.new as SortableCardProps;
+            setTopic(player.topic);
             setScore(player.score);
 
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
             }
 
-            if (player.topic) {
-              setTopic(player.topic);
-            }
+            // if (player.topic) {
+            //   setChangeTopic(false);
+            // }
+
             if (player.active === "red") {
               setHeart(player.heart);
-              if (player.heart === 0) {
-                setLoseModal(true);
-              }
             }
           }
         },
       )
 
+      // -----------------------------
+      // Other browser: Drag Start
+      // -----------------------------
+      .on("broadcast", { event: "drag-start" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag({
+          cardId: Number(payload.cardId),
+          left: Number(payload.left || 0),
+          top: Number(payload.top || 0),
+          x: 0,
+          y: 0,
+        });
+      })
+
+      // -----------------------------
+      // Other browser: Drag Move
+      // -----------------------------
+      .on("broadcast", { event: "drag-move" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag((prev) => {
+          // 💡 ถ้า prev ยังไม่มี ให้รับค่า x, y และตั้งต้นใหม่ทันที
+          if (!prev || prev.cardId !== Number(payload.cardId)) {
+            return {
+              cardId: Number(payload.cardId),
+              left: Number(payload.left || 0),
+              top: Number(payload.top || 0),
+              x: Number(payload.x || 0),
+              y: Number(payload.y || 0),
+            };
+          }
+
+          return {
+            ...prev,
+            x: Number(payload.x || 0),
+            y: Number(payload.y || 0),
+          };
+        });
+      })
+      // -----------------------------
+      // Other browser: Drag End
+      // -----------------------------
+      .on("broadcast", { event: "drag-end" }, ({ payload }) => {
+        if (payload.playerId === playerIdRef.current) return;
+
+        setRemoteDrag(null);
+
+        if (payload.cancelled) return;
+
+        setCards((currentCards) => {
+          const oldIndex = currentCards.findIndex(
+            (card) => card.id === Number(payload.cardId),
+          );
+
+          const newIndex = Number(payload.newIndex);
+
+          if (
+            oldIndex === -1 ||
+            newIndex < 0 ||
+            newIndex >= currentCards.length ||
+            oldIndex === newIndex
+          ) {
+            return currentCards;
+          }
+
+          if (currentCards[oldIndex].showVal === true) {
+            console.log("🔒 Cannot move: showVal=true");
+            return currentCards;
+          }
+
+          if (currentCards[newIndex].showVal === true) {
+            console.log("🔒 Cannot replace: target showVal=true");
+            return currentCards;
+          }
+
+          return arrayMove(currentCards, oldIndex, newIndex);
+        });
+      })
+
       .subscribe((status) => {
         console.log("Status:", status);
       });
 
+    channelRef.current = channel;
+
     return () => {
+      channelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, []);
@@ -219,32 +372,29 @@ const RumbleOrderScreen = () => {
           showVal: false,
           note: null,
           heart: 3,
+          player_order: i + 1,
         })
         .eq("id", cards[i].id)
+        .eq("room", room)
         .eq("mode", "single");
     }
     setNote("");
-    setNote("#00000");
-    setGlobalIndex(0);
-    setfinishCheck(false);
   };
 
-  const handleTopic = async (topicName: string) => {
-    const host = cards.find((item) => {
-      return item.is_host === true;
-    });
+  const handleTopic = async (topicName: string | undefined) => {
     await supabase
       .from("itomic")
       .update({ topic: topicName })
-      .eq("id", host?.id);
-
+      .eq("room", room)
+      .neq("id", 0);
     setChangeTopic(false);
   };
 
-  const handleRandomTopic = () => {
+  const handleRandomTopic = async () => {
     const index = Math.floor(Math.random() * topicGame.length);
     const item = topicGame.splice(index, 1)[0];
     setTopic(item.topic);
+    // await supabase.from("itomic").update({ topic: item.topic }).neq("id", 0);
   };
 
   const handleOk = async () => {
@@ -260,7 +410,7 @@ const RumbleOrderScreen = () => {
     const { data, error } = await supabase.rpc("join_game", {
       p_name: name,
       p_value: Number(randomNumber),
-      p_room: "",
+      p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
       p_order: cards.length + 1,
@@ -283,44 +433,202 @@ const RumbleOrderScreen = () => {
     setIsModalOpen(false);
   };
 
-  async function handleDragEnd(event: any) {
+  // -----------------------------
+  // Drag Start
+  // -----------------------------
+
+  const handleDragStart = async (event: DragStartEvent) => {
+    const cardId = Number(event.active.id);
+
+    const card = cards.find((item) => item.id === cardId);
+
+    if (!card || card.showVal === true) {
+      console.log("🔒 Cannot drag: showVal=true");
+      return;
+    }
+
+    dragPositionRef.current = { x: 0, y: 0 };
+    lastDragMoveRef.current = Date.now();
+
+    // 💡 ดึง DOM Element จริงของการ์ดจาก Event Activator Target
+    const activatorNode = event.activatorEvent.target as HTMLElement | null;
+    const cardElement = activatorNode?.closest(".gutter-row") || activatorNode;
+    const rect = cardElement?.getBoundingClientRect();
+
+    // ดึงค่า left, top จริงบนหน้าจอ (ถ้าหาไม่ได้ค่อยดึง fallback)
+    const left = rect ? rect.left : 0;
+    const top = rect ? rect.top : 0;
+
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-start",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId,
+        left,
+        top,
+      },
+    });
+  };
+  // -----------------------------
+  // Drag Move
+  // ส่งทุก ~40ms
+  // -----------------------------
+
+  const handleDragMove = async (event: DragMoveEvent) => {
+    const cardId = Number(event.active.id);
+
+    // 🔒 เช็กอีกครั้งระหว่างลาก
+    const card = cards.find((item) => item.id === cardId);
+
+    if (!card || card.showVal === true) {
+      return;
+    }
+    const now = Date.now();
+    if (now - lastDragMoveRef.current < 30) return;
+    lastDragMoveRef.current = now;
+
+    // event.delta คือระยะที่ลากออกจากจุดเริ่มต้นจริง
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-move",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId: Number(event.active.id),
+        x: event.delta.x,
+        y: event.delta.y,
+      },
+    });
+  };
+
+  // -----------------------------
+  // Drag End
+  // -----------------------------
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    const cardId = Number(active.id);
+    // แจ้ง browser อื่นว่าจบการลาก
+    if (!over) {
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId: Number(active.id),
+          cancelled: true,
+        },
+      });
 
-    if (!over || active.id === over.id) return;
+      return;
+    }
 
-    const oldIndex = cards.findIndex((i) => i.id === active.id);
-    const newIndex = cards.findIndex((i) => i.id === over.id);
-    // sounds.drag.play().catch((err) => {
-    //   console.error(err);
-    // });
+    const oldIndex = cards.findIndex((card) => card.id === Number(active.id));
+
+    const newIndex = cards.findIndex((card) => card.id === Number(over.id));
+
+    const activeCard = cards[oldIndex];
+    const targetCard = cards[newIndex];
+
+    // 🔒 ตัวที่ลาก showVal=true
+    if (activeCard.showVal === true) {
+      console.log("🔒 Cannot move: active showVal=true");
+
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId,
+          cancelled: true,
+        },
+      });
+
+      return;
+    }
+
+    if (targetCard.showVal === true) {
+      console.log("🔒 Cannot replace: target showVal=true");
+
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId,
+          cancelled: true,
+        },
+      });
+
+      return;
+    }
+    // ไม่ได้เปลี่ยนตำแหน่ง
+    if (oldIndex === -1 || newIndex === -1 || oldIndex === newIndex) {
+      await channelRef.current?.send({
+        type: "broadcast",
+        event: "drag-end",
+        payload: {
+          playerId: playerIdRef.current,
+          cardId: Number(active.id),
+          cancelled: true,
+        },
+      });
+
+      return;
+    }
+
     const newCards = arrayMove(cards, oldIndex, newIndex);
+
     setCards(newCards);
-    // setDragSoundPlay(true);
+
+    // Browser อื่น
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "drag-end",
+      payload: {
+        playerId: playerIdRef.current,
+        cardId: Number(active.id),
+        oldIndex,
+        newIndex,
+        cancelled: false,
+      },
+    });
+
+    // Save DB เฉพาะตอนปล่อย
     await Promise.all(
       newCards.map((card, index) =>
         supabase
           .from("itomic")
           .update({ player_order: index + 1 })
+          .eq("room", room)
           .eq("id", card.id),
       ),
     );
-  }
+  };
 
   const handleSingle = async () => {
-    const sorted = [...cards].sort((a, b) => a.value - b.value);
+    const getNull = cards.filter((item) => {
+      return item.active === null;
+    });
 
-    const oldCardIndex = cards[globalIndex - 1];
-    const getCardIndex = cards[globalIndex];
+    const sorted = [...getNull].sort((a, b) => a.value - b.value);
+    const getCardIndex = getNull[0];
 
-    if (getCardIndex.value === sorted[globalIndex].value) {
+    if (getCardIndex.value === sorted[0].value) {
       await supabase
         .from("itomic")
         .update({
           active: "green",
-          score: oldCardIndex ? oldCardIndex.score + 1 : 1,
           showVal: true,
         })
+        .eq("room", room)
         .eq("id", getCardIndex.id);
+      await supabase
+        .from("itomic")
+        .update({
+          score: getCardIndex ? getCardIndex.score + 1 : 1,
+        })
+        .eq("room", room)
+        .neq("id", 0);
     } else {
       await supabase
         .from("itomic")
@@ -329,27 +637,112 @@ const RumbleOrderScreen = () => {
           score: 0,
           showVal: true,
         })
+        .eq("room", room)
         .eq("id", getCardIndex.id);
 
+      const getRed = getNull.filter((item) => {
+        return item.value <= getCardIndex.value;
+      });
+
+      const getRedOrder = cards.filter((item) => {
+        return item.active === "red";
+      });
+
+      if (getRed) {
+        await Promise.all(
+          getRed.map((card, index) =>
+            supabase
+              .from("itomic")
+              .update({
+                active: "red",
+                score: card.score ? card.score : 0,
+                showVal: true,
+                player_order:
+                  getRed.length !== 0
+                    ? card.player_order
+                    : getRed[index].player_order + card.player_order,
+                heart: card.heart - 1,
+              })
+              .eq("room", room)
+              .eq("id", card.id),
+          ),
+        );
+      }
       await supabase
         .from("itomic")
         .update({
-          heart: oldCardIndex ? oldCardIndex.heart - 1 : getCardIndex.heart - 1,
+          heart:
+            getRedOrder.length !== 0
+              ? getCardIndex.heart - getRedOrder.length
+              : getCardIndex.heart - getRed.length,
         })
+        .eq("room", room)
         .gt("id", 0);
-    }
-    setGlobalIndex((prev) => prev + 1);
 
-    if (globalIndex + 1 >= cards.length) {
-      setfinishCheck(true);
+      const { data } = await supabase
+        .from("itomic")
+        .select("*")
+        .eq("room", room)
+        .eq("mode", "single");
+
+      const getZeroHeart =
+        data &&
+        data.find((item) => {
+          return (item.heart <= 0 && item.showVal === false) || null;
+        });
+
+      const nonOrder =
+        data &&
+        data.filter((item) => {
+          return item.value > getCardIndex.value;
+        });
+
+      if (getZeroHeart.heart <= 0 && nonOrder && nonOrder.length !== 0) {
+        await Promise.all(
+          nonOrder.map((card) =>
+            supabase
+              .from("itomic")
+              .update({
+                showVal: true,
+                active: "green",
+                score: card.score + 1,
+              })
+              .eq("room", room)
+              .eq("id", card.id),
+          ),
+        );
+        await supabase
+          .from("itomic")
+          .update({
+            score: getZeroHeart.score + nonOrder.length,
+          })
+          .eq("room", room)
+          .gt("id", 0);
+      } else if (
+        getZeroHeart === undefined &&
+        nonOrder &&
+        nonOrder.length !== 0
+      ) {
+        return;
+      }
     }
   };
 
-  const handleNote = async () => {
+  const handleNote = async (note: string | undefined) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
       .from("itomic")
-      .update({ note: note, notecolor: hexString })
+      .update({ note: note })
+      .eq("room", room)
+      .eq("id", player.id);
+  };
+
+  const handleColorNote = async (noteColor: string) => {
+    const player = JSON.parse(localStorage.getItem("player") ?? "null");
+    await supabase
+      .from("itomic")
+      .update({ notecolor: noteColor })
+      .eq("room", room)
       .eq("id", player.id);
   };
 
@@ -358,6 +751,7 @@ const RumbleOrderScreen = () => {
       .from("itomic")
       .delete()
       .neq("id", 0)
+      .eq("room", room)
       .eq("mode", "single");
     if (error) {
       console.error(error);
@@ -366,6 +760,133 @@ const RumbleOrderScreen = () => {
     }
   };
 
+  const groupedOptions = Object.values(
+    topicGame.reduce(
+      (acc, item) => {
+        if (!acc[item.category]) {
+          acc[item.category] = {
+            label: item.category, // Category header text
+            options: [],
+          };
+        }
+        acc[item.category].options.push({
+          label: item.topic,
+          value: item.topic,
+          id: item.id,
+        });
+        return acc;
+      },
+      {} as Record<string, CategoryGroup>,
+    ),
+  );
+
+  const showDescription = () => {
+    if (myCards && myCards?.heart <= 0 && myCards?.score <= 0) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "red",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              You Lose !!!
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "red",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              กากเกิน ไปคุยกันใหม่นะ
+            </h1>
+          </Row>
+        </>
+      );
+    }
+    if (myCards?.score === cards.length) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "magenta",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              You Win !!!
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "magenta",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Perfect game
+            </h1>
+          </Row>
+        </>
+      );
+    }
+    const getActive = cards.filter((item) => {
+      return item.active === null;
+    });
+
+    if (
+      myCards &&
+      myCards?.score !== 0 &&
+      myCards?.heart !== 3 &&
+      getActive.length === 0
+    ) {
+      return (
+        <>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "wheat",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Try Again
+            </h1>
+          </Row>
+          <Row justify={"center"}>
+            <h1
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "50px",
+                color: "wheat",
+                marginRight: "10px",
+                fontWeight: "bold",
+              }}
+            >
+              Score : {myCards?.score}
+            </h1>
+          </Row>
+        </>
+      );
+    }
+  };
   return (
     <div
       style={{
@@ -373,9 +894,20 @@ const RumbleOrderScreen = () => {
           window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
-      <h3 style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}>
-        iTOMIC{" "}
-      </h3>
+      <Row justify={"center"}>
+        <TiSortNumericallyOutline
+          style={{
+            margin: "32px 10px 0px 0px",
+            fontSize: "40px",
+            color: "magenta",
+          }}
+        />
+        <h3
+          style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
+        >
+          iTOMIC{" "}
+        </h3>
+      </Row>
       <h2
         style={{
           fontFamily: "Kanit, sans-serif",
@@ -383,55 +915,9 @@ const RumbleOrderScreen = () => {
           color: "cyan",
         }}
       >
-        Single Sort Mode
+        Room : {room}
       </h2>
-      <Modal
-        title={
-          <>
-            {" "}
-            <Row justify={"center"}>
-              {" "}
-              <h2 style={{ color: "magenta" }}>iTOMIC</h2>
-            </Row>{" "}
-            <Row justify={"center"}>
-              {" "}
-              <h2
-                style={{
-                  fontFamily: "Kanit, sans-serif",
-                  fontSize: "20px",
-                  color: "cyan",
-                }}
-              >
-                Single Sort Mode
-              </h2>
-            </Row>
-          </>
-        }
-        closeIcon={<div>X</div>}
-        onCancel={() => setLoseModal(false)}
-        open={loseModal}
-        footer={false}
-        width={{
-          xs: "80%",
-          sm: "80%",
-          md: "70%",
-          lg: "60%",
-          xl: "50%",
-          xxl: "40%",
-        }}
-      >
-        <Row justify={"center"}>
-          <h1
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "black",
-            }}
-          >
-            กาก
-          </h1>
-        </Row>
-      </Modal>
+
       <Modal
         title={
           <Row>
@@ -439,19 +925,22 @@ const RumbleOrderScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <h2 style={{ color: "magenta" }}>iTOMIC</h2>
-              </Row>
-              <Row justify={"center"}>
-                {" "}
-                <h2
+                <TiSortNumericallyOutline
                   style={{
-                    fontFamily: "Kanit, sans-serif",
-                    fontSize: "20px",
-                    color: "purple",
+                    margin: "0px 10px 0px 0px",
+                    fontSize: "40px",
+                    color: "magenta",
+                  }}
+                />
+                <h3
+                  style={{
+                    margin: "0px 10px 0px 0px",
+                    fontSize: "30px",
+                    color: "magenta",
                   }}
                 >
-                  Single Sort Mode
-                </h2>
+                  iTOMIC
+                </h3>
               </Row>
             </Col>
           </Row>
@@ -510,7 +999,7 @@ const RumbleOrderScreen = () => {
 
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               {" "}
-              <h3>Host (Set Topic)</h3>
+              <h3>Host (Create Room)</h3>
               <Switch
                 onChange={(e) => {
                   setHostBtn(e);
@@ -520,41 +1009,170 @@ const RumbleOrderScreen = () => {
               />
             </Col>
           </Row>
-          {hostBtn === true && (
+
+          {hostBtn === true ? (
             <>
-              {" "}
-              <Row gutter={[2, 16]}>
-                <h3>Enter topic</h3>
+              <Row gutter={12} style={{ marginLeft: "1px" }}>
+                <h3
+                  style={{
+                    margin: "0px 0px 20px 8px",
+                  }}
+                >
+                  Create Room Name{" "}
+                </h3>
                 <Input
-                  disabled={isHost.topic !== ""}
-                  placeholder="Enter Topic"
-                  value={topic}
+                  placeholder="Enter Room Name"
+                  value={room}
                   onChange={(e) => {
-                    setTopic(e.target.value);
+                    setRoom(e.target.value);
                   }}
-                />{" "}
-                <Button
-                  variant="solid"
-                  color="purple"
-                  onClick={() => {
-                    handleRandomTopic();
+                />
+              </Row>{" "}
+              <h3 style={{ marginLeft: "10px" }}>Enter topic</h3>
+              <Row gutter={12} style={{ marginLeft: "1px" }}>
+                <AutoComplete
+                  style={{
+                    width: "100%",
+                    marginBottom: "10px",
                   }}
-                  icon={<AiFillAlert />}
-                  style={{ marginRight: "10px" }}
-                >
-                  Generate Topic
-                </Button>
-                <Button
-                  variant="solid"
-                  color="red"
-                  onClick={() => {
-                    deleteAllRows();
+                  styles={{
+                    input: {
+                      fontFamily: "Kanit, sans-serif",
+                      fontSize: "15px",
+                    },
                   }}
-                  icon={<AiOutlineReload />}
-                >
-                  Reset game
-                </Button>
+                  options={groupedOptions}
+                  placeholder="Search or Enter Topic..."
+                  value={topic}
+                  filterOption={(
+                    inputValue: string,
+                    option: CategoryGroup | undefined,
+                  ): boolean => {
+                    return !!option?.label
+                      ?.toLowerCase()
+                      .includes(inputValue.toLowerCase());
+                  }}
+                  // onBlur={(e) => {
+                  //   const value = (e.target as HTMLInputElement).value;
+                  //   setTopic(value);
+                  // }}
+                  onChange={(value) => {
+                    setTopic(value);
+                  }}
+                  onSelect={(value) => {
+                    setTopic(value);
+                  }}
+                  prefix={
+                    <Button
+                      variant="outlined"
+                      type="text"
+                      color="purple"
+                      onClick={() => {
+                        handleRandomTopic();
+                      }}
+                      style={{ marginRight: "10px" }}
+                    >
+                      🎲 Random
+                    </Button>
+                  }
+                  allowClear
+                />
               </Row>
+              <Button
+                variant="solid"
+                color="red"
+                onClick={() => {
+                  deleteAllRows();
+                }}
+                icon={<AiOutlineReload />}
+              >
+                Reset game
+              </Button>
+            </>
+          ) : (
+            <>
+              <Row style={{ marginLeft: "10px" }}>
+                <h3 style={{ margin: "0px 5px 0px 0px" }}>Select Room :</h3>
+                <h3 style={{ color: "green", margin: "0px 5px 0px 0px" }}>
+                  {selectRoom}
+                </h3>
+              </Row>
+
+              {roomList.length === 0 ? (
+                <Row justify={"center"}>
+                  <Empty style={{ width: "80%" }} />
+                </Row>
+              ) : (
+                <>
+                  <div style={{ display: "flex", gap: 16 }}>
+                    {roomList.map((item) => (
+                      <Card
+                        hoverable
+                        onClick={() => setSelectRoom(item.room)}
+                        style={{
+                          width: 200,
+                          cursor: "pointer",
+                          borderRadius: 12,
+                          border:
+                            selectRoom === item.room
+                              ? "2px solid green"
+                              : "1px solid #d9d9d9",
+                        }}
+                      >
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "purple",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Room :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            <div>{item.room}</div>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "blue",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Host :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            {" "}
+                            <div>{item.host}</div>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "magenta",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Player in room :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            <div>{item.numberOfPlay}</div>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
             </>
           )}
         </Form>
@@ -629,16 +1247,19 @@ const RumbleOrderScreen = () => {
                       placeholder="Enter Note"
                       value={note}
                       allowClear
-                      onChange={(e) => {
-                        setNote(e.target.value);
-                      }}
+                      onChange={(e) => setNote(e.target.value)}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
                     <ColorPicker
                       format="hex"
-                      value={noteColor}
-                      onChangeComplete={setNoteColor}
+                      defaultValue={
+                        myCards?.notecolor ? myCards?.notecolor : "#000"
+                      }
+                      onChangeComplete={(color) => {
+                        const hex = color.toHexString();
+                        handleColorNote(hex);
+                      }}
                     />
                   </Col>
                 </Row>
@@ -647,7 +1268,7 @@ const RumbleOrderScreen = () => {
                   variant="solid"
                   color="purple"
                   onClick={() => {
-                    handleNote();
+                    handleNote(note);
                   }}
                   icon={<AiFillCheckCircle />}
                   style={{ marginTop: "10px" }}
@@ -674,145 +1295,219 @@ const RumbleOrderScreen = () => {
         >
           Topic :
         </h2>
-
-        {changeTopic === true ? (
-          <>
-            <Row>
-              {" "}
-              <Input
-                placeholder="Enter Topic"
-                size="large"
-                value={topic}
-                onChange={(e) => {
-                  setTopic(e.target.value);
-                }}
-              />{" "}
-              <Button
-                variant="solid"
-                color="purple"
-                size="large"
-                onClick={() => {
-                  handleRandomTopic();
-                }}
-                icon={<AiFillAlert />}
-                style={{ marginRight: "10px" }}
-              >
-                Random
-              </Button>
-              <Button
-                variant="solid"
-                size="large"
-                color="green"
-                onClick={() => {
-                  handleTopic(topic);
-                }}
-                icon={<AiFillCheckCircle />}
-                style={{ marginRight: "10px" }}
-              >
-                ok
-              </Button>
-            </Row>
-          </>
-        ) : (
-          <>
-            <Row>
-              <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-                {topic}
-              </h2>{" "}
-            </Row>
-            <Row>
-              <Button
-                variant="solid"
-                size="large"
-                color="purple"
-                onClick={() => {
-                  setChangeTopic(true);
-                }}
-                icon={<AiFillPlusSquare />}
-                style={{
-                  marginLeft: "20px",
-                }}
-              >
-                Change Topic
-              </Button>
-            </Row>
-          </>
+        <Row>
+          <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+            {topic}
+          </h2>{" "}
+        </Row>
+        {changeTopic === false && (
+          <Row>
+            <Button
+              variant="solid"
+              size="large"
+              color="purple"
+              onClick={() => {
+                setChangeTopic(true);
+              }}
+              icon={<AiFillPlusSquare />}
+              style={{
+                marginLeft: "20px",
+              }}
+            >
+              Change Topic
+            </Button>
+          </Row>
         )}
       </Row>
 
-      <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
-        {isLoading === true ? (
-          <>
-            <Row>
-              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                <img
-                  src={loadingGIF}
-                  alt=""
-                  style={{
-                    margin: "50px 0px 50px 0px",
-                    width: "250px",
-                    height: "250px",
-                  }}
-                />
-              </Col>
-            </Row>
-          </>
-        ) : (
-          <>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <DndContext
-                collisionDetection={closestCenter}
-                onDragEnd={handleDragEnd}
+      {changeTopic === true && (
+        <>
+          <AutoComplete
+            style={{
+              width: "500px",
+              marginRight: "10px",
+              marginBottom: "10px",
+            }}
+            styles={{
+              input: {
+                fontFamily: "Kanit, sans-serif",
+                fontSize: "15px",
+              },
+            }}
+            options={groupedOptions}
+            placeholder="Search or Enter Topic..."
+            value={topic}
+            filterOption={(
+              inputValue: string,
+              option: CategoryGroup | undefined,
+            ): boolean => {
+              return !!option?.label
+                ?.toLowerCase()
+                .includes(inputValue.toLowerCase());
+            }}
+            // onBlur={(e) => {
+            //   const value = (e.target as HTMLInputElement).value;
+            //   setTopic(value);
+            // }}
+            onChange={(value) => {
+              setTopic(value);
+            }}
+            onSelect={(value) => {
+              setTopic(value);
+            }}
+            prefix={
+              <Button
+                variant="outlined"
+                type="text"
+                color="purple"
+                onClick={() => {
+                  handleRandomTopic();
+                }}
+                style={{ marginRight: "10px" }}
               >
-                <SortableContext
-                  items={cards}
-                  strategy={horizontalListSortingStrategy}
+                🎲 Random
+              </Button>
+            }
+            allowClear
+          />
+          <Row justify={"center"}>
+            <Button
+              variant="solid"
+              size="large"
+              color="green"
+              onClick={() => {
+                handleTopic(topic);
+              }}
+              icon={<AiFillCheckCircle />}
+              style={{ marginRight: "10px" }}
+            >
+              Ok
+            </Button>
+            <Button
+              variant="solid"
+              size="large"
+              color="red"
+              onClick={() => {
+                setChangeTopic(false);
+              }}
+              icon={<MdCancel />}
+              style={{ marginRight: "10px" }}
+            >
+              cancel
+            </Button>
+          </Row>
+        </>
+      )}
+      {showDescription()}
+      <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
+        <>
+          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+            <DndContext
+              collisionDetection={closestCenter}
+              onDragStart={handleDragStart}
+              onDragMove={handleDragMove}
+              onDragEnd={handleDragEnd}
+            >
+              <SortableContext
+                items={cards}
+                strategy={horizontalListSortingStrategy}
+              >
+                <Row
+                  gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
+                  align={"middle"}
                 >
-                  <Row
-                    gutter={{ xs: 8, sm: 16, md: 24, lg: 32 }}
-                    align={"middle"}
-                  >
-                    {cards.map((card, index) => (
-                      <>
-                        <Col
-                          className="gutter-row"
-                          xs={8}
-                          sm={12}
-                          md={8}
-                          lg={6}
-                          xl={4}
-                          span={4}
-                        >
-                          <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
+                  {cards.map((card, index) => (
+                    <>
+                      <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
+                        <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
+                        <SortableCard
+                          key={card.id}
+                          id={card.id}
+                          name={card.name}
+                          value={card.value}
+                          showVal={card?.showVal}
+                          active={card.active}
+                          is_host={card.is_host}
+                          room={card.room}
+                          topic={card.topic}
+                          note={card.note}
+                          noteColor={card.notecolor}
+                          host={myCards?.is_host}
+                        />
+                      </Col>
+                    </>
+                  ))}
+                </Row>
+              </SortableContext>
 
-                          <SortableCard
-                            key={card.id}
-                            id={card.id}
-                            name={card.name}
-                            value={card.value}
-                            showVal={card?.showVal}
-                            active={card.active}
-                            is_host={card.is_host}
-                            room={card.room}
-                            topic={card.topic}
-                            note={card.note}
-                            noteColor={card.notecolor}
-                            host={myCards?.is_host}
-                          />
-                        </Col>
-                      </>
-                    ))}
-                  </Row>
-                </SortableContext>
-              </DndContext>
-            </Col>
-          </>
-        )}
+              {remoteDrag &&
+                remoteDrag.left > 0 &&
+                (() => {
+                  const targetCard = cards.find(
+                    (card) => card.id === remoteDrag.cardId,
+                  );
+
+                  if (!targetCard) return null;
+
+                  // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
+                  if (targetCard.showVal === true) {
+                    return null;
+                  }
+
+                  return (
+                    <div
+                      style={{
+                        position: "fixed",
+                        left: `${remoteDrag.left}px`,
+                        top: `${remoteDrag.top}px`,
+                        transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
+                        transition: "transform 30ms linear",
+                        width: "200px",
+                        height: "220px",
+                        boxSizing: "border-box",
+                        padding: "15px",
+                        background: "#ffffff",
+                        border: "3px dashed #722ed1",
+                        borderRadius: "12px",
+                        boxShadow: "0 8px 25px rgba(114, 46, 209, 0.35)",
+                        zIndex: 99999,
+                        pointerEvents: "none",
+                        willChange: "transform",
+                      }}
+                    >
+                      <div
+                        style={{
+                          fontWeight: "bold",
+                          color: "#333",
+                          fontSize: "16px",
+                        }}
+                      >
+                        {targetCard.name}
+                      </div>
+
+                      <div
+                        style={{
+                          fontSize: "36px",
+                          fontWeight: "bold",
+                          textAlign: "center",
+                          color: "#722ed1",
+                          marginTop: "10px",
+                        }}
+                      >
+                        {targetCard.showVal ? targetCard.value : "?"}
+                      </div>
+                    </div>
+                  );
+                })()}
+            </DndContext>
+          </Col>
+        </>
+        {/* )} */}
       </Row>
 
       {isHost && isHost.is_host === true && (
         <Row justify={"center"} gutter={24}>
-          {finishCheck === false && (
+          {myCards?.showVal !== true && (
             <Col>
               <Button
                 variant="solid"
@@ -827,7 +1522,7 @@ const RumbleOrderScreen = () => {
                   height: "50px",
                 }}
               >
-                Check No.{globalIndex + 1}
+                Check
               </Button>
             </Col>
           )}
@@ -875,11 +1570,11 @@ const RumbleOrderScreen = () => {
             color: "magenta",
           }}
         >
-          iTOMIC ver 1.8.5
+          iTOMIC ver 1.8.8
         </h3>
       </Row>
     </div>
   );
 };
 
-export default RumbleOrderScreen;
+export default SingleOrderScreen;
