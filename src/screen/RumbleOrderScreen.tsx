@@ -737,6 +737,7 @@ const RumbleOrderScreen = () => {
                             topic={card.topic}
                             note={card.note}
                             noteColor={card.notecolor}
+                            host={myCards?.is_host}
                           />
                         </Col>
                       </>
