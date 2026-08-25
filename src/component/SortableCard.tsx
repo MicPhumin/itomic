@@ -1,6 +1,8 @@
-import { Card, Row, Typography } from "antd";
+import { Button, Card, Row, Typography } from "antd";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
+import { MdCancel } from "react-icons/md";
+import { supabase } from "../supabase";
 
 interface SortableCardProps {
   id: number;
@@ -13,6 +15,7 @@ interface SortableCardProps {
   active: string;
   note: string;
   noteColor: string;
+  host: boolean | undefined;
 }
 
 export default function SortableCard({
@@ -24,6 +27,8 @@ export default function SortableCard({
   note,
   noteColor,
   is_host,
+  host,
+  room,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -38,6 +43,20 @@ export default function SortableCard({
     cursor: showVal === true ? "not-allowed" : "grab",
   };
 
+  const deletePlayer = async (id: number) => {
+    const { error } = await supabase
+      .from("itomic")
+      .delete()
+      .eq("id", id)
+      .eq("room", room)
+      .eq("mode", "single");
+    if (error) {
+      console.error(error);
+    } else {
+      console.log("Deleted all rows");
+    }
+  };
+
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card
@@ -45,17 +64,39 @@ export default function SortableCard({
         className=""
         title={
           <>
-            <div style={{ marginTop: "5px" }}>
-              {name}{" "}
-              {is_host === true ? (
-                <div style={{ color: "goldenrod" }}>(Host)</div>
-              ) : (
-                <div></div>
-              )}
-            </div>
+            {host === true && is_host === false && (
+              <Button
+                type="text"
+                size="small"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("id", id);
+                  deletePlayer(id);
+                }}
+                style={{
+                  margin: "0px 0px 10px 0px",
+                  position: "absolute",
+                  right: 0,
+                  top: 0,
+                }}
+              >
+                <MdCancel style={{ color: "red" }} />
+              </Button>
+            )}
+            <Row justify={"center"}>
+              <div style={{ marginTop: "5px", fontSize: "16px" }}>{name}</div>
+            </Row>
+            {is_host === true && (
+              <div style={{ color: "goldenrod", fontSize: "14px" }}>(Host)</div>
+            )}
           </>
         }
         style={{
+          position: "relative",
+          width: "100%",
           borderColor: active ? active : "",
           borderWidth: active ? "5px" : "",
           height: window.innerWidth <= 426 ? "180px" : "100%",
