@@ -15,7 +15,7 @@ interface SortableCardProps {
   active: string;
   note: string;
   noteColor: string;
-  host: boolean | undefined;
+  host?: boolean | undefined;
 }
 
 export default function SortableCard({
