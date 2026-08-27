@@ -439,9 +439,6 @@ const SingleOrderScreen = () => {
         console.log("join success");
         localStorage.setItem("player", JSON.stringify(userData));
       }
-    } else {
-      console.log("join have error");
-      message.error(error.message);
     }
     setIsModalOpen(false);
   };

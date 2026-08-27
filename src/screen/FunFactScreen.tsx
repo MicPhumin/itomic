@@ -44,7 +44,6 @@ import React from "react";
 import topicGame from "../assets/topic.json";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
-import { TiSortNumericallyOutline } from "react-icons/ti";
 import { RiFundsBoxFill } from "react-icons/ri";
 
 interface topicGame {
@@ -431,9 +430,6 @@ const FunFactScreen = () => {
         console.log("join success");
         localStorage.setItem("player", JSON.stringify(userData));
       }
-    } else {
-      console.log("join have error");
-      message.error(error.message);
     }
     setIsModalOpen(false);
   };
