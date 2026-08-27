@@ -151,7 +151,7 @@ const MainScreen = () => {
         <Col xs={22} sm={24} md={14} lg={8} xl={5}>
           <Button
             variant="solid"
-            color="default"
+            color="danger"
             href={window.location.origin + `/spyonmic`}
             icon={<GiSpy />}
             style={{

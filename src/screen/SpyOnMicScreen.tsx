@@ -913,11 +913,11 @@ const SpyOnMicScreen = () => {
           style={{
             margin: "32px 10px 0px 0px",
             fontSize: "40px",
-            color: "magenta",
+            color: "#a70000",
           }}
         />
         <h3
-          style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
+          style={{ fontSize: "40px", color: "#a70000", marginBottom: "20px" }}
         >
           Spy On Mic
         </h3>
@@ -1123,10 +1123,10 @@ const SpyOnMicScreen = () => {
                   style={{
                     margin: "0px 5px 0px 0px",
                     fontSize: "30px",
-                    color: "magenta",
+                    color: "#a70000",
                   }}
                 />
-                <h2 style={{ color: "magenta" }}> Spy on Mic</h2>
+                <h2 style={{ color: "#a70000" }}> Spy on Mic</h2>
               </Row>
             </Col>
           </Row>
@@ -1806,7 +1806,7 @@ const SpyOnMicScreen = () => {
         <h3
           style={{
             fontSize: "20px",
-            color: "magenta",
+            color: "#a70000",
           }}
         >
           Spy On Mic ver 1.0.3
