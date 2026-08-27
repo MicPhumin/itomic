@@ -11,6 +11,8 @@ import {
   ColorPicker,
   AutoComplete,
   Empty,
+  type GetProp,
+  type ColorPickerProps,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -74,6 +76,10 @@ interface SortableCardProps {
   mode: string;
 }
 
+type Color = Extract<
+  GetProp<ColorPickerProps, "value">,
+  string | { cleared: any }
+>;
 const SingleOrderScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
@@ -83,6 +89,7 @@ const SingleOrderScreen = () => {
   const [selectRoom, setSelectRoom] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [note, setNote] = useState("");
+  const [noteColor, setNoteColor] = useState<Color>("#000");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [heart, setHeart] = useState<number>(0);
@@ -742,25 +749,25 @@ const SingleOrderScreen = () => {
     }
   };
 
-  const handleNote = async (note: string | undefined) => {
+  const handleNote = async (note: string | undefined, noteColor: Color) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
       .from("itomic")
-      .update({ note: note })
+      .update({ note: note, notecolor: noteColor })
       .eq("room", room)
       .eq("mode", "single")
       .eq("id", player.id);
   };
 
-  const handleColorNote = async (noteColor: string) => {
-    const player = JSON.parse(localStorage.getItem("player") ?? "null");
-    await supabase
-      .from("itomic")
-      .update({ notecolor: noteColor })
-      .eq("room", room)
-      .eq("mode", "single")
-      .eq("id", player.id);
-  };
+  // const handleColorNote = async (noteColor: string) => {
+  //   const player = JSON.parse(localStorage.getItem("player") ?? "null");
+  //   await supabase
+  //     .from("itomic")
+  //     .update({ notecolor: noteColor })
+  //     .eq("room", room)
+  //     .eq("mode", "single")
+  //     .eq("id", player.id);
+  // };
 
   const deleteAllRows = async () => {
     const { error } = await supabase
@@ -1269,12 +1276,13 @@ const SingleOrderScreen = () => {
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
                     <ColorPicker
                       format="hex"
-                      defaultValue={
-                        myCards?.notecolor ? myCards?.notecolor : "#000"
-                      }
+                      // defaultValue={
+                      //   myCards?.notecolor ? myCards?.notecolor : "#000"
+                      // }
+                      value={noteColor}
                       onChangeComplete={(color) => {
                         const hex = color.toHexString();
-                        handleColorNote(hex);
+                        setNoteColor(hex);
                       }}
                     />
                   </Col>
@@ -1284,7 +1292,7 @@ const SingleOrderScreen = () => {
                   variant="solid"
                   color="purple"
                   onClick={() => {
-                    handleNote(note);
+                    handleNote(note, noteColor);
                   }}
                   icon={<AiFillCheckCircle />}
                   style={{ marginTop: "10px" }}
