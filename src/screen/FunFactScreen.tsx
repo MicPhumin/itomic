@@ -206,7 +206,7 @@ const FunFactScreen = () => {
       setMyCards(findPlayer);
       setHeart(findPlayer ? findPlayer.heart : 3);
       setRoom(findPlayer ? findPlayer.room : room);
-      // localStorage.setItem("player", JSON.stringify(findPlayer));
+      localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
@@ -1277,6 +1277,7 @@ const FunFactScreen = () => {
                 <Row>
                   <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                     <InputNumber
+                      disabled={myCards?.showVal === true ? true : false}
                       formatter={(value) =>
                         value
                           ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")

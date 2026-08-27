@@ -51,7 +51,7 @@ export default function SortableCard({
       .delete()
       .eq("id", id)
       .eq("room", room)
-      .eq("mode", "single");
+      .eq("mode", mode === "single" ? "single" : "fact");
     if (error) {
       console.error(error);
     } else {

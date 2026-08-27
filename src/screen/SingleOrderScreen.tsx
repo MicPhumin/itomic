@@ -204,7 +204,7 @@ const SingleOrderScreen = () => {
       setMyCards(findPlayer);
       setHeart(findPlayer ? findPlayer.heart : 3);
       setRoom(findPlayer ? findPlayer.room : room);
-      // localStorage.setItem("player", JSON.stringify(findPlayer));
+      localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
