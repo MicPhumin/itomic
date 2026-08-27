@@ -18,8 +18,9 @@ import {
   type TableProps,
   Table,
   Checkbox,
+  Empty,
 } from "antd";
-import { AiFillPlusSquare } from "react-icons/ai";
+import { AiFillPlusSquare, AiOutlineReload } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
 import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
@@ -48,6 +49,12 @@ interface locationProp {
   location: string;
   roles: string;
   is_played?: boolean;
+}
+
+interface RoomList {
+  room: string;
+  host: string;
+  numberOfPlay: number;
 }
 
 const presets = [
@@ -135,6 +142,9 @@ const SpyOnMicScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [name, setName] = useState<string>("");
+  const [room, setRoom] = useState<string>("");
+  const [roomList, setRoomList] = useState<RoomList[]>([]);
+  const [selectRoom, setSelectRoom] = useState<string>("");
   const [location, setLocation] = useState<locationProp[] | null>([]);
   const [hostBtn, setHostBtn] = useState<boolean>(false);
   const [endAt, setEndAt] = useState<number | null>(null);
@@ -163,7 +173,42 @@ const SpyOnMicScreen = () => {
     ),
   );
   // console.log("card", cards);
+  const showRoomList = async () => {
+    const { data } = await supabase
+      .from("spyonmic")
+      .select("room, name, is_host");
 
+    if (data) {
+      const rooms = Object.values(
+        data.reduce(
+          (acc, player) => {
+            if (!acc[player.room]) {
+              acc[player.room] = {
+                room: player.room,
+                host: player.name,
+                numberOfPlay: 0,
+              };
+            }
+            acc[player.room].numberOfPlay++;
+            if (player.is_host) {
+              acc[player.room].host = player.name;
+            }
+
+            return acc;
+          },
+          {} as Record<
+            string,
+            {
+              room: string;
+              host: string;
+              numberOfPlay: number;
+            }
+          >,
+        ),
+      );
+      setRoomList(rooms);
+    }
+  };
   const onChange: TableProps<locationProp>["onChange"] = (
     pagination,
     filters,
@@ -173,9 +218,13 @@ const SpyOnMicScreen = () => {
     console.log("params", pagination, filters, sorter, extra);
   };
   const loadPlayers = async () => {
-    const { data } = await supabase.from("spyonmic").select("*").order("id");
-
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
+
+    const { data } = await supabase
+      .from("spyonmic")
+      .select("*")
+      .order("id")
+      .eq("room", player ? player.room : room);
 
     if (player) {
       const findHost = data?.find((item) => {
@@ -190,12 +239,14 @@ const SpyOnMicScreen = () => {
       });
 
       setMyCards(findPlayer);
+      setRoom(findPlayer ? findPlayer.room : room);
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
     if (data) {
       setCards(data);
+      showRoomList();
     }
   };
 
@@ -258,6 +309,7 @@ const SpyOnMicScreen = () => {
       .update({
         is_vote: "true",
       })
+      .eq("room", room)
       .neq("id", 0);
     // ตัวอย่าง action อื่น ๆ
     // setShowAnswer(true);
@@ -413,6 +465,7 @@ const SpyOnMicScreen = () => {
       p_role: "",
       p_is_host: hostBtn,
       p_is_spy: false,
+      p_room: hostBtn ? room : selectRoom,
     });
 
     if (!error) {
@@ -489,6 +542,7 @@ const SpyOnMicScreen = () => {
             vote: card.vote,
             is_vote: card.is_vote,
           })
+          .eq("room", room)
           .eq("id", card.id),
       ),
     );
@@ -543,6 +597,7 @@ const SpyOnMicScreen = () => {
       .update({
         vote: votePlayer ? votePlayer.vote + 1 : 1,
       })
+      .eq("room", room)
       .eq("id", votePlayer?.id);
 
     await supabase
@@ -550,11 +605,13 @@ const SpyOnMicScreen = () => {
       .update({
         is_vote: "show",
       })
+      .eq("room", room)
       .eq("id", myCards?.id);
 
     const dataHasVote = await supabase
       .from("spyonmic")
       .select("*")
+      .eq("room", room)
       .eq("is_vote", "true");
 
     if (dataHasVote.data?.length === 0) {
@@ -563,6 +620,7 @@ const SpyOnMicScreen = () => {
         .select("*")
         .order("vote", { ascending: false })
         .limit(1)
+        .eq("room", room)
         .single();
 
       if (data) {
@@ -571,6 +629,7 @@ const SpyOnMicScreen = () => {
           .update({
             is_vote: "mostvote",
           })
+          .eq("room", room)
           .eq("id", data?.id);
       }
     }
@@ -586,6 +645,7 @@ const SpyOnMicScreen = () => {
       .update({
         showrole: true,
       })
+      .eq("room", room)
       .eq("id", show?.id);
   };
 
@@ -600,6 +660,7 @@ const SpyOnMicScreen = () => {
         showrole: true,
         is_vote: "reveal",
       })
+      .eq("room", room)
       .eq("id", reveal?.id);
     const { data } = await supabase
       .from("SpyOnMicLocation")
@@ -625,6 +686,7 @@ const SpyOnMicScreen = () => {
           is_vote: event,
           location: findLocation?.location,
         })
+        .eq("room", room)
         .neq("id", 0);
     } else {
       await supabase
@@ -633,6 +695,7 @@ const SpyOnMicScreen = () => {
           is_vote: event,
           location: findLocation?.location,
         })
+        .eq("room", room)
         .neq("id", 0);
     }
     await supabase
@@ -640,6 +703,7 @@ const SpyOnMicScreen = () => {
       .update({
         showrole: true,
       })
+      .eq("room", room)
       .neq("id", 0);
   };
 
@@ -1120,7 +1184,7 @@ const SpyOnMicScreen = () => {
             </Col>
 
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              <h3>Host</h3>
+              <h3>Host (Create Room)</h3>
               <Switch
                 onChange={(e) => {
                   setHostBtn(e);
@@ -1160,6 +1224,122 @@ const SpyOnMicScreen = () => {
               </Row>
             </>
           )} */}
+          {hostBtn === true ? (
+            <>
+              <Row gutter={12} style={{ marginLeft: "1px" }}>
+                <h3
+                  style={{
+                    margin: "0px 0px 20px 8px",
+                  }}
+                >
+                  Create Room Name{" "}
+                </h3>
+                <Input
+                  placeholder="Enter Room Name"
+                  value={room}
+                  onChange={(e) => {
+                    setRoom(e.target.value);
+                  }}
+                  style={{ marginBottom: "10px" }}
+                />
+              </Row>{" "}
+              <Button
+                variant="solid"
+                color="red"
+                onClick={() => {
+                  deleteAllRows();
+                }}
+                icon={<AiOutlineReload />}
+              >
+                Reset game
+              </Button>
+            </>
+          ) : (
+            <>
+              <Row style={{ marginLeft: "10px" }}>
+                <h3 style={{ margin: "0px 5px 0px 0px" }}>Select Room :</h3>
+                <h3 style={{ color: "green", margin: "0px 5px 0px 0px" }}>
+                  {selectRoom}
+                </h3>
+              </Row>
+
+              {roomList.length === 0 ? (
+                <Row justify={"center"}>
+                  <Empty style={{ width: "80%" }} />
+                </Row>
+              ) : (
+                <>
+                  <div style={{ display: "flex", gap: 16 }}>
+                    {roomList.map((item) => (
+                      <Card
+                        hoverable
+                        onClick={() => setSelectRoom(item.room)}
+                        style={{
+                          width: 200,
+                          cursor: "pointer",
+                          borderRadius: 12,
+                          border:
+                            selectRoom === item.room
+                              ? "2px solid green"
+                              : "1px solid #d9d9d9",
+                        }}
+                      >
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "purple",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Room :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            <div>{item.room}</div>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "blue",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Host :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            {" "}
+                            <div>{item.host}</div>
+                          </Col>
+                        </Row>
+                        <Row>
+                          <Col>
+                            <div
+                              style={{
+                                color: "magenta",
+                                marginRight: "5px",
+                                fontWeight: "bold",
+                              }}
+                            >
+                              Player in room :{" "}
+                            </div>
+                          </Col>
+                          <Col>
+                            <div>{item.numberOfPlay}</div>
+                          </Col>
+                        </Row>
+                      </Card>
+                    ))}
+                  </div>
+                </>
+              )}
+            </>
+          )}
         </Form>
       </Modal>
       <Row justify={"space-between"}>
