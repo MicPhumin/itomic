@@ -16,6 +16,7 @@ interface SortableCardProps {
   note: string;
   noteColor: string;
   host?: boolean | undefined;
+  mode?: string;
 }
 
 export default function SortableCard({
@@ -29,6 +30,7 @@ export default function SortableCard({
   is_host,
   host,
   room,
+  mode,
 }: SortableCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id });
@@ -107,11 +109,22 @@ export default function SortableCard({
             <div
               style={{
                 color: "black",
-                fontSize: window.innerWidth <= 426 ? "40px" : "80px",
+                fontSize:
+                  window.innerWidth <= 426
+                    ? "40px"
+                    : mode === "fact"
+                      ? value >= 100000
+                        ? value >= 1000000
+                          ? value >= 100000000
+                            ? "20px"
+                            : "25px"
+                          : "30px"
+                        : "40px"
+                      : "80px",
                 fontWeight: "bold",
               }}
             >
-              {value}
+              {value.toLocaleString()}
             </div>
           </Row>
         ) : (

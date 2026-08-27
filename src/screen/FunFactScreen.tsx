@@ -12,6 +12,9 @@ import {
   ColorPicker,
   AutoComplete,
   Empty,
+  InputNumber,
+  type ColorPickerProps,
+  type GetProp,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -42,6 +45,7 @@ import topicGame from "../assets/topic.json";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 import { TiSortNumericallyOutline } from "react-icons/ti";
+import { RiFundsBoxFill } from "react-icons/ri";
 
 interface topicGame {
   id: number;
@@ -74,8 +78,12 @@ interface SortableCardProps {
   heart: number;
   mode: string;
 }
+type Color = Extract<
+  GetProp<ColorPickerProps, "value">,
+  string | { cleared: any }
+>;
 
-const SingleOrderScreen = () => {
+const FunFactScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
   const [name, setName] = useState<string>("");
@@ -83,7 +91,9 @@ const SingleOrderScreen = () => {
   const [roomList, setRoomList] = useState<RoomList[]>([]);
   const [selectRoom, setSelectRoom] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
+  const [factValue, setFactValue] = useState<number | null>(null);
   const [note, setNote] = useState("");
+  const [noteColor, setNoteColor] = useState<Color>("#000");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [heart, setHeart] = useState<number>(0);
@@ -122,7 +132,7 @@ const SingleOrderScreen = () => {
     y: number;
   } | null>(null);
 
-  // console.log("card", cards);
+  console.log("card", cards);
   // console.log("myCard", myCards);
   // console.log("topic", topic);
 
@@ -138,7 +148,7 @@ const SingleOrderScreen = () => {
     const { data } = await supabase
       .from("itomic")
       .select("room, name, is_host")
-      .eq("mode", "single");
+      .eq("mode", "fact");
     if (data) {
       const rooms = Object.values(
         data.reduce(
@@ -178,7 +188,7 @@ const SingleOrderScreen = () => {
       .from("itomic")
       .select("*")
       .eq("room", player ? player.room : room)
-      .eq("mode", "single")
+      .eq("mode", "fact")
       .order("player_order");
 
     if (player) {
@@ -354,20 +364,11 @@ const SingleOrderScreen = () => {
   }, []);
 
   const handleRestart = async () => {
-    const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
     for (let i = 0; i < cards.length; i++) {
-      const randomNumber = shuffled.pop();
-
       await supabase
         .from("itomic")
         .update({
-          value: Number(randomNumber),
+          value: null,
           active: null,
           score: null,
           showVal: false,
@@ -377,8 +378,9 @@ const SingleOrderScreen = () => {
         })
         .eq("id", cards[i].id)
         .eq("room", room)
-        .eq("mode", "single");
+        .eq("mode", "fact");
     }
+    setFactValue(null);
     setNote("");
   };
 
@@ -387,9 +389,8 @@ const SingleOrderScreen = () => {
       .from("itomic")
       .update({ topic: topicName })
       .eq("room", room)
-      .eq("mode", "single")
+      .eq("mode", "fact")
       .neq("id", 0);
-
     setChangeTopic(false);
   };
 
@@ -401,23 +402,14 @@ const SingleOrderScreen = () => {
   };
 
   const handleOk = async () => {
-    const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
-
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-
-    const randomNumber = shuffled.pop();
-
     const { data, error } = await supabase.rpc("join_game", {
       p_name: name,
-      p_value: Number(randomNumber),
+      p_value: 0,
       p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
       p_order: cards.length + 1,
-      p_mode: "single",
+      p_mode: "fact",
       p_heart: 3,
     });
     if (error) {
@@ -634,15 +626,15 @@ const SingleOrderScreen = () => {
           showVal: true,
         })
         .eq("room", room)
-        .eq("id", getCardIndex.id)
-        .eq("mode", "single");
+        .eq("mode", "fact")
+        .eq("id", getCardIndex.id);
       await supabase
         .from("itomic")
         .update({
           score: getCardIndex ? getCardIndex.score + 1 : 1,
         })
         .eq("room", room)
-        .eq("mode", "single")
+        .eq("mode", "fact")
         .neq("id", 0);
     } else {
       await supabase
@@ -653,7 +645,7 @@ const SingleOrderScreen = () => {
           showVal: true,
         })
         .eq("room", room)
-        .eq("mode", "single")
+        .eq("mode", "fact")
         .eq("id", getCardIndex.id);
 
       const getRed = getNull.filter((item) => {
@@ -693,14 +685,14 @@ const SingleOrderScreen = () => {
               : getCardIndex.heart - getRed.length,
         })
         .eq("room", room)
-        .eq("mode", "single")
+        .eq("mode", "fact")
         .gt("id", 0);
 
       const { data } = await supabase
         .from("itomic")
         .select("*")
         .eq("room", room)
-        .eq("mode", "single");
+        .eq("mode", "fact");
 
       const getZeroHeart =
         data &&
@@ -725,7 +717,8 @@ const SingleOrderScreen = () => {
                 score: card.score + 1,
               })
               .eq("room", room)
-              .eq("id", card.id),
+              .eq("id", card.id)
+              .eq("mode", "fact"),
           ),
         );
         await supabase
@@ -734,7 +727,7 @@ const SingleOrderScreen = () => {
             score: getZeroHeart.score + nonOrder.length,
           })
           .eq("room", room)
-          .eq("mode", "single")
+          .eq("mode", "fact")
           .gt("id", 0);
       } else if (
         getZeroHeart === undefined &&
@@ -746,25 +739,29 @@ const SingleOrderScreen = () => {
     }
   };
 
-  const handleNote = async (note: string | undefined) => {
+  const handleNote = async (
+    value: number | null,
+    note: string | undefined,
+    noteColor: Color,
+  ) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
       .from("itomic")
-      .update({ note: note })
+      .update({ value: value, note: note, notecolor: noteColor })
       .eq("room", room)
-      .eq("mode", "single")
-      .eq("id", player.id);
+      .eq("id", player.id)
+      .eq("mode", "fact");
   };
 
-  const handleColorNote = async (noteColor: string) => {
-    const player = JSON.parse(localStorage.getItem("player") ?? "null");
-    await supabase
-      .from("itomic")
-      .update({ notecolor: noteColor })
-      .eq("room", room)
-      .eq("mode", "single")
-      .eq("id", player.id);
-  };
+  // const handleColorNote = async (noteColor: string) => {
+  //   const player = JSON.parse(localStorage.getItem("player") ?? "null");
+  //   await supabase
+  //     .from("itomic")
+  //     .update({ notecolor: noteColor })
+  //     .eq("mode", "fact")
+  //     .eq("room", room)
+  //     .eq("id", player.id);
+  // };
 
   const deleteAllRows = async () => {
     const { error } = await supabase
@@ -772,7 +769,7 @@ const SingleOrderScreen = () => {
       .delete()
       .neq("id", 0)
       .eq("room", room)
-      .eq("mode", "single");
+      .eq("mode", "fact");
     if (error) {
       console.error(error);
     } else {
@@ -915,17 +912,18 @@ const SingleOrderScreen = () => {
       }}
     >
       <Row justify={"center"}>
-        <TiSortNumericallyOutline
+        <RiFundsBoxFill
           style={{
             margin: "32px 10px 0px 0px",
             fontSize: "40px",
-            color: "magenta",
+            color: "#0077b6",
           }}
         />
+
         <h3
-          style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
+          style={{ fontSize: "40px", color: "#0077b6", marginBottom: "20px" }}
         >
-          iTOMIC{" "}
+          iTOMIC : Fact
         </h3>
       </Row>
       <h2
@@ -945,21 +943,21 @@ const SingleOrderScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
-                <TiSortNumericallyOutline
+                <RiFundsBoxFill
                   style={{
                     margin: "0px 10px 0px 0px",
                     fontSize: "40px",
-                    color: "magenta",
+                    color: "#0077b6",
                   }}
                 />
                 <h3
                   style={{
                     margin: "0px 10px 0px 0px",
                     fontSize: "30px",
-                    color: "magenta",
+                    color: "#0077b6",
                   }}
                 >
-                  iTOMIC
+                  iTOMIC : Fact
                 </h3>
               </Row>
             </Col>
@@ -1252,16 +1250,49 @@ const SingleOrderScreen = () => {
             </Col>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Card title={myCards?.name}>
-                <div
-                  style={{
-                    color: "black",
-                    fontSize: "80px",
-                    fontWeight: "bold",
-                  }}
-                >
-                  {myCards?.value}
-                </div>
+                {myCards?.value === null ? (
+                  <>
+                    {" "}
+                    <div
+                      style={{
+                        color: "black",
+                        fontSize: "30px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {"Enter Value"}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {" "}
+                    <div
+                      style={{
+                        color: "black",
+                        fontSize:
+                          myCards && myCards.value >= 100000 ? "35px" : "40px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {myCards?.value.toLocaleString()}
+                    </div>
+                  </>
+                )}
+
                 <Row>
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                    <InputNumber
+                      formatter={(value) =>
+                        value
+                          ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                          : ""
+                      }
+                      placeholder="Enter Value"
+                      value={factValue}
+                      onChange={(e) => setFactValue(e ?? 0)}
+                      style={{ marginBottom: "10px", width: "100%" }}
+                    />
+                  </Col>
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
                     <Input
                       placeholder="Enter Note"
@@ -1273,12 +1304,15 @@ const SingleOrderScreen = () => {
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
                     <ColorPicker
                       format="hex"
-                      defaultValue={
-                        myCards?.notecolor ? myCards?.notecolor : "#000"
+                      value={
+                        // myCards?.notecolor ? myCards?.notecolor : "#000"
+                        noteColor
                       }
                       onChangeComplete={(color) => {
                         const hex = color.toHexString();
-                        handleColorNote(hex);
+                        setNoteColor(hex);
+
+                        // handleColorNote(hex);
                       }}
                     />
                   </Col>
@@ -1288,12 +1322,12 @@ const SingleOrderScreen = () => {
                   variant="solid"
                   color="purple"
                   onClick={() => {
-                    handleNote(note);
+                    handleNote(factValue, note, noteColor);
                   }}
                   icon={<AiFillCheckCircle />}
                   style={{ marginTop: "10px" }}
                 >
-                  Save Note
+                  Save
                 </Button>
               </Card>
             </Col>
@@ -1453,6 +1487,7 @@ const SingleOrderScreen = () => {
                           note={card.note}
                           noteColor={card.notecolor}
                           host={myCards?.is_host}
+                          mode={card.mode}
                         />
                       </Col>
                     </>
@@ -1527,25 +1562,24 @@ const SingleOrderScreen = () => {
 
       {isHost && isHost.is_host === true && (
         <Row justify={"center"} gutter={24}>
-          {myCards?.showVal !== true && (
-            <Col>
-              <Button
-                variant="solid"
-                color="green"
-                onClick={() => {
-                  handleSingle();
-                }}
-                icon={<AiFillCheckCircle />}
-                style={{
-                  fontSize: "25px",
-                  width: "200px",
-                  height: "50px",
-                }}
-              >
-                Check
-              </Button>
-            </Col>
-          )}
+          <Col>
+            <Button
+              variant="solid"
+              color="green"
+              onClick={() => {
+                handleSingle();
+              }}
+              icon={<AiFillCheckCircle />}
+              style={{
+                fontSize: "25px",
+                width: "200px",
+                height: "50px",
+              }}
+            >
+              Check
+            </Button>
+          </Col>
+
           <Col>
             <Button
               variant="solid"
@@ -1587,14 +1621,14 @@ const SingleOrderScreen = () => {
         <h3
           style={{
             fontSize: "20px",
-            color: "magenta",
+            color: "#0077b6",
           }}
         >
-          iTOMIC ver 1.8.8
+          iTOMIC : Fact ver 1.0.0
         </h3>
       </Row>
     </div>
   );
 };
 
-export default SingleOrderScreen;
+export default FunFactScreen;

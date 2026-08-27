@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AiFillAudio } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
 import { IoGameController } from "react-icons/io5";
+import { RiFundsBoxFill } from "react-icons/ri";
 import { TiSortNumericallyOutline } from "react-icons/ti";
 
 const MainScreen = () => {
@@ -135,6 +136,22 @@ const MainScreen = () => {
         <Col xs={22} sm={24} md={14} lg={8} xl={5}>
           <Button
             variant="solid"
+            color="primary"
+            href={window.location.origin + `/itomicFact`}
+            icon={<RiFundsBoxFill />}
+            style={{
+              fontSize: "25px",
+              width: "100%",
+              height: "50px",
+              marginBottom: "10px",
+            }}
+          >
+            iTOMIC : Fact
+          </Button>
+        </Col>
+        <Col xs={22} sm={24} md={14} lg={8} xl={5}>
+          <Button
+            variant="solid"
             color="default"
             href={window.location.origin + `/spyonmic`}
             icon={<GiSpy />}
@@ -146,24 +163,6 @@ const MainScreen = () => {
             }}
           >
             Spy on Mic
-          </Button>
-        </Col>
-        <Col xs={22} sm={24} md={14} lg={8} xl={5}>
-          <Button
-            disabled
-            variant="solid"
-            color="primary"
-            href={window.location.origin + `/itomicRumble`}
-            icon={<AiFillAudio />}
-            style={{
-              fontSize: "25px",
-              width: "100%",
-              height: "50px",
-              backgroundColor: "darkgrey",
-              marginBottom: "10px",
-            }}
-          >
-            iTOMIC Rumble (Old)
           </Button>
         </Col>
       </Row>
