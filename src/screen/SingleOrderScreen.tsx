@@ -256,6 +256,10 @@ const SingleOrderScreen = () => {
               console.log("ShowVal");
             }
 
+            if (player.note === null) {
+              setNote("");
+            }
+
             // if (player.topic) {
             //   setChangeTopic(false);
             // }
@@ -385,7 +389,6 @@ const SingleOrderScreen = () => {
         .eq("room", room)
         .eq("mode", "single");
     }
-    setNote("");
   };
 
   const handleTopic = async (topicName: string | undefined) => {

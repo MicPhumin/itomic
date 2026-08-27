@@ -133,7 +133,8 @@ const FunFactScreen = () => {
   console.log("card", cards);
   // console.log("myCard", myCards);
   // console.log("topic", topic);
-
+  console.log("factValue", factValue);
+  console.log("note", note);
   const values = Form.useWatch([], form);
   React.useEffect(() => {
     form
@@ -257,6 +258,10 @@ const FunFactScreen = () => {
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
             }
+            if (player.value === null && player.note === null) {
+              setFactValue(null);
+              setNote("");
+            }
 
             // if (player.topic) {
             //   setChangeTopic(false);
@@ -378,8 +383,6 @@ const FunFactScreen = () => {
         .eq("room", room)
         .eq("mode", "fact");
     }
-    setFactValue(null);
-    setNote("");
   };
 
   const handleTopic = async (topicName: string | undefined) => {
@@ -1284,7 +1287,7 @@ const FunFactScreen = () => {
                           : ""
                       }
                       placeholder="Enter Value"
-                      value={factValue}
+                      value={myCards?.value ? myCards?.value : factValue}
                       onChange={(e) => setFactValue(e ?? 0)}
                       style={{ marginBottom: "10px", width: "100%" }}
                     />
@@ -1292,7 +1295,7 @@ const FunFactScreen = () => {
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
                     <Input
                       placeholder="Enter Note"
-                      value={note}
+                      value={myCards?.note ? myCards?.note : note}
                       allowClear
                       onChange={(e) => setNote(e.target.value)}
                     />
