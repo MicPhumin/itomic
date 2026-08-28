@@ -59,6 +59,46 @@ export default function SortableCard({
     }
   };
 
+  const getContrastColor = (color: string): "#000000" | "#FFFFFF" => {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    // HEX #RGB
+    if (/^#([0-9A-F]{3})$/i.test(color)) {
+      const hex = color.substring(1);
+
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    }
+
+    // HEX #RRGGBB
+    else if (/^#([0-9A-F]{6})$/i.test(color)) {
+      const hex = color.substring(1);
+
+      r = parseInt(hex.substring(0, 2), 16);
+      g = parseInt(hex.substring(2, 4), 16);
+      b = parseInt(hex.substring(4, 6), 16);
+    }
+
+    // rgb() / rgba()
+    else {
+      const match = color.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+
+      if (match) {
+        r = Number(match[1]);
+        g = Number(match[2]);
+        b = Number(match[3]);
+      }
+    }
+
+    // Perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness < 128 ? "#FFFFFF" : "#000000";
+  };
+
   return (
     <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
       <Card
@@ -89,14 +129,36 @@ export default function SortableCard({
               </Button>
             )}
             <Row justify={"center"}>
-              <div style={{ marginTop: "5px", fontSize: "16px" }}>{name}</div>
+              <div
+                style={{
+                  marginTop: "5px",
+                  fontSize: "16px",
+                  color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
+                  textShadow:
+                    getContrastColor(noteColor ? noteColor : "#FFFFFF") ===
+                    "#FFFFFF"
+                      ? "1px 1px 0 #000, 2px 2px 0 #000"
+                      : "",
+                }}
+              >
+                {name}
+              </div>
             </Row>
             {is_host === true && (
-              <div style={{ color: "goldenrod", fontSize: "14px" }}>(Host)</div>
+              <div
+                style={{
+                  color: "goldenrod",
+                  textShadow: "1px 1px 0 #000, 1px 1px 0 #000",
+                  fontSize: "14px",
+                }}
+              >
+                (Host)
+              </div>
             )}
           </>
         }
         style={{
+          backgroundColor: noteColor,
           position: "relative",
           width: "100%",
           borderColor: active ? active : "",
@@ -108,7 +170,12 @@ export default function SortableCard({
           <Row justify={"center"}>
             <div
               style={{
-                color: "black",
+                color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
+                textShadow:
+                  getContrastColor(noteColor ? noteColor : "#FFFFFF") ===
+                  "#FFFFFF"
+                    ? "1px 1px 0 #000, 2px 2px 0 #000"
+                    : "",
                 fontSize:
                   window.innerWidth <= 426
                     ? "40px"
@@ -131,9 +198,14 @@ export default function SortableCard({
           <Row justify={"center"}>
             <div
               style={{
-                color: "black",
                 fontSize: window.innerWidth <= 426 ? "40px" : "80px",
                 fontWeight: "bold",
+                color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
+                textShadow:
+                  getContrastColor(noteColor ? noteColor : "#FFFFFF") ===
+                  "#FFFFFF"
+                    ? "1px 1px 0 #000, 2px 2px 0 #000"
+                    : "",
               }}
             >
               ?
@@ -150,9 +222,11 @@ export default function SortableCard({
             fontFamily: "Kanit, sans-serif",
             fontSize: 25,
             fontWeight: "bold",
-            color: noteColor,
-            WebkitTextStroke: "1px #111",
-            // textShadow: "1px 1px 0 #111, 2px 2px 0 #111",
+            color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
+            textShadow:
+              getContrastColor(noteColor ? noteColor : "#FFFFFF") === "#FFFFFF"
+                ? "1px 1px 0 #000, 2px 2px 0 #000"
+                : "",
           }}
         >
           {note}

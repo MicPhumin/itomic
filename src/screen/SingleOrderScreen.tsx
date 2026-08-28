@@ -11,8 +11,6 @@ import {
   ColorPicker,
   AutoComplete,
   Empty,
-  type GetProp,
-  type ColorPickerProps,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -76,10 +74,6 @@ interface SortableCardProps {
   mode: string;
 }
 
-type Color = Extract<
-  GetProp<ColorPickerProps, "value">,
-  string | { cleared: any }
->;
 const SingleOrderScreen = () => {
   const [cards, setCards] = useState<SortableCardProps[]>([]);
   const [myCards, setMyCards] = useState<SortableCardProps>();
@@ -89,7 +83,7 @@ const SingleOrderScreen = () => {
   const [selectRoom, setSelectRoom] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
   const [note, setNote] = useState("");
-  const [noteColor, setNoteColor] = useState<Color>("#000");
+  const [noteColor, setNoteColor] = useState<string>("#FFFFFF");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
   const [score, setScore] = useState<number>(0);
   const [heart, setHeart] = useState<number>(0);
@@ -913,6 +907,47 @@ const SingleOrderScreen = () => {
       );
     }
   };
+
+  const getContrastColor = (color: string): "#000000" | "#FFFFFF" => {
+    let r = 0;
+    let g = 0;
+    let b = 0;
+
+    // HEX #RGB
+    if (/^#([0-9A-F]{3})$/i.test(color)) {
+      const hex = color.substring(1);
+
+      r = parseInt(hex[0] + hex[0], 16);
+      g = parseInt(hex[1] + hex[1], 16);
+      b = parseInt(hex[2] + hex[2], 16);
+    }
+
+    // HEX #RRGGBB
+    else if (/^#([0-9A-F]{6})$/i.test(color)) {
+      const hex = color.substring(1);
+
+      r = parseInt(hex.substring(0, 2), 16);
+      g = parseInt(hex.substring(2, 4), 16);
+      b = parseInt(hex.substring(4, 6), 16);
+    }
+
+    // rgb() / rgba()
+    else {
+      const match = color.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)/);
+
+      if (match) {
+        r = Number(match[1]);
+        g = Number(match[2]);
+        b = Number(match[3]);
+      }
+    }
+
+    // Perceived brightness
+    const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+
+    return brightness < 128 ? "#FFFFFF" : "#000000";
+  };
+
   return (
     <div
       style={{
@@ -1257,10 +1292,30 @@ const SingleOrderScreen = () => {
               <h2 style={{ fontSize: "20px" }}>Your Number is :</h2>
             </Col>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              <Card title={myCards?.name}>
+              <Card
+                title={
+                  <div
+                    style={{
+                      color: getContrastColor(noteColor),
+                      textShadow:
+                        getContrastColor(noteColor) === "#FFFFFF"
+                          ? "1px 1px 0 #000, 2px 2px 0 #000"
+                          : "",
+                      fontSize: "20px",
+                    }}
+                  >
+                    {myCards?.name}
+                  </div>
+                }
+                style={{ backgroundColor: noteColor }}
+              >
                 <div
                   style={{
-                    color: "black",
+                    color: getContrastColor(noteColor),
+                    textShadow:
+                      getContrastColor(noteColor) === "#FFFFFF"
+                        ? "1px 1px 0 #000, 2px 2px 0 #000"
+                        : "",
                     fontSize: "80px",
                     fontWeight: "bold",
                   }}
@@ -1270,6 +1325,7 @@ const SingleOrderScreen = () => {
                 <Row>
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
                     <Input
+                      disabled={myCards?.showVal === true ? true : false}
                       placeholder="Enter Note"
                       value={note}
                       allowClear
@@ -1278,10 +1334,8 @@ const SingleOrderScreen = () => {
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
                     <ColorPicker
+                      disabled={myCards?.showVal === true ? true : false}
                       format="hex"
-                      // defaultValue={
-                      //   myCards?.notecolor ? myCards?.notecolor : "#000"
-                      // }
                       value={noteColor}
                       onChangeComplete={(color) => {
                         const hex = color.toHexString();
@@ -1597,7 +1651,7 @@ const SingleOrderScreen = () => {
             color: "magenta",
           }}
         >
-          iTOMIC ver 1.8.8
+          iTOMIC ver 1.8.9
         </h3>
       </Row>
     </div>
