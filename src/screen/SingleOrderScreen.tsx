@@ -1540,6 +1540,18 @@ const SingleOrderScreen = () => {
                   gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
                   align={"middle"}
                 >
+                  {myCards === undefined && (
+                    <>
+                      <Button
+                        variant="solid"
+                        color="volcano"
+                        onClick={() => localStorage.clear()}
+                        style={{ marginLeft: "10px" }}
+                      >
+                        Clear Local Storage
+                      </Button>
+                    </>
+                  )}
                   {cards.map((card, index) => (
                     <>
                       <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
