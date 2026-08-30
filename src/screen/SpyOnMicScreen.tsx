@@ -1128,6 +1128,21 @@ const SpyOnMicScreen = () => {
                 />
                 <h2 style={{ color: "#a70000" }}> Spy on Mic</h2>
               </Row>
+              <Button
+                variant="solid"
+                color="purple"
+                href={window.location.origin + `/`}
+              >
+                Back to menu
+              </Button>
+              <Button
+                variant="solid"
+                color="volcano"
+                onClick={() => localStorage.clear()}
+                style={{ marginLeft: "10px" }}
+              >
+                Clear Local Storage
+              </Button>
             </Col>
           </Row>
         }

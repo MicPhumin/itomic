@@ -178,11 +178,13 @@ const SingleOrderScreen = () => {
       .from("itomic")
       .select("*")
       .eq("room", player ? player.room : room)
-      .eq("mode", "single")
-      .order("player_order");
+      .eq("mode", "single");
+
+    // Sort by player_order in JavaScript instead of database (free tier limitation)
+    const sortedData = data?.sort((a, b) => a.player_order - b.player_order);
 
     if (player) {
-      const findHost = data?.find((item) => {
+      const findHost = sortedData?.find((item) => {
         return item.is_host === player.is_host;
       });
       if (findHost?.is_host == true) {
@@ -191,14 +193,14 @@ const SingleOrderScreen = () => {
         setHeart(findHost.heart);
       }
 
-      const findPlayer = data?.find((item) => {
+      const findPlayer = sortedData?.find((item) => {
         return item.id == player?.id;
       });
       console.log("findPlayer", findPlayer);
       if (findPlayer) {
         setMyCards(findPlayer);
-        setNote(findPlayer ? findPlayer.note : "");
-        setNoteColor(findPlayer ? findPlayer.notecolor : "");
+        // setNote(findPlayer ? findPlayer.note : "");
+        // setNoteColor(findPlayer ? findPlayer.notecolor : "");
         setHeart(findPlayer ? findPlayer.heart : 3);
         setRoom(findPlayer ? findPlayer.room : room);
         localStorage.setItem("player", JSON.stringify(findPlayer));
@@ -207,13 +209,13 @@ const SingleOrderScreen = () => {
       setIsModalOpen(false);
     }
 
-    if (data) {
-      setCards(data);
-      const findTopic = data.find((item) => {
-        return item?.topic !== "";
-      });
+    if (sortedData) {
+      setCards(sortedData);
+      // const findTopic = sortedData.find((item) => {
+      //   return item?.topic !== "";
+      // });
       showRoomList();
-      setTopic(findTopic ? findTopic.topic : topic);
+      // setTopic(findTopic ? findTopic.topic : topic);
     }
   };
 
@@ -248,7 +250,7 @@ const SingleOrderScreen = () => {
           } else if (payload.eventType === "UPDATE") {
             // setIsLoading(true);
             const player = payload.new as SortableCardProps;
-            setTopic(player.topic);
+            // setTopic(player.topic);
             setScore(player.score);
 
             if (player.showVal && player.showVal === true) {
@@ -1002,6 +1004,7 @@ const SingleOrderScreen = () => {
               {" "}
               <Row justify={"center"}>
                 {" "}
+                <Col xs={24} sm={24} md={24} lg={24} xl={24}></Col>
                 <TiSortNumericallyOutline
                   style={{
                     margin: "0px 10px 0px 0px",
@@ -1018,7 +1021,22 @@ const SingleOrderScreen = () => {
                 >
                   iTOMIC
                 </h3>
-              </Row>
+              </Row>{" "}
+              <Button
+                variant="solid"
+                color="purple"
+                href={window.location.origin + `/`}
+              >
+                Back to menu
+              </Button>
+              <Button
+                variant="solid"
+                color="volcano"
+                onClick={() => localStorage.clear()}
+                style={{ marginLeft: "10px" }}
+              >
+                Clear Local Storage
+              </Button>
             </Col>
           </Row>
         }
@@ -1343,12 +1361,12 @@ const SingleOrderScreen = () => {
                     <Input
                       disabled={myCards?.showVal === true ? true : false}
                       placeholder="Enter Note"
-                      defaultValue={note}
+                      value={note}
                       allowClear
-                      onBlur={(e) => setNote(e.target.value)}
-                      onPressEnter={(e) => {
-                        e.currentTarget.blur();
-                      }}
+                      onChange={(e) => setNote(e.target.value)}
+                      // onPressEnter={(e) => {
+                      //   e.currentTarget.onchange();
+                      // }}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
@@ -1397,7 +1415,7 @@ const SingleOrderScreen = () => {
         </h2>
         <Row>
           <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-            {topic}
+            {myCards?.topic}
           </h2>{" "}
         </Row>
         {changeTopic === false && (
@@ -1436,7 +1454,7 @@ const SingleOrderScreen = () => {
             }}
             options={groupedOptions}
             placeholder="Search or Enter Topic..."
-            value={topic || myCards?.topic || ""}
+            value={topic}
             filterOption={(
               inputValue: string,
               option: CategoryGroup | undefined,
@@ -1446,9 +1464,11 @@ const SingleOrderScreen = () => {
                 .includes(inputValue.toLowerCase());
             }}
             onChange={(value) => {
-              setTopic(value ?? "");
+              setTopic(value);
             }}
             onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+              console.log("event.target.value", event.target.value);
+
               setTopic(event.target.value);
             }}
             onSelect={(value) => {

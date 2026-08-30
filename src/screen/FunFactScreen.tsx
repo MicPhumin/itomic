@@ -207,11 +207,11 @@ const FunFactScreen = () => {
 
     if (data) {
       setCards(data);
-      const findTopic = data.find((item) => {
-        return item?.topic !== "";
-      });
+      // const findTopic = data.find((item) => {
+      //   return item?.topic !== "";
+      // });
       showRoomList();
-      setTopic(findTopic ? findTopic.topic : topic);
+      // setTopic(findTopic ? findTopic.topic : topic);
     }
   };
 
@@ -246,16 +246,16 @@ const FunFactScreen = () => {
           } else if (payload.eventType === "UPDATE") {
             // setIsLoading(true);
             const player = payload.new as SortableCardProps;
-            setTopic(player.topic);
+            // setTopic(player.topic);
             setScore(player.score);
 
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
             }
-            if (player.value === null && player.note === null) {
-              setFactValue(null);
-              setNote("");
-            }
+            // if (player.value === null && player.note === null) {
+            //   setFactValue(null);
+            //   setNote("");
+            // }
 
             // if (player.topic) {
             //   setChangeTopic(false);
@@ -403,6 +403,7 @@ const FunFactScreen = () => {
       p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
+      p_notecolor: "#FFFFFF",
       p_order: cards.length + 1,
       p_mode: "fact",
       p_heart: 3,
@@ -994,6 +995,21 @@ const FunFactScreen = () => {
                 </h3>
               </Row>
             </Col>
+            <Button
+              variant="solid"
+              color="purple"
+              href={window.location.origin + `/`}
+            >
+              Back to menu
+            </Button>
+            <Button
+              variant="solid"
+              color="volcano"
+              onClick={() => localStorage.clear()}
+              style={{ marginLeft: "10px" }}
+            >
+              Clear Local Storage
+            </Button>
           </Row>
         }
         closable={false}
@@ -1409,7 +1425,7 @@ const FunFactScreen = () => {
         </h2>
         <Row>
           <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
-            {topic}
+            {myCards?.topic}
           </h2>{" "}
         </Row>
         {changeTopic === false && (
