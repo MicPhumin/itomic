@@ -124,11 +124,10 @@ const FunFactScreen = () => {
     y: number;
   } | null>(null);
 
-  console.log("card", cards);
+  //console.log("card", cards);
   // console.log("myCard", myCards);
   // console.log("topic", topic);
   // console.log("factValue", factValue);
-  console.log("noteColor", noteColor);
   const values = Form.useWatch([], form);
   React.useEffect(() => {
     form
@@ -1298,7 +1297,7 @@ const FunFactScreen = () => {
               {" "}
               <h2 style={{ fontSize: "20px" }}>Your Number is :</h2>
             </Col>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+            <Col xs={22} sm={22} md={24} lg={24} xl={24}>
               <Card
                 title={
                   <div
@@ -1451,54 +1450,58 @@ const FunFactScreen = () => {
 
       {changeTopic === true && (
         <>
-          <AutoComplete
-            style={{
-              width: "500px",
-              marginRight: "10px",
-              marginBottom: "10px",
-            }}
-            styles={{
-              input: {
-                fontFamily: "Kanit, sans-serif",
-                fontSize: "15px",
-              },
-            }}
-            options={groupedOptions}
-            placeholder="Search or Enter Topic..."
-            value={topic}
-            filterOption={(
-              inputValue: string,
-              option: CategoryGroup | undefined,
-            ): boolean => {
-              return !!option?.label
-                ?.toLowerCase()
-                .includes(inputValue.toLowerCase());
-            }}
-            // onBlur={(e) => {
-            //   const value = (e.target as HTMLInputElement).value;
-            //   setTopic(value);
-            // }}
-            onChange={(value) => {
-              setTopic(value);
-            }}
-            onSelect={(value) => {
-              setTopic(value);
-            }}
-            prefix={
-              <Button
-                variant="outlined"
-                type="text"
-                color="purple"
-                onClick={() => {
-                  handleRandomTopic();
+          <Row>
+            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+              <AutoComplete
+                style={{
+                  width: "100%",
+                  marginRight: "10px",
+                  marginBottom: "10px",
                 }}
-                style={{ marginRight: "10px" }}
-              >
-                🎲 Random
-              </Button>
-            }
-            allowClear
-          />
+                styles={{
+                  input: {
+                    fontFamily: "Kanit, sans-serif",
+                    fontSize: "15px",
+                  },
+                }}
+                options={groupedOptions}
+                placeholder="Search or Enter Topic..."
+                value={topic}
+                filterOption={(
+                  inputValue: string,
+                  option: CategoryGroup | undefined,
+                ): boolean => {
+                  return !!option?.label
+                    ?.toLowerCase()
+                    .includes(inputValue.toLowerCase());
+                }}
+                // onBlur={(e) => {
+                //   const value = (e.target as HTMLInputElement).value;
+                //   setTopic(value);
+                // }}
+                onChange={(value) => {
+                  setTopic(value);
+                }}
+                onSelect={(value) => {
+                  setTopic(value);
+                }}
+                prefix={
+                  <Button
+                    variant="outlined"
+                    type="text"
+                    color="purple"
+                    onClick={() => {
+                      handleRandomTopic();
+                    }}
+                    style={{ marginRight: "10px" }}
+                  >
+                    🎲 Random
+                  </Button>
+                }
+                allowClear
+              />
+            </Col>
+          </Row>
           <Row justify={"center"}>
             <Button
               variant="solid"
@@ -1649,6 +1652,7 @@ const FunFactScreen = () => {
                 fontSize: "25px",
                 width: "200px",
                 height: "50px",
+                marginBottom: "10px",
               }}
             >
               Check
@@ -1667,6 +1671,7 @@ const FunFactScreen = () => {
                 fontSize: "25px",
                 width: "200px",
                 height: "50px",
+                marginBottom: "10px",
               }}
             >
               Restart
@@ -1684,6 +1689,7 @@ const FunFactScreen = () => {
                 fontSize: "25px",
                 width: "200px",
                 height: "50px",
+                marginBottom: "10px",
               }}
             >
               New Game

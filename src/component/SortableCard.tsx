@@ -40,9 +40,9 @@ export default function SortableCard({
     transition,
     marginBottom: 16,
     touchAction: "none",
-    pointerEvents: note === "" || showVal === true ? "none" : "auto",
-    opacity: note === "" || showVal === true ? 0.5 : 1,
-    cursor: note === "" || showVal === true ? "not-allowed" : "grab",
+    pointerEvents: showVal === true ? "none" : "auto",
+    opacity: showVal === true ? 0.5 : 1,
+    cursor: showVal === true ? "not-allowed" : "grab",
   };
 
   const deletePlayer = async (id: number) => {
@@ -51,7 +51,7 @@ export default function SortableCard({
       .delete()
       .eq("id", id)
       .eq("room", room)
-      .eq("mode", mode === "single" ? "single" : "fact");
+      .eq("mode", mode);
     if (error) {
       console.error(error);
     } else {
@@ -116,6 +116,9 @@ export default function SortableCard({
                 onClick={(e) => {
                   e.stopPropagation();
                   console.log("id", id);
+                  console.log("mode", mode);
+                  console.log("room", room);
+
                   deletePlayer(id);
                 }}
                 style={{
@@ -163,7 +166,7 @@ export default function SortableCard({
           width: "100%",
           borderColor: active ? active : "",
           borderWidth: active ? "5px" : "",
-          height: window.innerWidth <= 426 ? "180px" : "100%",
+          height: "100%",
         }}
       >
         {showVal == true ? (
@@ -220,7 +223,7 @@ export default function SortableCard({
             wordBreak: "break-word",
             overflowWrap: "break-word",
             fontFamily: "Kanit, sans-serif",
-            fontSize: 25,
+            fontSize: window.innerWidth <= 426 ? 15 : 25,
             fontWeight: "bold",
             color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
             textShadow:
