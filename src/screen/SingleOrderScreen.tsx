@@ -1441,8 +1441,8 @@ const SingleOrderScreen = () => {
 
       {changeTopic === true && (
         <>
-          <Row>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+          <Row justify={"center"}>
+            <Col xs={24} sm={24} md={18} lg={12} xl={12}>
               <AutoComplete
                 style={{
                   width: "100%",

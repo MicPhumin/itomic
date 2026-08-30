@@ -166,7 +166,8 @@ export default function SortableCard({
           width: "100%",
           borderColor: active ? active : "",
           borderWidth: active ? "5px" : "",
-          height: "100%",
+          height: "auto",
+          minHeight: window.innerWidth <= 426 ? "160px" : "250px",
         }}
       >
         {showVal == true ? (
@@ -216,14 +217,16 @@ export default function SortableCard({
           </Row>
         )}
         <Typography.Text
-          // ellipsis={{
-          //   tooltip: true,
-          // }}
           style={{
+            display: "block",
+            whiteSpace: "normal",
             wordBreak: "break-word",
-            overflowWrap: "break-word",
+            overflowWrap: "anywhere",
+            textAlign: "center",
+            lineHeight: 1.2,
             fontFamily: "Kanit, sans-serif",
-            fontSize: window.innerWidth <= 426 ? 15 : 25,
+            fontSize:
+              window.innerWidth <= 426 ? "clamp(9px, 3vw, 15px)" : "25px",
             fontWeight: "bold",
             color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
             textShadow:
