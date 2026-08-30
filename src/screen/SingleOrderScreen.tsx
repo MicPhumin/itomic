@@ -426,6 +426,7 @@ const SingleOrderScreen = () => {
       p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
+      p_note: "",
       p_notecolor: "#FFFFFF",
       p_order: cards.length + 1,
       p_mode: "single",

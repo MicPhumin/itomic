@@ -40,9 +40,9 @@ export default function SortableCard({
     transition,
     marginBottom: 16,
     touchAction: "none",
-    pointerEvents: note === null || showVal === true ? "none" : "auto",
-    opacity: note === null || showVal === true ? 0.5 : 1,
-    cursor: note === null || showVal === true ? "not-allowed" : "grab",
+    pointerEvents: note === "" || showVal === true ? "none" : "auto",
+    opacity: note === "" || showVal === true ? 0.5 : 1,
+    cursor: note === "" || showVal === true ? "not-allowed" : "grab",
   };
 
   const deletePlayer = async (id: number) => {

@@ -369,7 +369,7 @@ const FunFactScreen = () => {
           active: null,
           score: null,
           showVal: false,
-          note: null,
+          note: "",
           heart: 3,
           player_order: i + 1,
         })
@@ -403,6 +403,7 @@ const FunFactScreen = () => {
       p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
+      p_note: "",
       p_notecolor: "#FFFFFF",
       p_order: cards.length + 1,
       p_mode: "fact",
