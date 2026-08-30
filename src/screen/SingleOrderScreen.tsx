@@ -1542,20 +1542,25 @@ const SingleOrderScreen = () => {
                 >
                   {myCards === undefined && (
                     <>
-                      <h3>
-                        If didn't see Join Room Click Clear Local Storage Button
-                      </h3>
-                      <Button
-                        variant="solid"
-                        color="volcano"
-                        onClick={() => {
-                          localStorage.clear();
-                          window.location.reload();
-                        }}
-                        style={{ marginLeft: "10px" }}
-                      >
-                        Clear Local Storage
-                      </Button>
+                      <Row justify={"center"}>
+                        <h3>
+                          If didn't see Join Room Click Clear Local Storage
+                          Button
+                        </h3>
+                      </Row>
+                      <Row justify={"center"}>
+                        <Button
+                          variant="solid"
+                          color="volcano"
+                          onClick={() => {
+                            localStorage.clear();
+                            window.location.reload();
+                          }}
+                          style={{ marginLeft: "10px" }}
+                        >
+                          Clear Local Storage
+                        </Button>
+                      </Row>
                     </>
                   )}
                   {cards.map((card, index) => (
