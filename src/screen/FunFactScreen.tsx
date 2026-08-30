@@ -1676,6 +1676,13 @@ const FunFactScreen = () => {
       )}
 
       <Row justify={"end"}>
+        <RiFundsBoxFill
+          style={{
+            margin: "18px 5px 00px 0px",
+            fontSize: "25px",
+            color: "#0077b6",
+          }}
+        />
         <h3
           style={{
             fontSize: "20px",

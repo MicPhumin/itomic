@@ -123,7 +123,7 @@ const SingleOrderScreen = () => {
   } | null>(null);
 
   // console.log("card", cards);
-  // console.log("myCard", myCards);
+  console.log("myCard", myCards);
   // console.log("topic", topic);
 
   const values = Form.useWatch([], form);
@@ -194,11 +194,16 @@ const SingleOrderScreen = () => {
       const findPlayer = data?.find((item) => {
         return item.id == player?.id;
       });
+      console.log("findPlayer", findPlayer);
+      if (findPlayer) {
+        setMyCards(findPlayer);
+        setNote(findPlayer ? findPlayer.note : "");
+        setNoteColor(findPlayer ? findPlayer.notecolor : "");
+        setHeart(findPlayer ? findPlayer.heart : 3);
+        setRoom(findPlayer ? findPlayer.room : room);
+        localStorage.setItem("player", JSON.stringify(findPlayer));
+      }
 
-      setMyCards(findPlayer);
-      setHeart(findPlayer ? findPlayer.heart : 3);
-      setRoom(findPlayer ? findPlayer.room : room);
-      localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
 
@@ -375,7 +380,7 @@ const SingleOrderScreen = () => {
           active: null,
           score: null,
           showVal: false,
-          note: null,
+          note: "",
           heart: 3,
           player_order: i + 1,
         })
@@ -419,6 +424,7 @@ const SingleOrderScreen = () => {
       p_room: hostBtn ? room : selectRoom,
       p_is_host: hostBtn,
       p_topic: hostBtn ? topic : "",
+      p_notecolor: "#FFFFFF",
       p_order: cards.length + 1,
       p_mode: "single",
       p_heart: 3,
@@ -745,6 +751,16 @@ const SingleOrderScreen = () => {
       }
     }
   };
+
+  // const handleNote = async (note: string | undefined) => {
+  //   const player = JSON.parse(localStorage.getItem("player") ?? "null");
+  //   await supabase
+  //     .from("itomic")
+  //     .update({ note: note })
+  //     .eq("room", room)
+  //     .eq("mode", "single")
+  //     .eq("id", player.id);
+  // };
 
   const handleNote = async (note: string | undefined, noteColor: string) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
@@ -1327,9 +1343,12 @@ const SingleOrderScreen = () => {
                     <Input
                       disabled={myCards?.showVal === true ? true : false}
                       placeholder="Enter Note"
-                      value={note}
+                      defaultValue={note}
                       allowClear
-                      onChange={(e) => setNote(e.target.value)}
+                      onBlur={(e) => setNote(e.target.value)}
+                      onPressEnter={(e) => {
+                        e.currentTarget.blur();
+                      }}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
@@ -1417,7 +1436,7 @@ const SingleOrderScreen = () => {
             }}
             options={groupedOptions}
             placeholder="Search or Enter Topic..."
-            value={topic}
+            defaultValue={myCards?.topic ? myCards.topic : topic}
             filterOption={(
               inputValue: string,
               option: CategoryGroup | undefined,
@@ -1426,13 +1445,12 @@ const SingleOrderScreen = () => {
                 ?.toLowerCase()
                 .includes(inputValue.toLowerCase());
             }}
-            // onBlur={(e) => {
-            //   const value = (e.target as HTMLInputElement).value;
+            onBlur={(value) => {
+              setTopic(value.target.value);
+            }}
+            // onChange={(value) => {
             //   setTopic(value);
             // }}
-            onChange={(value) => {
-              setTopic(value);
-            }}
             onSelect={(value) => {
               setTopic(value);
             }}
@@ -1644,6 +1662,13 @@ const SingleOrderScreen = () => {
       )}
 
       <Row justify={"end"}>
+        <TiSortNumericallyOutline
+          style={{
+            margin: "18px 5px 00px 0px",
+            fontSize: "25px",
+            color: "magenta",
+          }}
+        />
         <h3
           style={{
             fontSize: "20px",
