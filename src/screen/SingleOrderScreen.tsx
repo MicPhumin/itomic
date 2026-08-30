@@ -1588,25 +1588,24 @@ const SingleOrderScreen = () => {
 
       {isHost && isHost.is_host === true && (
         <Row justify={"center"} gutter={24}>
-          {myCards?.showVal !== true && (
-            <Col>
-              <Button
-                variant="solid"
-                color="green"
-                onClick={() => {
-                  handleSingle();
-                }}
-                icon={<AiFillCheckCircle />}
-                style={{
-                  fontSize: "25px",
-                  width: "200px",
-                  height: "50px",
-                }}
-              >
-                Check
-              </Button>
-            </Col>
-          )}
+          <Col>
+            <Button
+              variant="solid"
+              color="green"
+              onClick={() => {
+                handleSingle();
+              }}
+              icon={<AiFillCheckCircle />}
+              style={{
+                fontSize: "25px",
+                width: "200px",
+                height: "50px",
+              }}
+            >
+              Check
+            </Button>
+          </Col>
+
           <Col>
             <Button
               variant="solid"
