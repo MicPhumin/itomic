@@ -1542,6 +1542,9 @@ const SingleOrderScreen = () => {
                 >
                   {myCards === undefined && (
                     <>
+                      <h3>
+                        If didn't see Join Room Click Clear Local Storage Button
+                      </h3>
                       <Button
                         variant="solid"
                         color="volcano"
