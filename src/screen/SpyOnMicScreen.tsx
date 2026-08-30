@@ -1809,7 +1809,7 @@ const SpyOnMicScreen = () => {
             color: "#a70000",
           }}
         >
-          Spy On Mic ver 1.0.3
+          Spy On Mic
         </h3>
       </Row>
     </div>

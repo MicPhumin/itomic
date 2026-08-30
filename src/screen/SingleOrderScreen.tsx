@@ -746,7 +746,7 @@ const SingleOrderScreen = () => {
     }
   };
 
-  const handleNote = async (note: string | undefined, noteColor: Color) => {
+  const handleNote = async (note: string | undefined, noteColor: string) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
       .from("itomic")
@@ -1651,7 +1651,7 @@ const SingleOrderScreen = () => {
             color: "magenta",
           }}
         >
-          iTOMIC ver 1.8.9
+          iTOMIC
         </h3>
       </Row>
     </div>

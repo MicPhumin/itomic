@@ -734,7 +734,7 @@ const FunFactScreen = () => {
   const handleNote = async (
     value: number | null,
     note: string | undefined,
-    noteColor: Color,
+    noteColor: string,
   ) => {
     const player = JSON.parse(localStorage.getItem("player") ?? "null");
     await supabase
@@ -1682,7 +1682,7 @@ const FunFactScreen = () => {
             color: "#0077b6",
           }}
         >
-          iTOMIC : Fact ver 1.0.1
+          iTOMIC : Fact
         </h3>
       </Row>
     </div>
