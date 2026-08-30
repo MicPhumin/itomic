@@ -1545,7 +1545,10 @@ const SingleOrderScreen = () => {
                       <Button
                         variant="solid"
                         color="volcano"
-                        onClick={() => localStorage.clear()}
+                        onClick={() => {
+                          localStorage.clear();
+                          window.location.reload();
+                        }}
                         style={{ marginLeft: "10px" }}
                       >
                         Clear Local Storage
