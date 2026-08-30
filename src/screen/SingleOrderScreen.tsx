@@ -1436,7 +1436,7 @@ const SingleOrderScreen = () => {
             }}
             options={groupedOptions}
             placeholder="Search or Enter Topic..."
-            defaultValue={myCards?.topic ? myCards.topic : topic}
+            value={topic || myCards?.topic || ""}
             filterOption={(
               inputValue: string,
               option: CategoryGroup | undefined,
@@ -1445,12 +1445,12 @@ const SingleOrderScreen = () => {
                 ?.toLowerCase()
                 .includes(inputValue.toLowerCase());
             }}
-            onBlur={(value) => {
-              setTopic(value.target.value);
+            onChange={(value) => {
+              setTopic(value ?? "");
             }}
-            // onChange={(value) => {
-            //   setTopic(value);
-            // }}
+            onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
+              setTopic(event.target.value);
+            }}
             onSelect={(value) => {
               setTopic(value);
             }}
