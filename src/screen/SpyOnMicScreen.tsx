@@ -1135,14 +1135,6 @@ const SpyOnMicScreen = () => {
               >
                 Back to menu
               </Button>
-              <Button
-                variant="solid"
-                color="volcano"
-                onClick={() => localStorage.clear()}
-                style={{ marginLeft: "10px" }}
-              >
-                Clear Local Storage
-              </Button>
             </Col>
           </Row>
         }
@@ -1527,7 +1519,28 @@ const SpyOnMicScreen = () => {
                 />
               </>
             )}
-
+            {myCards === undefined && (
+              <>
+                <Row justify={"center"}>
+                  <h3>
+                    If didn't see Join Room Click Clear Local Storage Button
+                  </h3>
+                </Row>
+                <Row justify={"center"}>
+                  <Button
+                    variant="solid"
+                    color="volcano"
+                    onClick={() => {
+                      localStorage.clear();
+                      window.location.reload();
+                    }}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Clear Local Storage
+                  </Button>
+                </Row>
+              </>
+            )}
             <>
               {" "}
               <Row
@@ -1818,6 +1831,13 @@ const SpyOnMicScreen = () => {
       )}
 
       <Row justify={"end"}>
+        <GiSpy
+          style={{
+            margin: "18px 5px 00px 0px",
+            fontSize: "25px",
+            color: "#a70000",
+          }}
+        />
         <h3
           style={{
             fontSize: "20px",

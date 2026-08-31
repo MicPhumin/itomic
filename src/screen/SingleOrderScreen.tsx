@@ -1030,14 +1030,6 @@ const SingleOrderScreen = () => {
               >
                 Back to menu
               </Button>
-              <Button
-                variant="solid"
-                color="volcano"
-                onClick={() => localStorage.clear()}
-                style={{ marginLeft: "10px" }}
-              >
-                Clear Local Storage
-              </Button>
             </Col>
           </Row>
         }
@@ -1523,6 +1515,26 @@ const SingleOrderScreen = () => {
         </>
       )}
       {showDescription()}
+      {myCards === undefined && (
+        <>
+          <Row justify={"center"}>
+            <h3>If didn't see Join Room Click Clear Local Storage Button</h3>
+          </Row>
+          <Row justify={"center"}>
+            <Button
+              variant="solid"
+              color="volcano"
+              onClick={() => {
+                localStorage.clear();
+                window.location.reload();
+              }}
+              style={{ marginLeft: "10px" }}
+            >
+              Clear Local Storage
+            </Button>
+          </Row>
+        </>
+      )}
       <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
         <>
           <Col xs={24} sm={24} md={24} lg={24} xl={24}>
@@ -1540,29 +1552,6 @@ const SingleOrderScreen = () => {
                   gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
                   align={"middle"}
                 >
-                  {myCards === undefined && (
-                    <>
-                      <Row justify={"center"}>
-                        <h3>
-                          If didn't see Join Room Click Clear Local Storage
-                          Button
-                        </h3>
-                      </Row>
-                      <Row justify={"center"}>
-                        <Button
-                          variant="solid"
-                          color="volcano"
-                          onClick={() => {
-                            localStorage.clear();
-                            window.location.reload();
-                          }}
-                          style={{ marginLeft: "10px" }}
-                        >
-                          Clear Local Storage
-                        </Button>
-                      </Row>
-                    </>
-                  )}
                   {cards.map((card, index) => (
                     <>
                       <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
@@ -1717,7 +1706,7 @@ const SingleOrderScreen = () => {
         <TiSortNumericallyOutline
           style={{
             margin: "18px 5px 00px 0px",
-            fontSize: "25px",
+            fontSize: "27px",
             color: "magenta",
           }}
         />
