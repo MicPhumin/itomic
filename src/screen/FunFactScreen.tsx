@@ -1287,7 +1287,7 @@ const FunFactScreen = () => {
           <Row justify={"center"}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               {" "}
-              <h2 style={{ fontSize: "20px" }}>Your Number is :</h2>
+              <h2 style={{ fontSize: "20px" }}>Your Card Number</h2>
             </Col>
             <Col xs={22} sm={22} md={24} lg={24} xl={24}>
               <Card

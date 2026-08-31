@@ -135,7 +135,8 @@ export default function SortableCard({
               <div
                 style={{
                   marginTop: "5px",
-                  fontSize: "16px",
+                  fontSize:
+                    window.innerWidth <= 426 ? "clamp(9px, 3vw, 12px)" : "16px",
                   color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
                   textShadow:
                     getContrastColor(noteColor ? noteColor : "#FFFFFF") ===
@@ -152,7 +153,8 @@ export default function SortableCard({
                 style={{
                   color: "goldenrod",
                   textShadow: "1px 1px 0 #000, 1px 1px 0 #000",
-                  fontSize: "14px",
+                  fontSize:
+                    window.innerWidth <= 426 ? "clamp(9px, 3vw, 10px)" : "14px",
                 }}
               >
                 (Host)
@@ -168,6 +170,14 @@ export default function SortableCard({
           borderWidth: active ? "5px" : "",
           height: "auto",
           minHeight: window.innerWidth <= 426 ? "160px" : "250px",
+        }}
+        styles={{
+          header: {
+            padding: window.innerWidth <= 426 ? "0px 0px" : "0px 24px",
+          },
+          body: {
+            padding: window.innerWidth <= 426 ? "10px 0px" : "24px",
+          },
         }}
       >
         {showVal == true ? (
