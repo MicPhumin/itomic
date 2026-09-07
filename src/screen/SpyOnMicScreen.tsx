@@ -907,7 +907,7 @@ const SpyOnMicScreen = () => {
     <div
       style={{
         margin:
-          window.innerWidth <= 440 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+          window.innerWidth <= 480 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
       <Row justify={"center"}>
@@ -1558,8 +1558,8 @@ const SpyOnMicScreen = () => {
             <>
               {" "}
               <Row
-                gutter={[32, 8]}
-                align={"middle"}
+                gutter={[0, 8]}
+                justify={"center"}
                 style={{ marginTop: "20px" }}
               >
                 {cards.map((card) => (
@@ -1567,8 +1567,8 @@ const SpyOnMicScreen = () => {
                     <>
                       <Col
                         className="gutter-row"
-                        xs={24}
-                        sm={24}
+                        xs={22}
+                        sm={22}
                         md={12}
                         lg={8}
                         xl={6}
@@ -1737,12 +1737,12 @@ const SpyOnMicScreen = () => {
           </Row>
           <Row justify={"center"} gutter={[64, 0]}>
             <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-              <Row justify={window.innerWidth <= 440 ? "center" : "end"}>
+              <Row justify={window.innerWidth <= 480 ? "center" : "end"}>
                 {" "}
                 <h3 style={{ margin: "0px" }}>Change minutes </h3>
               </Row>
               <Row
-                justify={window.innerWidth <= 440 ? "center" : "end"}
+                justify={window.innerWidth <= 480 ? "center" : "end"}
                 align={"middle"}
               >
                 {" "}
@@ -1757,13 +1757,13 @@ const SpyOnMicScreen = () => {
               </Row>
             </Col>
             <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-              <Row justify={window.innerWidth <= 440 ? "center" : "start"}>
+              <Row justify={window.innerWidth <= 480 ? "center" : "start"}>
                 {" "}
                 <h3 style={{ margin: "0px" }}>
                   Change Location Dataset (1 - 100)
                 </h3>
               </Row>
-              <Row justify={window.innerWidth <= 440 ? "center" : "start"}>
+              <Row justify={window.innerWidth <= 480 ? "center" : "start"}>
                 <Col>
                   <InputNumber
                     value={beginData}
@@ -1795,9 +1795,9 @@ const SpyOnMicScreen = () => {
                 }}
                 icon={<FaPlay />}
                 style={{
-                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                  width: window.innerWidth <= 440 ? "150px" : "200px",
-                  height: window.innerWidth <= 440 ? "40px" : "50px",
+                  fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                  width: window.innerWidth <= 480 ? "150px" : "200px",
+                  height: window.innerWidth <= 480 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >
@@ -1813,9 +1813,9 @@ const SpyOnMicScreen = () => {
                 }}
                 icon={<MdTimer />}
                 style={{
-                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                  width: window.innerWidth <= 440 ? "150px" : "200px",
-                  height: window.innerWidth <= 440 ? "40px" : "50px",
+                  fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                  width: window.innerWidth <= 480 ? "150px" : "200px",
+                  height: window.innerWidth <= 480 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >
@@ -1831,9 +1831,9 @@ const SpyOnMicScreen = () => {
                 }}
                 icon={<MdCancel />}
                 style={{
-                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                  width: window.innerWidth <= 440 ? "200px" : "200px",
-                  height: window.innerWidth <= 440 ? "40px" : "50px",
+                  fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                  width: window.innerWidth <= 480 ? "200px" : "200px",
+                  height: window.innerWidth <= 480 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >

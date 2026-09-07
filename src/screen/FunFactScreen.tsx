@@ -125,7 +125,7 @@ const FunFactScreen = () => {
     y: number;
   } | null>(null);
 
-  //console.log("card", cards);
+  // console.log("card", cards);
   // console.log("myCard", myCards);
   // console.log("topic", topic);
   // console.log("factValue", factValue);
@@ -1714,8 +1714,8 @@ const FunFactScreen = () => {
       </Row>
 
       {isHost && isHost.is_host === true && (
-        <Row justify={"center"} gutter={12}>
-          <Col sm={12} md={12}>
+        <Row justify={"center"} gutter={[32, 0]}>
+          <Col>
             <Button
               variant="solid"
               color="green"
@@ -1724,17 +1724,17 @@ const FunFactScreen = () => {
               }}
               icon={<AiFillCheckCircle />}
               style={{
-                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
-                width: window.innerWidth <= 480 ? "150px" : "200px",
+                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                width: window.innerWidth <= 480 ? "120px" : "150px",
                 height: window.innerWidth <= 480 ? "40px" : "50px",
-                marginBottom: "0px 0px 10px 0px",
+                marginBottom: "10px ",
               }}
             >
               Check
             </Button>
           </Col>
 
-          <Col sm={12} md={12}>
+          <Col>
             <Button
               variant="solid"
               color="red"
@@ -1743,8 +1743,8 @@ const FunFactScreen = () => {
               }}
               icon={<AiOutlineReload />}
               style={{
-                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
-                width: window.innerWidth <= 480 ? "150px" : "200px",
+                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                width: window.innerWidth <= 480 ? "120px" : "150px",
                 height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
@@ -1752,7 +1752,7 @@ const FunFactScreen = () => {
               Restart
             </Button>
           </Col>
-          <Col sm={24} md={24}>
+          <Col>
             <Button
               variant="solid"
               color="purple"
@@ -1761,8 +1761,8 @@ const FunFactScreen = () => {
               }}
               icon={<MdCancel />}
               style={{
-                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
-                width: window.innerWidth <= 480 ? "200px" : "200px",
+                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                width: window.innerWidth <= 480 ? "150px" : "180px",
                 height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
