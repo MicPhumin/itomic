@@ -1,0 +1,222 @@
+.itomic-card {
+  width: 100%;
+  max-width: 900px;
+  height: 130px;
+  margin: -4px auto;
+  overflow: hidden;
+  border-radius: 10;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* =========================
+   CARD LAYOUT
+========================= */
+
+.itomic-card .ant-card-body {
+  display: flex;
+  height: 100%;
+  padding: 0 !important;
+}
+
+/* =========================
+   RANK
+========================= */
+
+.itomic-rank {
+  width: 100px;
+  min-width: 100px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f7941d;
+
+  color: white;
+
+  font-size: 64px;
+  font-weight: 800;
+}
+
+/* =========================
+   MAIN INFO
+========================= */
+
+.itomic-info {
+  flex: 1;
+
+  min-width: 0;
+
+  padding: 18px 30px;
+
+  background: #292929;
+
+  color: white;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.itomic-title {
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.itomic-subtitle {
+  margin-top: 8px;
+
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.itomic-description {
+  margin-top: 2px;
+
+  font-size: 15px;
+  color: #eeeeee;
+}
+
+/* =========================
+   STATS
+========================= */
+
+.itomic-stats {
+  width: 100px;
+  min-width: 100px;
+
+  background: #f7941d;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-row {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stat-icon {
+  width: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  color: white;
+
+  font-size: 21px;
+}
+
+.stat-value {
+  width: 50%;
+  height: 100%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.08);
+
+  color: white;
+
+  font-size: 22px;
+  font-weight: 700;
+}
+
+/* =========================
+   WEEKS
+========================= */
+
+.itomic-weeks {
+  width: 120px;
+  min-width: 120px;
+
+  background: #ffc400;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  color: #222;
+}
+
+.weeks-number {
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 800;
+}
+
+.weeks-text {
+  font-size: 15px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 600px) {
+  .itomic-card {
+    height: 80px;
+  }
+
+  .itomic-rank {
+    width: 50px;
+    min-width: 60px;
+
+    font-size: 40px;
+  }
+
+  .itomic-info {
+    padding: 10px 10px;
+  }
+
+  .itomic-title {
+    font-size: 20px;
+  }
+
+  .itomic-subtitle {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+
+  .itomic-description {
+    font-size: 10px;
+  }
+
+  .itomic-stats {
+    width: 65px;
+    min-width: 65px;
+  }
+
+  .stat-icon {
+    font-size: 14px;
+  }
+
+  .stat-value {
+    font-size: 14px;
+  }
+
+  .itomic-weeks {
+    width: 75px;
+    min-width: 75px;
+  }
+
+  .weeks-number {
+    font-size: 20px;
+  }
+
+  .weeks-text {
+    font-size: 9px;
+  }
+}

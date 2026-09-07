@@ -20,12 +20,12 @@ import {
   Checkbox,
   Empty,
 } from "antd";
-import { AiFillPlusSquare, AiOutlineReload } from "react-icons/ai";
+import { AiOutlineReload } from "react-icons/ai";
 import { GiSpy } from "react-icons/gi";
 import { FaMapMarkedAlt, FaUserAlt, FaVoteYea } from "react-icons/fa";
 import { BiSolidShow } from "react-icons/bi";
 import { FaPlay } from "react-icons/fa6";
-import { MdTimer } from "react-icons/md";
+import { MdCancel, MdTimer } from "react-icons/md";
 import "./SpyOnMicScreen.css";
 
 interface SpyOnMicProps {
@@ -172,6 +172,8 @@ const SpyOnMicScreen = () => {
       String(value).toLowerCase().includes(searchText.toLowerCase()),
     ),
   );
+  console.log("window.innerWidth", window.innerWidth);
+
   // console.log("card", cards);
   const showRoomList = async () => {
     const { data } = await supabase
@@ -905,7 +907,7 @@ const SpyOnMicScreen = () => {
     <div
       style={{
         margin:
-          window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+          window.innerWidth <= 440 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
       <Row justify={"center"}>
@@ -922,6 +924,15 @@ const SpyOnMicScreen = () => {
           Spy On Mic
         </h3>
       </Row>
+      <h2
+        style={{
+          fontFamily: "Kanit, sans-serif",
+          fontSize: "30px",
+          color: "cyan",
+        }}
+      >
+        Room : {room}
+      </h2>
       <Modal
         title={
           <>
@@ -1138,7 +1149,8 @@ const SpyOnMicScreen = () => {
             </Col>
           </Row>
         }
-        closable={false}
+        closable={true}
+        onCancel={() => setIsModalOpen(false)}
         open={isModalOpen}
         footer={
           <>
@@ -1390,9 +1402,11 @@ const SpyOnMicScreen = () => {
           <Row justify={"center"}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               {" "}
-              <h2 style={{ fontSize: "20px" }}>Your Role Card</h2>
+              <h2 style={{ fontSize: "20px", fontFamily: "Kanit, sans-serif" }}>
+                Your Role Card
+              </h2>
             </Col>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+            <Col xs={22} sm={22} md={24} lg={24} xl={24}>
               <Card
                 title={myCards?.name}
                 style={{
@@ -1723,12 +1737,12 @@ const SpyOnMicScreen = () => {
           </Row>
           <Row justify={"center"} gutter={[64, 0]}>
             <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-              <Row justify={window.innerWidth <= 426 ? "center" : "end"}>
+              <Row justify={window.innerWidth <= 440 ? "center" : "end"}>
                 {" "}
                 <h3 style={{ margin: "0px" }}>Change minutes </h3>
               </Row>
               <Row
-                justify={window.innerWidth <= 426 ? "center" : "end"}
+                justify={window.innerWidth <= 440 ? "center" : "end"}
                 align={"middle"}
               >
                 {" "}
@@ -1743,13 +1757,13 @@ const SpyOnMicScreen = () => {
               </Row>
             </Col>
             <Col xs={24} sm={24} md={10} lg={10} xl={10}>
-              <Row justify={window.innerWidth <= 426 ? "center" : "start"}>
+              <Row justify={window.innerWidth <= 440 ? "center" : "start"}>
                 {" "}
                 <h3 style={{ margin: "0px" }}>
                   Change Location Dataset (1 - 100)
                 </h3>
               </Row>
-              <Row justify={window.innerWidth <= 426 ? "center" : "start"}>
+              <Row justify={window.innerWidth <= 440 ? "center" : "start"}>
                 <Col>
                   <InputNumber
                     value={beginData}
@@ -1771,8 +1785,8 @@ const SpyOnMicScreen = () => {
             </Col>
           </Row>
 
-          <Row justify={"center"} gutter={24} style={{ marginTop: "20px" }}>
-            <Col>
+          <Row justify={"center"} gutter={12} style={{ marginTop: "20px" }}>
+            <Col sm={12} md={12}>
               <Button
                 variant="solid"
                 color="green"
@@ -1781,16 +1795,16 @@ const SpyOnMicScreen = () => {
                 }}
                 icon={<FaPlay />}
                 style={{
-                  fontSize: "25px",
-                  width: "200px",
-                  height: "50px",
+                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                  width: window.innerWidth <= 440 ? "150px" : "200px",
+                  height: window.innerWidth <= 440 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >
                 Start
               </Button>
             </Col>
-            <Col>
+            <Col sm={12} md={12}>
               <Button
                 variant="solid"
                 color="red"
@@ -1799,31 +1813,31 @@ const SpyOnMicScreen = () => {
                 }}
                 icon={<MdTimer />}
                 style={{
-                  fontSize: "25px",
-                  width: "200px",
-                  height: "50px",
+                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                  width: window.innerWidth <= 440 ? "150px" : "200px",
+                  height: window.innerWidth <= 440 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >
                 Time'up
               </Button>
             </Col>
-            <Col>
+            <Col sm={24} md={24}>
               <Button
                 variant="solid"
                 color="purple"
                 onClick={() => {
                   deleteAllRows();
                 }}
-                icon={<AiFillPlusSquare />}
+                icon={<MdCancel />}
                 style={{
-                  fontSize: "25px",
-                  width: "200px",
-                  height: "50px",
+                  fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                  width: window.innerWidth <= 440 ? "200px" : "200px",
+                  height: window.innerWidth <= 440 ? "40px" : "50px",
                   marginBottom: "10px",
                 }}
               >
-                New Game
+                Delete Room
               </Button>
             </Col>
           </Row>

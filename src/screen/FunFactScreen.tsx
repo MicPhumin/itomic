@@ -32,6 +32,7 @@ import {
   SortableContext,
   arrayMove,
   horizontalListSortingStrategy,
+  verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 
 // import loadingGIF from "../assets/loading.gif";
@@ -128,6 +129,7 @@ const FunFactScreen = () => {
   // console.log("myCard", myCards);
   // console.log("topic", topic);
   // console.log("factValue", factValue);
+  const { TextArea } = Input;
   const values = Form.useWatch([], form);
   React.useEffect(() => {
     form
@@ -795,30 +797,31 @@ const FunFactScreen = () => {
       return (
         <>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "red",
+                marginTop: "10px",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               You Lose !!!
-            </h1>
+            </h2>
           </Row>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "red",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               กากเกิน ไปคุยกันใหม่นะ
-            </h1>
+            </h2>
           </Row>
         </>
       );
@@ -827,30 +830,31 @@ const FunFactScreen = () => {
       return (
         <>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "magenta",
+                marginTop: "10px",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               You Win !!!
-            </h1>
+            </h2>
           </Row>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "magenta",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               Perfect game
-            </h1>
+            </h2>
           </Row>
         </>
       );
@@ -868,30 +872,31 @@ const FunFactScreen = () => {
       return (
         <>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "wheat",
+                marginTop: "10px",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               Try Again
-            </h1>
+            </h2>
           </Row>
           <Row justify={"center"}>
-            <h1
+            <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "50px",
+                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
                 color: "wheat",
                 marginRight: "10px",
                 fontWeight: "bold",
               }}
             >
               Score : {myCards?.score}
-            </h1>
+            </h2>
           </Row>
         </>
       );
@@ -942,7 +947,7 @@ const FunFactScreen = () => {
     <div
       style={{
         margin:
-          window.innerWidth <= 426 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+          window.innerWidth <= 440 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
       <Row justify={"center"}>
@@ -1004,7 +1009,8 @@ const FunFactScreen = () => {
             </Button>
           </Row>
         }
-        closable={false}
+        closable={true}
+        onCancel={() => setIsModalOpen(false)}
         open={isModalOpen}
         footer={
           <>
@@ -1287,7 +1293,9 @@ const FunFactScreen = () => {
           <Row justify={"center"}>
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               {" "}
-              <h2 style={{ fontSize: "20px" }}>Your Card Number</h2>
+              <h2 style={{ fontSize: "20px", fontFamily: "Kanit, sans-serif" }}>
+                Your Card Number
+              </h2>
             </Col>
             <Col xs={22} sm={22} md={24} lg={24} xl={24}>
               <Card
@@ -1360,12 +1368,18 @@ const FunFactScreen = () => {
                     />
                   </Col>
                   <Col xs={20} sm={20} md={20} lg={20} xl={20}>
-                    <Input
+                    <TextArea
+                      rows={1}
                       disabled={myCards?.showVal === true ? true : false}
                       placeholder="Enter Note"
                       value={note}
                       allowClear
                       onChange={(e) => setNote(e.target.value)}
+                      maxLength={40}
+                      showCount
+                      // onPressEnter={(e) => {
+                      //   e.currentTarget.onchange();
+                      // }}
                     />
                   </Col>
                   <Col xs={4} sm={4} md={4} lg={4} xl={4}>
@@ -1408,7 +1422,7 @@ const FunFactScreen = () => {
         <h2
           style={{
             fontFamily: "Kanit, sans-serif",
-            fontSize: "30px",
+            fontSize: window.innerWidth <= 440 ? "25px" : "30px",
             color: "gray",
             marginRight: "10px",
           }}
@@ -1416,7 +1430,12 @@ const FunFactScreen = () => {
           Topic :
         </h2>
         <Row>
-          <h2 style={{ fontFamily: "Kanit, sans-serif", fontSize: "30px" }}>
+          <h2
+            style={{
+              fontFamily: "Kanit, sans-serif",
+              fontSize: window.innerWidth <= 440 ? "25px" : "30px",
+            }}
+          >
             {myCards?.topic}
           </h2>{" "}
         </Row>
@@ -1431,7 +1450,7 @@ const FunFactScreen = () => {
               }}
               icon={<AiFillPlusSquare />}
               style={{
-                marginLeft: "20px",
+                marginLeft: window.innerWidth <= 440 ? "0px" : "20px",
               }}
             >
               Change Topic
@@ -1543,116 +1562,160 @@ const FunFactScreen = () => {
           </Row>
         </>
       )}
-      <Row style={{ margin: "0px 50px 0px 50px" }} justify={"center"}>
+      <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
         <>
-          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-            <DndContext
-              collisionDetection={closestCenter}
-              onDragStart={handleDragStart}
-              onDragMove={handleDragMove}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext
-                items={cards}
-                strategy={horizontalListSortingStrategy}
-              >
-                <Row
-                  gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
-                  align={"middle"}
+          {window.innerWidth <= 440 ? (
+            <>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragMove={handleDragMove}
+                  onDragEnd={handleDragEnd}
                 >
-                  {cards.map((card, index) => (
-                    <>
-                      <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
-                        <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
-                        <SortableCard
-                          key={card.id}
-                          id={card.id}
-                          name={card.name}
-                          value={card.value}
-                          showVal={card?.showVal}
-                          active={card.active}
-                          is_host={card.is_host}
-                          room={card.room}
-                          topic={card.topic}
-                          note={card.note}
-                          noteColor={card.notecolor}
-                          host={myCards?.is_host}
-                          mode={card.mode}
-                        />
-                      </Col>
-                    </>
-                  ))}
-                </Row>
-              </SortableContext>
-
-              {remoteDrag &&
-                remoteDrag.left > 0 &&
-                (() => {
-                  const targetCard = cards.find(
-                    (card) => card.id === remoteDrag.cardId,
-                  );
-
-                  if (!targetCard) return null;
-
-                  // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
-                  if (targetCard.showVal === true) {
-                    return null;
-                  }
-
-                  return (
-                    <div
-                      style={{
-                        position: "fixed",
-                        left: `${remoteDrag.left}px`,
-                        top: `${remoteDrag.top}px`,
-                        transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
-                        transition: "transform 30ms linear",
-                        width: "200px",
-                        height: "220px",
-                        boxSizing: "border-box",
-                        padding: "15px",
-                        background: "#ffffff",
-                        border: "3px dashed #722ed1",
-                        borderRadius: "12px",
-                        boxShadow: "0 8px 25px rgba(114, 46, 209, 0.35)",
-                        zIndex: 99999,
-                        pointerEvents: "none",
-                        willChange: "transform",
-                      }}
+                  <SortableContext
+                    items={cards}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <Row>
+                      {cards.map((card) => (
+                        <>
+                          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                            <SortableCard
+                              key={card.id}
+                              id={card.id}
+                              name={card.name}
+                              value={card.value}
+                              showVal={card?.showVal}
+                              active={card.active}
+                              player_Order={card.player_order}
+                              is_host={card.is_host}
+                              room={card.room}
+                              topic={card.topic}
+                              note={card.note}
+                              mode={card.mode}
+                              noteColor={card.notecolor}
+                              host={myCards?.is_host}
+                            />
+                          </Col>
+                        </>
+                      ))}
+                    </Row>
+                  </SortableContext>
+                </DndContext>
+              </Col>
+            </>
+          ) : (
+            <>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                <DndContext
+                  collisionDetection={closestCenter}
+                  onDragStart={handleDragStart}
+                  onDragMove={handleDragMove}
+                  onDragEnd={handleDragEnd}
+                >
+                  <SortableContext
+                    items={cards}
+                    strategy={horizontalListSortingStrategy}
+                  >
+                    <Row
+                      gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
+                      align={"middle"}
                     >
-                      <div
-                        style={{
-                          fontWeight: "bold",
-                          color: "#333",
-                          fontSize: "16px",
-                        }}
-                      >
-                        {targetCard.name}
-                      </div>
+                      {cards.map((card, index) => (
+                        <>
+                          <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
+                            <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
+                            <SortableCard
+                              key={card.id}
+                              id={card.id}
+                              name={card.name}
+                              value={card.value}
+                              showVal={card?.showVal}
+                              active={card.active}
+                              is_host={card.is_host}
+                              room={card.room}
+                              topic={card.topic}
+                              note={card.note}
+                              mode={card.mode}
+                              noteColor={card.notecolor}
+                              host={myCards?.is_host}
+                            />
+                          </Col>
+                        </>
+                      ))}
+                    </Row>
+                  </SortableContext>
 
-                      <div
-                        style={{
-                          fontSize: "36px",
-                          fontWeight: "bold",
-                          textAlign: "center",
-                          color: "#722ed1",
-                          marginTop: "10px",
-                        }}
-                      >
-                        {targetCard.showVal ? targetCard.value : "?"}
-                      </div>
-                    </div>
-                  );
-                })()}
-            </DndContext>
-          </Col>
+                  {remoteDrag &&
+                    remoteDrag.left > 0 &&
+                    (() => {
+                      const targetCard = cards.find(
+                        (card) => card.id === remoteDrag.cardId,
+                      );
+
+                      if (!targetCard) return null;
+
+                      // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
+                      if (targetCard.showVal === true) {
+                        return null;
+                      }
+
+                      return (
+                        <div
+                          style={{
+                            position: "fixed",
+                            left: `${remoteDrag.left}px`,
+                            top: `${remoteDrag.top}px`,
+                            transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
+                            transition: "transform 30ms linear",
+                            width: "200px",
+                            height: "220px",
+                            boxSizing: "border-box",
+                            padding: "15px",
+                            background: "#ffffff",
+                            border: "3px dashed #722ed1",
+                            borderRadius: "12px",
+                            boxShadow: "0 8px 25px rgba(114, 46, 209, 0.35)",
+                            zIndex: 99999,
+                            pointerEvents: "none",
+                            willChange: "transform",
+                          }}
+                        >
+                          <div
+                            style={{
+                              fontWeight: "bold",
+                              color: "#333",
+                              fontSize: "16px",
+                            }}
+                          >
+                            {targetCard.name}
+                          </div>
+
+                          <div
+                            style={{
+                              fontSize: "36px",
+                              fontWeight: "bold",
+                              textAlign: "center",
+                              color: "#722ed1",
+                              marginTop: "10px",
+                            }}
+                          >
+                            {targetCard.showVal ? targetCard.value : "?"}
+                          </div>
+                        </div>
+                      );
+                    })()}
+                </DndContext>
+              </Col>
+            </>
+          )}
         </>
-        {/* )} */}
       </Row>
 
       {isHost && isHost.is_host === true && (
-        <Row justify={"center"} gutter={24}>
-          <Col>
+        <Row justify={"center"} gutter={12}>
+          <Col sm={12} md={12}>
             <Button
               variant="solid"
               color="green"
@@ -1661,17 +1724,17 @@ const FunFactScreen = () => {
               }}
               icon={<AiFillCheckCircle />}
               style={{
-                fontSize: "25px",
-                width: "200px",
-                height: "50px",
-                marginBottom: "10px",
+                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                width: window.innerWidth <= 440 ? "150px" : "200px",
+                height: window.innerWidth <= 440 ? "40px" : "50px",
+                marginBottom: "0px 0px 10px 0px",
               }}
             >
               Check
             </Button>
           </Col>
 
-          <Col>
+          <Col sm={12} md={12}>
             <Button
               variant="solid"
               color="red"
@@ -1680,31 +1743,31 @@ const FunFactScreen = () => {
               }}
               icon={<AiOutlineReload />}
               style={{
-                fontSize: "25px",
-                width: "200px",
-                height: "50px",
+                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                width: window.innerWidth <= 440 ? "150px" : "200px",
+                height: window.innerWidth <= 440 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >
               Restart
             </Button>
           </Col>
-          <Col>
+          <Col sm={24} md={24}>
             <Button
               variant="solid"
               color="purple"
               onClick={() => {
                 deleteAllRows();
               }}
-              icon={<AiFillPlusSquare />}
+              icon={<MdCancel />}
               style={{
-                fontSize: "25px",
-                width: "200px",
-                height: "50px",
+                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
+                width: window.innerWidth <= 440 ? "200px" : "200px",
+                height: window.innerWidth <= 440 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >
-              New Game
+              Delete Room
             </Button>
           </Col>
         </Row>
