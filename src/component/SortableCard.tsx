@@ -174,7 +174,7 @@ export default function SortableCard({
               className=""
               title={
                 <>
-                  {host === true && is_host === false && (
+                  {/* {host === true && is_host === false && (
                     <Button
                       type="text"
                       size="small"
@@ -198,7 +198,7 @@ export default function SortableCard({
                     >
                       <MdCancel style={{ color: "red" }} />
                     </Button>
-                  )}
+                  )} */}
                   <Row justify={"center"}>
                     <div
                       style={{

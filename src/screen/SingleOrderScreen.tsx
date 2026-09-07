@@ -412,6 +412,12 @@ const SingleOrderScreen = () => {
   };
 
   const handleOk = async () => {
+    try {
+      await form.validateFields();
+    } catch {
+      return;
+    }
+
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
 
     for (let i = shuffled.length - 1; i > 0; i--) {
@@ -1105,7 +1111,7 @@ const SingleOrderScreen = () => {
 
           {hostBtn === true ? (
             <>
-              <Row gutter={12} style={{ marginLeft: "1px" }}>
+              <Row gutter={12} style={{ marginLeft: "1px" }} justify={"start"}>
                 <h3
                   style={{
                     margin: "0px 0px 20px 8px",
@@ -1184,88 +1190,104 @@ const SingleOrderScreen = () => {
             </>
           ) : (
             <>
-              <Row style={{ marginLeft: "10px" }}>
-                <h3 style={{ margin: "0px 5px 0px 0px" }}>Select Room :</h3>
-                <h3 style={{ color: "green", margin: "0px 5px 0px 0px" }}>
-                  {selectRoom}
-                </h3>
-              </Row>
-
-              {roomList.length === 0 ? (
-                <Row justify={"center"}>
-                  <Empty style={{ width: "80%" }} />
-                </Row>
-              ) : (
-                <>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    {roomList.map((item) => (
-                      <Card
-                        hoverable
-                        onClick={() => setSelectRoom(item.room)}
-                        style={{
-                          width: 200,
-                          cursor: "pointer",
-                          borderRadius: 12,
-                          border:
-                            selectRoom === item.room
-                              ? "2px solid green"
-                              : "1px solid #d9d9d9",
-                        }}
-                      >
-                        <Row>
-                          <Col>
-                            <div
-                              style={{
-                                color: "purple",
-                                marginRight: "5px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              Room :{" "}
-                            </div>
-                          </Col>
-                          <Col>
-                            <div>{item.room}</div>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div
-                              style={{
-                                color: "blue",
-                                marginRight: "5px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              Host :{" "}
-                            </div>
-                          </Col>
-                          <Col>
-                            {" "}
-                            <div>{item.host}</div>
-                          </Col>
-                        </Row>
-                        <Row>
-                          <Col>
-                            <div
-                              style={{
-                                color: "magenta",
-                                marginRight: "5px",
-                                fontWeight: "bold",
-                              }}
-                            >
-                              Player in room :{" "}
-                            </div>
-                          </Col>
-                          <Col>
-                            <div>{item.numberOfPlay}</div>
-                          </Col>
-                        </Row>
-                      </Card>
-                    ))}
-                  </div>
-                </>
-              )}
+              <Form.Item
+                name="room"
+                hidden={hostBtn}
+                label={
+                  <>
+                    <h3>Select Room : </h3>{" "}
+                    <h3 style={{ color: "green", margin: "0px 0px 0px 5px" }}>
+                      {selectRoom}
+                    </h3>
+                  </>
+                }
+                rules={[
+                  {
+                    required: !hostBtn,
+                    message: "Please select a room",
+                  },
+                ]}
+              >
+                {roomList.length === 0 ? (
+                  <Row justify={"center"}>
+                    <Empty style={{ width: "80%" }} />
+                  </Row>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", gap: 16 }}>
+                      {roomList.map((item) => (
+                        <Card
+                          key={item.room}
+                          hoverable
+                          onClick={() => {
+                            setSelectRoom(item.room);
+                            form.setFieldsValue({ room: item.room });
+                          }}
+                          style={{
+                            width: 200,
+                            cursor: "pointer",
+                            borderRadius: 12,
+                            border:
+                              selectRoom === item.room
+                                ? "2px solid green"
+                                : "1px solid #d9d9d9",
+                          }}
+                        >
+                          <Row>
+                            <Col>
+                              <div
+                                style={{
+                                  color: "purple",
+                                  marginRight: "5px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Room :{" "}
+                              </div>
+                            </Col>
+                            <Col>
+                              <div>{item.room}</div>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col>
+                              <div
+                                style={{
+                                  color: "blue",
+                                  marginRight: "5px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Host :{" "}
+                              </div>
+                            </Col>
+                            <Col>
+                              {" "}
+                              <div>{item.host}</div>
+                            </Col>
+                          </Row>
+                          <Row>
+                            <Col>
+                              <div
+                                style={{
+                                  color: "magenta",
+                                  marginRight: "5px",
+                                  fontWeight: "bold",
+                                }}
+                              >
+                                Player in room :{" "}
+                              </div>
+                            </Col>
+                            <Col>
+                              <div>{item.numberOfPlay}</div>
+                            </Col>
+                          </Row>
+                        </Card>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </Form.Item>
             </>
           )}
         </Form>
