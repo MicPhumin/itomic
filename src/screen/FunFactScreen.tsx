@@ -800,7 +800,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "red",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -814,7 +814,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "red",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -833,7 +833,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "magenta",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -847,7 +847,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "magenta",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -875,7 +875,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "wheat",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -889,7 +889,7 @@ const FunFactScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "wheat",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -947,7 +947,7 @@ const FunFactScreen = () => {
     <div
       style={{
         margin:
-          window.innerWidth <= 440 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+          window.innerWidth <= 480 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
       <Row justify={"center"}>
@@ -1422,7 +1422,7 @@ const FunFactScreen = () => {
         <h2
           style={{
             fontFamily: "Kanit, sans-serif",
-            fontSize: window.innerWidth <= 440 ? "25px" : "30px",
+            fontSize: window.innerWidth <= 480 ? "25px" : "30px",
             color: "gray",
             marginRight: "10px",
           }}
@@ -1433,7 +1433,7 @@ const FunFactScreen = () => {
           <h2
             style={{
               fontFamily: "Kanit, sans-serif",
-              fontSize: window.innerWidth <= 440 ? "25px" : "30px",
+              fontSize: window.innerWidth <= 480 ? "25px" : "30px",
             }}
           >
             {myCards?.topic}
@@ -1450,7 +1450,7 @@ const FunFactScreen = () => {
               }}
               icon={<AiFillPlusSquare />}
               style={{
-                marginLeft: window.innerWidth <= 440 ? "0px" : "20px",
+                marginLeft: window.innerWidth <= 480 ? "0px" : "20px",
               }}
             >
               Change Topic
@@ -1564,7 +1564,7 @@ const FunFactScreen = () => {
       )}
       <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
         <>
-          {window.innerWidth <= 440 ? (
+          {window.innerWidth <= 480 ? (
             <>
               <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                 <DndContext
@@ -1724,9 +1724,9 @@ const FunFactScreen = () => {
               }}
               icon={<AiFillCheckCircle />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "150px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "150px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "0px 0px 10px 0px",
               }}
             >
@@ -1743,9 +1743,9 @@ const FunFactScreen = () => {
               }}
               icon={<AiOutlineReload />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "150px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "150px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >
@@ -1761,9 +1761,9 @@ const FunFactScreen = () => {
               }}
               icon={<MdCancel />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "200px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "200px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >

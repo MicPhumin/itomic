@@ -828,7 +828,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "red",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -842,7 +842,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "red",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -861,7 +861,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "magenta",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -875,7 +875,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "magenta",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -903,7 +903,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "wheat",
                 marginTop: "10px",
                 marginRight: "10px",
@@ -917,7 +917,7 @@ const SingleOrderScreen = () => {
             <h2
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 440 ? "30px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "30px" : "50px",
                 color: "wheat",
                 marginRight: "10px",
                 fontWeight: "bold",
@@ -975,7 +975,7 @@ const SingleOrderScreen = () => {
     <div
       style={{
         margin:
-          window.innerWidth <= 440 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
+          window.innerWidth <= 480 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
       }}
     >
       <Row justify={"center"}>
@@ -1350,7 +1350,7 @@ const SingleOrderScreen = () => {
                       getContrastColor(noteColor) === "#FFFFFF"
                         ? "1px 1px 0 #000, 2px 2px 0 #000"
                         : "",
-                    fontSize: window.innerWidth <= 440 ? "40px" : "80px",
+                    fontSize: window.innerWidth <= 480 ? "40px" : "80px",
                     fontWeight: "bold",
                   }}
                 >
@@ -1409,7 +1409,7 @@ const SingleOrderScreen = () => {
         <h2
           style={{
             fontFamily: "Kanit, sans-serif",
-            fontSize: window.innerWidth <= 440 ? "25px" : "30px",
+            fontSize: window.innerWidth <= 480 ? "25px" : "30px",
             color: "gray",
             marginRight: "10px",
           }}
@@ -1420,7 +1420,7 @@ const SingleOrderScreen = () => {
           <h2
             style={{
               fontFamily: "Kanit, sans-serif",
-              fontSize: window.innerWidth <= 440 ? "25px" : "30px",
+              fontSize: window.innerWidth <= 480 ? "25px" : "30px",
             }}
           >
             {myCards?.topic}
@@ -1437,7 +1437,7 @@ const SingleOrderScreen = () => {
               }}
               icon={<AiFillPlusSquare />}
               style={{
-                marginLeft: window.innerWidth <= 440 ? "0px" : "20px",
+                marginLeft: window.innerWidth <= 480 ? "0px" : "20px",
               }}
             >
               Change Topic
@@ -1552,7 +1552,7 @@ const SingleOrderScreen = () => {
       )}
       <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
         <>
-          {window.innerWidth <= 440 ? (
+          {window.innerWidth <= 480 ? (
             <>
               <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                 <DndContext
@@ -1712,9 +1712,9 @@ const SingleOrderScreen = () => {
               }}
               icon={<AiFillCheckCircle />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "150px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "150px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px ",
               }}
             >
@@ -1731,9 +1731,9 @@ const SingleOrderScreen = () => {
               }}
               icon={<AiOutlineReload />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "150px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "150px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >
@@ -1749,9 +1749,9 @@ const SingleOrderScreen = () => {
               }}
               icon={<MdCancel />}
               style={{
-                fontSize: window.innerWidth <= 440 ? "20px" : "25px",
-                width: window.innerWidth <= 440 ? "200px" : "200px",
-                height: window.innerWidth <= 440 ? "40px" : "50px",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                width: window.innerWidth <= 480 ? "200px" : "200px",
+                height: window.innerWidth <= 480 ? "40px" : "50px",
                 marginBottom: "10px",
               }}
             >

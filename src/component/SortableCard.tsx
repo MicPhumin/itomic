@@ -104,7 +104,7 @@ export default function SortableCard({
 
   return (
     <>
-      {window.innerWidth <= 440 ? (
+      {window.innerWidth <= 480 ? (
         <>
           <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
             <Card
@@ -204,7 +204,7 @@ export default function SortableCard({
                       style={{
                         marginTop: "5px",
                         fontSize:
-                          window.innerWidth <= 440
+                          window.innerWidth <= 480
                             ? "clamp(9px, 3vw, 12px)"
                             : "16px",
                         color: getContrastColor(
@@ -227,7 +227,7 @@ export default function SortableCard({
                         color: "goldenrod",
                         textShadow: "1px 1px 0 #000, 1px 1px 0 #000",
                         fontSize:
-                          window.innerWidth <= 440
+                          window.innerWidth <= 480
                             ? "clamp(9px, 3vw, 10px)"
                             : "14px",
                       }}
@@ -244,14 +244,14 @@ export default function SortableCard({
                 borderColor: active ? active : "",
                 borderWidth: active ? "5px" : "",
                 height: "auto",
-                minHeight: window.innerWidth <= 440 ? "160px" : "250px",
+                minHeight: window.innerWidth <= 480 ? "160px" : "250px",
               }}
               styles={{
                 header: {
-                  padding: window.innerWidth <= 440 ? "0px 0px" : "0px 24px",
+                  padding: window.innerWidth <= 480 ? "0px 0px" : "0px 24px",
                 },
                 body: {
-                  padding: window.innerWidth <= 440 ? "10px 0px" : "24px",
+                  padding: window.innerWidth <= 480 ? "10px 0px" : "24px",
                 },
               }}
             >
@@ -268,7 +268,7 @@ export default function SortableCard({
                           ? "1px 1px 0 #000, 2px 2px 0 #000"
                           : "",
                       fontSize:
-                        window.innerWidth <= 440
+                        window.innerWidth <= 480
                           ? "40px"
                           : mode === "fact"
                             ? value >= 100000
@@ -289,7 +289,7 @@ export default function SortableCard({
                 <Row justify={"center"}>
                   <div
                     style={{
-                      fontSize: window.innerWidth <= 440 ? "40px" : "80px",
+                      fontSize: window.innerWidth <= 480 ? "40px" : "80px",
                       fontWeight: "bold",
                       color: getContrastColor(
                         noteColor ? noteColor : "#FFFFFF",
@@ -315,7 +315,7 @@ export default function SortableCard({
                   lineHeight: 1.2,
                   fontFamily: "Kanit, sans-serif",
                   fontSize:
-                    window.innerWidth <= 440 ? "clamp(9px, 3vw, 15px)" : "25px",
+                    window.innerWidth <= 480 ? "clamp(9px, 3vw, 15px)" : "25px",
                   fontWeight: "bold",
                   color: getContrastColor(noteColor ? noteColor : "#FFFFFF"),
                   textShadow:
