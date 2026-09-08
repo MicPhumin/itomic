@@ -163,6 +163,28 @@ export default function SortableCard({
                   {note}
                 </div>
               </div>
+
+              <Button
+                icon={<MdCancel style={{ color: "red" }} />}
+                type="text"
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  console.log("id", id);
+                  console.log("mode", mode);
+                  console.log("room", room);
+
+                  deletePlayer(id);
+                }}
+                style={{
+                  margin: "0px 0px 10px 0px",
+                  position: "absolute",
+                  right: 0,
+                  top: 0,
+                }}
+              ></Button>
             </Card>
           </div>
         </>
