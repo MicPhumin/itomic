@@ -1,8 +1,9 @@
-import { Card, Row, Typography } from "antd";
+import { Button, Card, Row, Typography } from "antd";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
 import { supabase } from "../supabase";
 import "./SortableCard.css";
+import { MdCancel } from "react-icons/md";
 
 interface SortableCardProps {
   id: number;
@@ -29,7 +30,7 @@ export default function SortableCard({
   note,
   noteColor,
   is_host,
-  // host,
+  host,
   room,
   mode,
   player_Order,
@@ -173,7 +174,7 @@ export default function SortableCard({
               className=""
               title={
                 <>
-                  {/* {host === true && is_host === false && (
+                  {host === true && is_host === false && (
                     <Button
                       type="text"
                       size="small"
@@ -197,7 +198,7 @@ export default function SortableCard({
                     >
                       <MdCancel style={{ color: "red" }} />
                     </Button>
-                  )} */}
+                  )}
                   <Row justify={"center"}>
                     <div
                       style={{
