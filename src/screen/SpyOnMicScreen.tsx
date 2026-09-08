@@ -165,7 +165,13 @@ const SpyOnMicScreen = () => {
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
-  }, [form, values]);
+  }, [form, values, hostBtn, room]);
+
+  useEffect(() => {
+    if (!hostBtn) {
+      form.resetFields(["room"]);
+    }
+  }, [hostBtn, form]);
 
   const filteredData = locationList.filter((record) =>
     Object.values(record).some((value) =>
@@ -245,10 +251,9 @@ const SpyOnMicScreen = () => {
       localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
-
+    showRoomList();
     if (data) {
       setCards(data);
-      showRoomList();
     }
   };
 
@@ -1195,13 +1200,20 @@ const SpyOnMicScreen = () => {
               <Form.Item
                 name="Name"
                 label={<h3>Enter Name</h3>}
-                rules={[{ required: true }]}
+                rules={[
+                  {
+                    required: true,
+                    whitespace: true,
+                    message: "Please enter your name",
+                  },
+                ]}
               >
                 <Input
                   placeholder="Enter Name"
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
+                    form.setFieldsValue({ Name: e.target.value });
                   }}
                 />
               </Form.Item>
@@ -1210,6 +1222,7 @@ const SpyOnMicScreen = () => {
             <Col xs={24} sm={24} md={8} lg={8} xl={8}>
               <h3>Host (Create Room)</h3>
               <Switch
+                disabled={selectRoom === "" ? false : true}
                 onChange={(e) => {
                   setHostBtn(e);
                 }}
@@ -1251,21 +1264,28 @@ const SpyOnMicScreen = () => {
           {hostBtn === true ? (
             <>
               <Row gutter={12} style={{ marginLeft: "1px" }}>
-                <h3
-                  style={{
-                    margin: "0px 0px 20px 8px",
-                  }}
+                <Form.Item
+                  name="room"
+                  label={<h3>Create Room Name</h3>}
+                  style={{ width: "100%" }}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Please enter a room name",
+                    },
+                  ]}
                 >
-                  Create Room Name{" "}
-                </h3>
-                <Input
-                  placeholder="Enter Room Name"
-                  value={room}
-                  onChange={(e) => {
-                    setRoom(e.target.value);
-                  }}
-                  style={{ marginBottom: "10px" }}
-                />
+                  <Input
+                    placeholder="Enter Room Name"
+                    value={room}
+                    onChange={(e) => {
+                      setRoom(e.target.value);
+                      form.setFieldsValue({ room: e.target.value });
+                    }}
+                    style={{ marginBottom: "10px" }}
+                  />
+                </Form.Item>
               </Row>{" "}
               <Button
                 variant="solid"
@@ -1280,39 +1300,41 @@ const SpyOnMicScreen = () => {
             </>
           ) : (
             <>
-              {roomList.length === 0 ? (
-                <Row justify={"center"}>
-                  <Empty style={{ width: "80%" }} />
-                </Row>
-              ) : (
-                <>
-                  <Form.Item
-                    name="room"
-                    hidden={hostBtn}
-                    label={
-                      <>
-                        <h3>Select Room : </h3>{" "}
-                        <h3
-                          style={{ color: "green", margin: "0px 0px 0px 5px" }}
-                        >
-                          {selectRoom}
-                        </h3>
-                      </>
-                    }
-                    rules={[
-                      {
-                        required: !hostBtn,
-                        message: "Please select a room",
-                      },
-                    ]}
-                  >
+              <Form.Item
+                name="room"
+                hidden={hostBtn}
+                label={
+                  <>
+                    <h3>Select Room : </h3>{" "}
+                    <h3 style={{ color: "green", margin: "0px 0px 0px 5px" }}>
+                      {selectRoom}
+                    </h3>
+                  </>
+                }
+                rules={[
+                  {
+                    required: !hostBtn,
+                    message: "Please select a room",
+                  },
+                ]}
+              >
+                {roomList.length === 0 ? (
+                  <Row justify={"center"}>
+                    <Empty style={{ width: "80%" }} />
+                  </Row>
+                ) : (
+                  <>
                     <div style={{ display: "flex", gap: 16 }}>
                       {roomList.map((item) => (
                         <Card
                           hoverable
                           onClick={() => {
-                            setSelectRoom(item.room);
-                            form.setFieldsValue({ room: item.room });
+                            const nextRoom =
+                              selectRoom === item.room ? "" : item.room;
+                            setSelectRoom(nextRoom);
+                            form.setFieldsValue({
+                              room: nextRoom || undefined,
+                            });
                           }}
                           style={{
                             width: 200,
@@ -1376,9 +1398,9 @@ const SpyOnMicScreen = () => {
                         </Card>
                       ))}
                     </div>
-                  </Form.Item>
-                </>
-              )}
+                  </>
+                )}
+              </Form.Item>
             </>
           )}
         </Form>
@@ -1558,21 +1580,20 @@ const SpyOnMicScreen = () => {
             {myCards === undefined && (
               <>
                 <Row justify={"center"}>
-                  <h3>
-                    If didn't see Join Room Click Clear Local Storage Button
-                  </h3>
+                  <h3>If didn't see Join Room Click Reset Button</h3>
                 </Row>
                 <Row justify={"center"}>
                   <Button
                     variant="solid"
-                    color="volcano"
+                    color="red"
+                    size="large"
                     onClick={() => {
                       localStorage.clear();
                       window.location.reload();
                     }}
                     style={{ marginLeft: "10px" }}
                   >
-                    Clear Local Storage
+                    Reset
                   </Button>
                 </Row>
               </>
@@ -1580,7 +1601,7 @@ const SpyOnMicScreen = () => {
             <>
               {" "}
               <Row
-                gutter={[0, 8]}
+                gutter={[10, 8]}
                 justify={"center"}
                 style={{ marginTop: "20px" }}
               >

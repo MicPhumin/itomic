@@ -84,7 +84,7 @@ const FunFactScreen = () => {
   const [roomList, setRoomList] = useState<RoomList[]>([]);
   const [selectRoom, setSelectRoom] = useState<string>("");
   const [topic, setTopic] = useState<string>("");
-  const [factValue, setFactValue] = useState<number | null>(null);
+  const [factValue, setFactValue] = useState<number | null>(0);
   const [note, setNote] = useState("");
   const [noteColor, setNoteColor] = useState<string>("#FFFFFF");
   const [changeTopic, setChangeTopic] = useState<boolean>(false);
@@ -136,7 +136,13 @@ const FunFactScreen = () => {
       .validateFields({ validateOnly: true })
       .then(() => setSubmittable(true))
       .catch(() => setSubmittable(false));
-  }, [form, values]);
+  }, [form, values, hostBtn, room]);
+
+  useEffect(() => {
+    if (!hostBtn) {
+      form.resetFields(["room"]);
+    }
+  }, [hostBtn, form]);
 
   const showRoomList = async () => {
     const { data } = await supabase
@@ -183,10 +189,11 @@ const FunFactScreen = () => {
       .select("*")
       .eq("room", player ? player.room : room)
       .eq("mode", "fact")
-      .order("player_order");
+      .order("id");
 
+    const sortedData = data?.sort((a, b) => a.player_order - b.player_order);
     if (player) {
-      const findHost = data?.find((item) => {
+      const findHost = sortedData?.find((item) => {
         return item.is_host === player.is_host;
       });
       if (findHost?.is_host == true) {
@@ -195,23 +202,28 @@ const FunFactScreen = () => {
         setHeart(findHost.heart);
       }
 
-      const findPlayer = data?.find((item) => {
+      const findPlayer = sortedData?.find((item) => {
         return item.id == player?.id;
       });
+      console.log("findPlayer", findPlayer);
+      if (findPlayer) {
+        setMyCards(findPlayer);
+        // setNote(findPlayer ? findPlayer.note : "");
+        // setNoteColor(findPlayer ? findPlayer.notecolor : "");
+        setHeart(findPlayer ? findPlayer.heart : 3);
+        setRoom(findPlayer ? findPlayer.room : room);
+        localStorage.setItem("player", JSON.stringify(findPlayer));
+      }
 
-      setMyCards(findPlayer);
-      setHeart(findPlayer ? findPlayer.heart : 3);
-      setRoom(findPlayer ? findPlayer.room : room);
-      localStorage.setItem("player", JSON.stringify(findPlayer));
       setIsModalOpen(false);
     }
-
-    if (data) {
-      setCards(data);
+    showRoomList();
+    if (sortedData) {
+      setCards(sortedData);
       // const findTopic = data.find((item) => {
       //   return item?.topic !== "";
       // });
-      showRoomList();
+
       // setTopic(findTopic ? findTopic.topic : topic);
     }
   };
@@ -253,10 +265,6 @@ const FunFactScreen = () => {
             if (player.showVal && player.showVal === true) {
               console.log("ShowVal");
             }
-            // if (player.value === null && player.note === null) {
-            //   setFactValue(null);
-            //   setNote("");
-            // }
 
             // if (player.topic) {
             //   setChangeTopic(false);
@@ -362,16 +370,18 @@ const FunFactScreen = () => {
   }, []);
 
   const handleRestart = async () => {
+    setFactValue(0);
     for (let i = 0; i < cards.length; i++) {
       await supabase
         .from("itomic")
         .update({
-          value: null,
+          value: 0,
           active: null,
           score: null,
           showVal: false,
           note: "",
           heart: 3,
+          topic: null,
           player_order: i + 1,
         })
         .eq("id", cards[i].id)
@@ -749,8 +759,8 @@ const FunFactScreen = () => {
       .from("itomic")
       .update({ value: value, note: note, notecolor: noteColor })
       .eq("room", room)
-      .eq("id", player.id)
-      .eq("mode", "fact");
+      .eq("mode", "fact")
+      .eq("id", player.id);
   };
 
   // const handleColorNote = async (noteColor: string) => {
@@ -970,16 +980,6 @@ const FunFactScreen = () => {
           iTOMIC : Fact
         </h3>
       </Row>
-      <h2
-        style={{
-          fontFamily: "Kanit, sans-serif",
-          fontSize: "30px",
-          color: "cyan",
-        }}
-      >
-        Room : {room}
-      </h2>
-
       <Modal
         title={
           <Row>
@@ -1055,13 +1055,20 @@ const FunFactScreen = () => {
               <Form.Item
                 name="Name"
                 label={<h3>Enter Name</h3>}
-                rules={[{ required: true }]}
+                rules={[
+                  {
+                    required: true,
+                    whitespace: true,
+                    message: "Please enter your name",
+                  },
+                ]}
               >
                 <Input
                   placeholder="Enter Name"
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
+                    form.setFieldsValue({ Name: e.target.value });
                   }}
                 />
               </Form.Item>
@@ -1071,6 +1078,7 @@ const FunFactScreen = () => {
               {" "}
               <h3>Host (Create Room)</h3>
               <Switch
+                disabled={selectRoom === "" ? false : true}
                 onChange={(e) => {
                   setHostBtn(e);
                 }}
@@ -1083,22 +1091,29 @@ const FunFactScreen = () => {
           {hostBtn === true ? (
             <>
               <Row gutter={12} style={{ marginLeft: "1px" }} justify={"start"}>
-                <h3
-                  style={{
-                    margin: "0px 0px 20px 8px",
-                  }}
+                <Form.Item
+                  name="room"
+                  label={<h3>Create Room Name</h3>}
+                  style={{ width: "100%" }}
+                  rules={[
+                    {
+                      required: true,
+                      whitespace: true,
+                      message: "Please enter a room name",
+                    },
+                  ]}
                 >
-                  Create Room Name{" "}
-                </h3>{" "}
-                <Input
-                  placeholder="Enter Room Name"
-                  value={room}
-                  onChange={(e) => {
-                    setRoom(e.target.value);
-                  }}
-                />
+                  <Input
+                    placeholder="Enter Room Name"
+                    value={room}
+                    onChange={(e) => {
+                      setRoom(e.target.value);
+                      form.setFieldsValue({ room: e.target.value });
+                    }}
+                  />
+                </Form.Item>
               </Row>{" "}
-              <h3 style={{ marginLeft: "10px" }}>Enter topic</h3>
+              {/* <h3 style={{ marginLeft: "10px" }}>Enter topic</h3>
               <Row gutter={12} style={{ marginLeft: "1px" }}>
                 <AutoComplete
                   style={{
@@ -1147,7 +1162,7 @@ const FunFactScreen = () => {
                   }
                   allowClear
                 />
-              </Row>
+              </Row> */}
               <Button
                 variant="solid"
                 color="red"
@@ -1161,39 +1176,41 @@ const FunFactScreen = () => {
             </>
           ) : (
             <>
-              {roomList.length === 0 ? (
-                <Row justify={"center"}>
-                  <Empty style={{ width: "80%" }} />
-                </Row>
-              ) : (
-                <>
-                  <Form.Item
-                    name="room"
-                    hidden={hostBtn}
-                    label={
-                      <>
-                        <h3>Select Room : </h3>{" "}
-                        <h3
-                          style={{ color: "green", margin: "0px 0px 0px 5px" }}
-                        >
-                          {selectRoom}
-                        </h3>
-                      </>
-                    }
-                    rules={[
-                      {
-                        required: !hostBtn,
-                        message: "Please select a room",
-                      },
-                    ]}
-                  >
+              <Form.Item
+                name="room"
+                hidden={hostBtn}
+                label={
+                  <>
+                    <h3>Select Room : </h3>{" "}
+                    <h3 style={{ color: "green", margin: "0px 0px 0px 5px" }}>
+                      {selectRoom}
+                    </h3>
+                  </>
+                }
+                rules={[
+                  {
+                    required: !hostBtn,
+                    message: "Please select a room",
+                  },
+                ]}
+              >
+                {roomList.length === 0 ? (
+                  <Row justify={"center"}>
+                    <Empty style={{ width: "80%" }} />
+                  </Row>
+                ) : (
+                  <>
                     <div style={{ display: "flex", gap: 16 }}>
                       {roomList.map((item) => (
                         <Card
                           hoverable
                           onClick={() => {
-                            setSelectRoom(item.room);
-                            form.setFieldsValue({ room: item.room });
+                            const nextRoom =
+                              selectRoom === item.room ? "" : item.room;
+                            setSelectRoom(nextRoom);
+                            form.setFieldsValue({
+                              room: nextRoom || undefined,
+                            });
                           }}
                           style={{
                             width: 200,
@@ -1257,561 +1274,630 @@ const FunFactScreen = () => {
                         </Card>
                       ))}
                     </div>
-                  </Form.Item>
-                </>
-              )}
+                  </>
+                )}
+              </Form.Item>
             </>
           )}
         </Form>
       </Modal>
-      <Row justify={"space-between"}>
-        <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-          <h1
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-            }}
-          >
-            Sort the numbers from smallest to largest .
-          </h1>
-          <Row
-            justify={"center"}
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-            }}
-          >
+      {myCards === undefined ? (
+        <>
+          <Row justify={"center"}>
             <h3
               style={{
                 fontFamily: "Kanit, sans-serif",
-                fontSize: "30px",
-                color: "white",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                margin: 10,
               }}
             >
-              Life Point
+              ถ้าไม่เห็นหน้าต่าง join room
             </h3>
           </Row>
-
           <Row justify={"center"}>
-            {Array.from({ length: heart }).map((_, index) => (
-              <IoIosHeart
-                key={index}
-                style={{ color: "red", width: "50px", height: "50px" }}
-              />
-            ))}
-          </Row>
-          <h3
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "white",
-            }}
-          >
-            Score : {score}
-          </h3>
-        </Col>
-
-        <Col xs={24} sm={24} md={10} lg={6} xl={6}>
-          <Row justify={"center"}>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-              {" "}
-              <h2 style={{ fontSize: "20px", fontFamily: "Kanit, sans-serif" }}>
-                Your Card Number
-              </h2>
-            </Col>
-            <Col xs={22} sm={22} md={24} lg={24} xl={24}>
-              <Card
-                title={
-                  <div
-                    style={{
-                      color: getContrastColor(noteColor),
-                      textShadow:
-                        getContrastColor(noteColor) === "#FFFFFF"
-                          ? "1px 1px 0 #000, 2px 2px 0 #000"
-                          : "",
-                      fontSize: "20px",
-                    }}
-                  >
-                    {myCards?.name}
-                  </div>
-                }
-                style={{ backgroundColor: noteColor }}
-              >
-                {myCards?.value === null ? (
-                  <>
-                    {" "}
-                    <div
-                      style={{
-                        color: getContrastColor(noteColor),
-                        textShadow:
-                          getContrastColor(noteColor) === "#FFFFFF"
-                            ? "1px 1px 0 #000, 2px 2px 0 #000"
-                            : "",
-                        fontSize: "30px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {"Enter Value"}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    {" "}
-                    <div
-                      style={{
-                        color: getContrastColor(noteColor),
-                        textShadow:
-                          getContrastColor(noteColor) === "#FFFFFF"
-                            ? "1px 1px 0 #000, 2px 2px 0 #000"
-                            : "",
-                        fontSize:
-                          myCards && myCards.value >= 100000 ? "35px" : "40px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {myCards?.value.toLocaleString()}
-                    </div>
-                  </>
-                )}
-
-                <Row>
-                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                    <InputNumber
-                      disabled={myCards?.showVal === true ? true : false}
-                      formatter={(value) =>
-                        value
-                          ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                          : ""
-                      }
-                      placeholder="Enter Value"
-                      value={factValue}
-                      onChange={(e) => setFactValue(e ?? 0)}
-                      style={{ marginBottom: "10px", width: "100%" }}
-                    />
-                  </Col>
-                  <Col xs={20} sm={20} md={20} lg={20} xl={20}>
-                    <TextArea
-                      rows={1}
-                      disabled={myCards?.showVal === true ? true : false}
-                      placeholder="Enter Note"
-                      value={note}
-                      allowClear
-                      onChange={(e) => setNote(e.target.value)}
-                      maxLength={40}
-                      showCount
-                      // onPressEnter={(e) => {
-                      //   e.currentTarget.onchange();
-                      // }}
-                    />
-                  </Col>
-                  <Col xs={4} sm={4} md={4} lg={4} xl={4}>
-                    <ColorPicker
-                      disabled={myCards?.showVal === true ? true : false}
-                      format="hex"
-                      value={noteColor}
-                      onChangeComplete={(color) => {
-                        const hex = color.toHexString();
-                        setNoteColor(hex);
-                      }}
-                    />
-                  </Col>
-                </Row>
-
-                <Button
-                  disabled={myCards?.showVal === true ? true : false}
-                  variant="solid"
-                  color="purple"
-                  onClick={() => {
-                    handleNote(factValue, note, noteColor);
-                  }}
-                  icon={<AiFillCheckCircle />}
-                  style={{
-                    marginTop: "10px",
-                  }}
-                >
-                  Save
-                </Button>
-              </Card>
-            </Col>
-          </Row>
-        </Col>
-      </Row>
-
-      <Divider
-        style={{ backgroundColor: "green", margin: "15px 0px 15px 0px" }}
-      />
-      <Row justify={"center"}>
-        <h2
-          style={{
-            fontFamily: "Kanit, sans-serif",
-            fontSize: window.innerWidth <= 480 ? "25px" : "30px",
-            color: "gray",
-            marginRight: "10px",
-          }}
-        >
-          Topic :
-        </h2>
-        <Row>
-          <h2
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: window.innerWidth <= 480 ? "25px" : "30px",
-            }}
-          >
-            {myCards?.topic}
-          </h2>{" "}
-        </Row>
-        {changeTopic === false && (
-          <Row>
-            <Button
-              variant="solid"
-              size="large"
-              color="purple"
-              onClick={() => {
-                setChangeTopic(true);
-              }}
-              icon={<AiFillPlusSquare />}
+            <h3
               style={{
-                marginLeft: window.innerWidth <= 480 ? "0px" : "20px",
+                fontFamily: "Kanit, sans-serif",
+                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                margin: 10,
               }}
             >
-              Change Topic
-            </Button>
-          </Row>
-        )}
-      </Row>
-
-      {changeTopic === true && (
-        <>
-          <Row>
-            <Col xs={24} sm={24} md={18} lg={12} xl={12}>
-              <AutoComplete
-                style={{
-                  width: "100%",
-                  marginRight: "10px",
-                  marginBottom: "10px",
-                }}
-                styles={{
-                  input: {
-                    fontFamily: "Kanit, sans-serif",
-                    fontSize: "15px",
-                  },
-                }}
-                options={groupedOptions}
-                placeholder="Search or Enter Topic..."
-                value={topic}
-                filterOption={(
-                  inputValue: string,
-                  option: CategoryGroup | undefined,
-                ): boolean => {
-                  return !!option?.label
-                    ?.toLowerCase()
-                    .includes(inputValue.toLowerCase());
-                }}
-                // onBlur={(e) => {
-                //   const value = (e.target as HTMLInputElement).value;
-                //   setTopic(value);
-                // }}
-                onChange={(value) => {
-                  setTopic(value);
-                }}
-                onSelect={(value) => {
-                  setTopic(value);
-                }}
-                prefix={
-                  <Button
-                    variant="outlined"
-                    type="text"
-                    color="purple"
-                    onClick={() => {
-                      handleRandomTopic();
-                    }}
-                    style={{ marginRight: "10px" }}
-                  >
-                    🎲 Random
-                  </Button>
-                }
-                allowClear
-              />
-            </Col>
+              กดที่ปุ่ม Reset Button
+            </h3>
           </Row>
           <Row justify={"center"}>
             <Button
               variant="solid"
-              size="large"
-              color="green"
-              onClick={() => {
-                handleTopic(topic);
-              }}
-              icon={<AiFillCheckCircle />}
-              style={{ marginRight: "10px" }}
-            >
-              Ok
-            </Button>
-            <Button
-              variant="solid"
-              size="large"
               color="red"
-              onClick={() => {
-                setChangeTopic(false);
-              }}
-              icon={<MdCancel />}
-              style={{ marginRight: "10px" }}
-            >
-              cancel
-            </Button>
-          </Row>
-        </>
-      )}
-      {showDescription()}
-      {myCards === undefined && (
-        <>
-          <Row justify={"center"}>
-            <h3>If didn't see Join Room Click Clear Local Storage Button</h3>
-          </Row>
-          <Row justify={"center"}>
-            <Button
-              variant="solid"
-              color="volcano"
+              size="large"
               onClick={() => {
                 localStorage.clear();
                 window.location.reload();
               }}
               style={{ marginLeft: "10px" }}
             >
-              Clear Local Storage
+              Reset
             </Button>
           </Row>
         </>
-      )}
-      <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
+      ) : (
         <>
-          {window.innerWidth <= 480 ? (
-            <>
-              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                <DndContext
-                  collisionDetection={closestCenter}
-                  onDragStart={handleDragStart}
-                  onDragMove={handleDragMove}
-                  onDragEnd={handleDragEnd}
+          <h2
+            style={{
+              fontFamily: "Kanit, sans-serif",
+              fontSize: "30px",
+              color: "cyan",
+            }}
+          >
+            Room : {room}
+          </h2>
+
+          <Row justify={"space-between"}>
+            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
+              <h1
+                style={{
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: "30px",
+                }}
+              >
+                Sort the numbers from smallest to largest .
+              </h1>
+              <Row
+                justify={"center"}
+                style={{
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: "30px",
+                }}
+              >
+                <h3
+                  style={{
+                    fontFamily: "Kanit, sans-serif",
+                    fontSize: "30px",
+                    color: "white",
+                  }}
                 >
-                  <SortableContext
-                    items={cards}
-                    strategy={verticalListSortingStrategy}
+                  Life Point
+                </h3>
+              </Row>
+
+              <Row justify={"center"}>
+                {Array.from({ length: heart }).map((_, index) => (
+                  <IoIosHeart
+                    key={index}
+                    style={{ color: "red", width: "50px", height: "50px" }}
+                  />
+                ))}
+              </Row>
+              <h3
+                style={{
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: "30px",
+                  color: "white",
+                }}
+              >
+                Score : {score}
+              </h3>
+            </Col>
+
+            <Col xs={24} sm={24} md={10} lg={6} xl={6}>
+              <Row justify={"center"}>
+                <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                  {" "}
+                  <h2
+                    style={{
+                      fontSize: "20px",
+                      fontFamily: "Kanit, sans-serif",
+                    }}
                   >
-                    <Row>
-                      {cards.map((card) => (
-                        <>
-                          <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                            <SortableCard
-                              key={card.id}
-                              id={card.id}
-                              name={card.name}
-                              value={card.value}
-                              showVal={card?.showVal}
-                              active={card.active}
-                              player_Order={card.player_order}
-                              is_host={card.is_host}
-                              room={card.room}
-                              topic={card.topic}
-                              note={card.note}
-                              mode={card.mode}
-                              noteColor={card.notecolor}
-                              host={myCards?.is_host}
-                            />
-                          </Col>
-                        </>
-                      ))}
-                    </Row>
-                  </SortableContext>
-                </DndContext>
-              </Col>
-            </>
-          ) : (
-            <>
-              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                <DndContext
-                  collisionDetection={closestCenter}
-                  onDragStart={handleDragStart}
-                  onDragMove={handleDragMove}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext
-                    items={cards}
-                    strategy={horizontalListSortingStrategy}
+                    Your Card Number
+                  </h2>
+                </Col>
+                <Col xs={22} sm={22} md={24} lg={24} xl={24}>
+                  <Card
+                    title={
+                      <div
+                        style={{
+                          color: getContrastColor(noteColor),
+                          textShadow:
+                            getContrastColor(noteColor) === "#FFFFFF"
+                              ? "1px 1px 0 #000, 2px 2px 0 #000"
+                              : "",
+                          fontSize: "20px",
+                        }}
+                      >
+                        {myCards?.name}
+                      </div>
+                    }
+                    style={{ backgroundColor: noteColor }}
                   >
-                    <Row
-                      gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
-                      align={"middle"}
-                    >
-                      {cards.map((card, index) => (
-                        <>
-                          <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
-                            <h2 style={{ fontSize: "50px" }}>{index + 1}</h2>
-                            <SortableCard
-                              key={card.id}
-                              id={card.id}
-                              name={card.name}
-                              value={card.value}
-                              showVal={card?.showVal}
-                              active={card.active}
-                              is_host={card.is_host}
-                              room={card.room}
-                              topic={card.topic}
-                              note={card.note}
-                              mode={card.mode}
-                              noteColor={card.notecolor}
-                              host={myCards?.is_host}
-                            />
-                          </Col>
-                        </>
-                      ))}
-                    </Row>
-                  </SortableContext>
-
-                  {remoteDrag &&
-                    remoteDrag.left > 0 &&
-                    (() => {
-                      const targetCard = cards.find(
-                        (card) => card.id === remoteDrag.cardId,
-                      );
-
-                      if (!targetCard) return null;
-
-                      // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
-                      if (targetCard.showVal === true) {
-                        return null;
-                      }
-
-                      return (
+                    {myCards?.value === null ? (
+                      <>
+                        {" "}
                         <div
                           style={{
-                            position: "fixed",
-                            left: `${remoteDrag.left}px`,
-                            top: `${remoteDrag.top}px`,
-                            transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
-                            transition: "transform 30ms linear",
-                            width: "200px",
-                            height: "220px",
-                            boxSizing: "border-box",
-                            padding: "15px",
-                            background: "#ffffff",
-                            border: "3px dashed #722ed1",
-                            borderRadius: "12px",
-                            boxShadow: "0 8px 25px rgba(114, 46, 209, 0.35)",
-                            zIndex: 99999,
-                            pointerEvents: "none",
-                            willChange: "transform",
+                            color: getContrastColor(noteColor),
+                            textShadow:
+                              getContrastColor(noteColor) === "#FFFFFF"
+                                ? "1px 1px 0 #000, 2px 2px 0 #000"
+                                : "",
+                            fontSize: "30px",
+                            fontWeight: "bold",
                           }}
                         >
-                          <div
-                            style={{
-                              fontWeight: "bold",
-                              color: "#333",
-                              fontSize: "16px",
-                            }}
-                          >
-                            {targetCard.name}
-                          </div>
-
-                          <div
-                            style={{
-                              fontSize: "36px",
-                              fontWeight: "bold",
-                              textAlign: "center",
-                              color: "#722ed1",
-                              marginTop: "10px",
-                            }}
-                          >
-                            {targetCard.showVal ? targetCard.value : "?"}
-                          </div>
+                          {"Enter Value"}
                         </div>
-                      );
-                    })()}
-                </DndContext>
-              </Col>
+                      </>
+                    ) : (
+                      <>
+                        {" "}
+                        <div
+                          style={{
+                            color: getContrastColor(noteColor),
+                            textShadow:
+                              getContrastColor(noteColor) === "#FFFFFF"
+                                ? "1px 1px 0 #000, 2px 2px 0 #000"
+                                : "",
+                            fontSize:
+                              myCards && myCards.value >= 100000
+                                ? "35px"
+                                : "40px",
+                            fontWeight: "bold",
+                          }}
+                        >
+                          {myCards?.value.toLocaleString()}
+                        </div>
+                      </>
+                    )}
+
+                    <Row>
+                      <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                        <InputNumber
+                          disabled={myCards?.showVal === true ? true : false}
+                          formatter={(value) =>
+                            value
+                              ? `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                              : ""
+                          }
+                          placeholder="Enter Value"
+                          value={factValue}
+                          onChange={(e) => setFactValue(e ?? 0)}
+                          style={{ marginBottom: "10px", width: "100%" }}
+                        />
+                      </Col>
+                      <Col xs={20} sm={20} md={20} lg={20} xl={20}>
+                        <TextArea
+                          rows={1}
+                          disabled={myCards?.showVal === true ? true : false}
+                          placeholder="Enter Note"
+                          value={note}
+                          allowClear
+                          onChange={(e) => setNote(e.target.value)}
+                          maxLength={40}
+                          showCount
+                          // onPressEnter={(e) => {
+                          //   e.currentTarget.onchange();
+                          // }}
+                        />
+                      </Col>
+                      <Col xs={4} sm={4} md={4} lg={4} xl={4}>
+                        <ColorPicker
+                          disabled={myCards?.showVal === true ? true : false}
+                          format="hex"
+                          value={noteColor}
+                          onChangeComplete={(color) => {
+                            const hex = color.toHexString();
+                            setNoteColor(hex);
+                          }}
+                        />
+                      </Col>
+                    </Row>
+
+                    <Button
+                      disabled={
+                        myCards?.showVal === true || factValue === 0
+                          ? true
+                          : false
+                      }
+                      variant="solid"
+                      color="purple"
+                      onClick={() => {
+                        handleNote(factValue, note, noteColor);
+                      }}
+                      icon={<AiFillCheckCircle />}
+                      style={{
+                        marginTop: "10px",
+                      }}
+                    >
+                      Save
+                    </Button>
+                  </Card>
+                </Col>
+              </Row>
+            </Col>
+          </Row>
+
+          <Divider
+            style={{ backgroundColor: "green", margin: "15px 0px 15px 0px" }}
+          />
+          <Row justify={"center"}>
+            <h2
+              style={{
+                fontFamily: "Kanit, sans-serif",
+                fontSize: window.innerWidth <= 480 ? "25px" : "30px",
+                color: "gray",
+                marginRight: "10px",
+              }}
+            >
+              Topic :
+            </h2>
+            <Row>
+              <h2
+                style={{
+                  fontFamily: "Kanit, sans-serif",
+                  fontSize: window.innerWidth <= 480 ? "25px" : "30px",
+                }}
+              >
+                {myCards?.topic ? myCards?.topic : "กรุณาเลือกหัวข้อ..."}
+              </h2>{" "}
+            </Row>
+            {changeTopic === false && (
+              <Row>
+                <Button
+                  disabled={myCards === undefined}
+                  variant="solid"
+                  size="large"
+                  color="purple"
+                  onClick={() => {
+                    setChangeTopic(true);
+                  }}
+                  icon={<AiFillPlusSquare />}
+                  style={{
+                    marginLeft: window.innerWidth <= 480 ? "0px" : "20px",
+                  }}
+                >
+                  Change Topic
+                </Button>
+              </Row>
+            )}
+          </Row>
+
+          {changeTopic === true && (
+            <>
+              <Row>
+                <Col xs={24} sm={24} md={18} lg={12} xl={12}>
+                  <AutoComplete
+                    style={{
+                      width: "100%",
+                      marginRight: "10px",
+                      marginBottom: "10px",
+                    }}
+                    styles={{
+                      input: {
+                        fontFamily: "Kanit, sans-serif",
+                        fontSize: "15px",
+                      },
+                    }}
+                    options={groupedOptions}
+                    placeholder="Search or Enter Topic..."
+                    value={topic}
+                    filterOption={(
+                      inputValue: string,
+                      option: CategoryGroup | undefined,
+                    ): boolean => {
+                      return !!option?.label
+                        ?.toLowerCase()
+                        .includes(inputValue.toLowerCase());
+                    }}
+                    // onBlur={(e) => {
+                    //   const value = (e.target as HTMLInputElement).value;
+                    //   setTopic(value);
+                    // }}
+                    onChange={(value) => {
+                      setTopic(value);
+                    }}
+                    onSelect={(value) => {
+                      setTopic(value);
+                    }}
+                    prefix={
+                      <Button
+                        variant="outlined"
+                        type="text"
+                        color="purple"
+                        onClick={() => {
+                          handleRandomTopic();
+                        }}
+                        style={{ marginRight: "10px" }}
+                      >
+                        🎲 Random
+                      </Button>
+                    }
+                    allowClear
+                  />
+                </Col>
+              </Row>
+              <Row justify={"center"}>
+                <Button
+                  variant="solid"
+                  size="large"
+                  color="green"
+                  onClick={() => {
+                    handleTopic(topic);
+                  }}
+                  icon={<AiFillCheckCircle />}
+                  style={{ marginRight: "10px" }}
+                >
+                  Ok
+                </Button>
+                <Button
+                  variant="solid"
+                  size="large"
+                  color="red"
+                  onClick={() => {
+                    setChangeTopic(false);
+                  }}
+                  icon={<MdCancel />}
+                  style={{ marginRight: "10px" }}
+                >
+                  cancel
+                </Button>
+              </Row>
             </>
           )}
+          {showDescription()}
+          {myCards === undefined && (
+            <>
+              <Row justify={"center"}>
+                <h3>If didn't see Join Room Click Reset Button</h3>
+              </Row>
+              <Row justify={"center"}>
+                <Button
+                  variant="solid"
+                  color="red"
+                  size="large"
+                  onClick={() => {
+                    localStorage.clear();
+                    window.location.reload();
+                  }}
+                  style={{ marginLeft: "10px" }}
+                >
+                  Reset
+                </Button>
+              </Row>
+            </>
+          )}
+          <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
+            <>
+              {window.innerWidth <= 480 ? (
+                <>
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                    <DndContext
+                      collisionDetection={closestCenter}
+                      onDragStart={handleDragStart}
+                      onDragMove={handleDragMove}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={cards}
+                        strategy={verticalListSortingStrategy}
+                      >
+                        <Row>
+                          {cards.map((card) => (
+                            <>
+                              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                                <SortableCard
+                                  key={card.id}
+                                  id={card.id}
+                                  name={card.name}
+                                  value={card.value}
+                                  showVal={card?.showVal}
+                                  active={card.active}
+                                  player_Order={card.player_order}
+                                  is_host={card.is_host}
+                                  room={card.room}
+                                  topic={card.topic}
+                                  note={card.note}
+                                  mode={card.mode}
+                                  noteColor={card.notecolor}
+                                  host={myCards?.is_host}
+                                />
+                              </Col>
+                            </>
+                          ))}
+                        </Row>
+                      </SortableContext>
+                    </DndContext>
+                  </Col>
+                </>
+              ) : (
+                <>
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                    <DndContext
+                      collisionDetection={closestCenter}
+                      onDragStart={handleDragStart}
+                      onDragMove={handleDragMove}
+                      onDragEnd={handleDragEnd}
+                    >
+                      <SortableContext
+                        items={cards}
+                        strategy={horizontalListSortingStrategy}
+                      >
+                        <Row
+                          gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
+                          align={"middle"}
+                        >
+                          {cards.map((card, index) => (
+                            <>
+                              <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
+                                <h2 style={{ fontSize: "50px" }}>
+                                  {index + 1}
+                                </h2>
+                                <SortableCard
+                                  key={card.id}
+                                  id={card.id}
+                                  name={card.name}
+                                  value={card.value}
+                                  showVal={card?.showVal}
+                                  active={card.active}
+                                  is_host={card.is_host}
+                                  room={card.room}
+                                  topic={card.topic}
+                                  note={card.note}
+                                  mode={card.mode}
+                                  noteColor={card.notecolor}
+                                  host={myCards?.is_host}
+                                />
+                              </Col>
+                            </>
+                          ))}
+                        </Row>
+                      </SortableContext>
+
+                      {remoteDrag &&
+                        remoteDrag.left > 0 &&
+                        (() => {
+                          const targetCard = cards.find(
+                            (card) => card.id === remoteDrag.cardId,
+                          );
+
+                          if (!targetCard) return null;
+
+                          // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
+                          if (targetCard.showVal === true) {
+                            return null;
+                          }
+
+                          return (
+                            <div
+                              style={{
+                                position: "fixed",
+                                left: `${remoteDrag.left}px`,
+                                top: `${remoteDrag.top}px`,
+                                transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
+                                transition: "transform 30ms linear",
+                                width: "200px",
+                                height: "220px",
+                                boxSizing: "border-box",
+                                padding: "15px",
+                                background: "#ffffff",
+                                border: "3px dashed #722ed1",
+                                borderRadius: "12px",
+                                boxShadow:
+                                  "0 8px 25px rgba(114, 46, 209, 0.35)",
+                                zIndex: 99999,
+                                pointerEvents: "none",
+                                willChange: "transform",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  fontWeight: "bold",
+                                  color: "#333",
+                                  fontSize: "16px",
+                                }}
+                              >
+                                {targetCard.name}
+                              </div>
+
+                              <div
+                                style={{
+                                  fontSize: "36px",
+                                  fontWeight: "bold",
+                                  textAlign: "center",
+                                  color: "#722ed1",
+                                  marginTop: "10px",
+                                }}
+                              >
+                                {targetCard.showVal ? targetCard.value : "?"}
+                              </div>
+                            </div>
+                          );
+                        })()}
+                    </DndContext>
+                  </Col>
+                </>
+              )}
+            </>
+          </Row>
+
+          {isHost && isHost.is_host === true && (
+            <Row justify={"center"} gutter={[32, 0]}>
+              <Col>
+                <Button
+                  variant="solid"
+                  color="green"
+                  onClick={() => {
+                    handleSingle();
+                  }}
+                  icon={<AiFillCheckCircle />}
+                  style={{
+                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                    width: window.innerWidth <= 480 ? "120px" : "150px",
+                    height: window.innerWidth <= 480 ? "40px" : "50px",
+                    marginBottom: "10px ",
+                  }}
+                >
+                  Check
+                </Button>
+              </Col>
+
+              <Col>
+                <Button
+                  variant="solid"
+                  color="red"
+                  onClick={() => {
+                    handleRestart();
+                  }}
+                  icon={<AiOutlineReload />}
+                  style={{
+                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                    width: window.innerWidth <= 480 ? "120px" : "150px",
+                    height: window.innerWidth <= 480 ? "40px" : "50px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Restart
+                </Button>
+              </Col>
+              <Col>
+                <Button
+                  variant="solid"
+                  color="purple"
+                  onClick={() => {
+                    deleteAllRows();
+                  }}
+                  icon={<MdCancel />}
+                  style={{
+                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
+                    width: window.innerWidth <= 480 ? "150px" : "180px",
+                    height: window.innerWidth <= 480 ? "40px" : "50px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  Delete Room
+                </Button>
+              </Col>
+            </Row>
+          )}
+
+          <Row justify={"end"}>
+            <RiFundsBoxFill
+              style={{
+                margin: "18px 5px 00px 0px",
+                fontSize: "25px",
+                color: "#0077b6",
+              }}
+            />
+            <h3
+              style={{
+                fontSize: "20px",
+                color: "#0077b6",
+              }}
+            >
+              iTOMIC : Fact
+            </h3>
+          </Row>
         </>
-      </Row>
-
-      {isHost && isHost.is_host === true && (
-        <Row justify={"center"} gutter={[32, 0]}>
-          <Col>
-            <Button
-              variant="solid"
-              color="green"
-              onClick={() => {
-                handleSingle();
-              }}
-              icon={<AiFillCheckCircle />}
-              style={{
-                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                width: window.innerWidth <= 480 ? "120px" : "150px",
-                height: window.innerWidth <= 480 ? "40px" : "50px",
-                marginBottom: "10px ",
-              }}
-            >
-              Check
-            </Button>
-          </Col>
-
-          <Col>
-            <Button
-              variant="solid"
-              color="red"
-              onClick={() => {
-                handleRestart();
-              }}
-              icon={<AiOutlineReload />}
-              style={{
-                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                width: window.innerWidth <= 480 ? "120px" : "150px",
-                height: window.innerWidth <= 480 ? "40px" : "50px",
-                marginBottom: "10px",
-              }}
-            >
-              Restart
-            </Button>
-          </Col>
-          <Col>
-            <Button
-              variant="solid"
-              color="purple"
-              onClick={() => {
-                deleteAllRows();
-              }}
-              icon={<MdCancel />}
-              style={{
-                fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                width: window.innerWidth <= 480 ? "150px" : "180px",
-                height: window.innerWidth <= 480 ? "40px" : "50px",
-                marginBottom: "10px",
-              }}
-            >
-              Delete Room
-            </Button>
-          </Col>
-        </Row>
       )}
-
-      <Row justify={"end"}>
-        <RiFundsBoxFill
-          style={{
-            margin: "18px 5px 00px 0px",
-            fontSize: "25px",
-            color: "#0077b6",
-          }}
-        />
-        <h3
-          style={{
-            fontSize: "20px",
-            color: "#0077b6",
-          }}
-        >
-          iTOMIC : Fact
-        </h3>
-      </Row>
     </div>
   );
 };

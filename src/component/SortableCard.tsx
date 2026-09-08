@@ -1,7 +1,6 @@
-import { Button, Card, Row, Typography } from "antd";
+import { Card, Row, Typography } from "antd";
 import { CSS } from "@dnd-kit/utilities";
 import { useSortable } from "@dnd-kit/sortable";
-import { MdCancel } from "react-icons/md";
 import { supabase } from "../supabase";
 import "./SortableCard.css";
 
@@ -30,7 +29,7 @@ export default function SortableCard({
   note,
   noteColor,
   is_host,
-  host,
+  // host,
   room,
   mode,
   player_Order,
@@ -282,7 +281,7 @@ export default function SortableCard({
                       fontWeight: "bold",
                     }}
                   >
-                    {value.toLocaleString()}
+                    {value ? value.toLocaleString() : 0}
                   </div>
                 </Row>
               ) : (
