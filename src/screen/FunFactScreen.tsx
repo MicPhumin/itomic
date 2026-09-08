@@ -413,6 +413,38 @@ const FunFactScreen = () => {
     } catch {
       return;
     }
+    const targetRoom = hostBtn ? room : selectRoom;
+    const { data: usedValues, error: usedValuesError } = await supabase
+      .from("itomic")
+      .select("value")
+      .eq("room", targetRoom)
+      .eq("mode", "single");
+
+    if (usedValuesError) {
+      console.error("ไม่สามารถตรวจสอบเลขที่ถูกใช้แล้วได้", usedValuesError);
+      return;
+    }
+
+    const usedValueSet = new Set(
+      (usedValues ?? [])
+        .map((item) => item.value)
+        .filter(
+          (value): value is number =>
+            typeof value === "number" && value >= 1 && value <= 100,
+        ),
+    );
+
+    const availableValues = Array.from(
+      { length: 100 },
+      (_, index) => index + 1,
+    ).filter((value) => !usedValueSet.has(value));
+    const randomNumber =
+      availableValues[Math.floor(Math.random() * availableValues.length)];
+
+    if (randomNumber === undefined) {
+      alert("เลข 1-100 ถูกใช้ครบแล้วในห้องนี้");
+      return;
+    }
     const { data, error } = await supabase.rpc("join_game", {
       p_name: name,
       p_value: 0,
