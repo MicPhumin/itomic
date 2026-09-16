@@ -2,7 +2,6 @@ import {
   Button,
   Card,
   Col,
-  Divider,
   Row,
   Modal,
   Input,
@@ -11,7 +10,6 @@ import {
   ColorPicker,
   AutoComplete,
   Empty,
-  Tooltip,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -22,11 +20,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core";
 import { supabase } from "../supabase";
-import {
-  AiFillCheckCircle,
-  AiFillPlusSquare,
-  AiOutlineReload,
-} from "react-icons/ai";
+import { AiFillCheckCircle, AiOutlineReload } from "react-icons/ai";
 
 import {
   SortableContext,
@@ -40,7 +34,6 @@ import {
 import SortableCard from "../component/SortableCard";
 import React from "react";
 import topicGame from "../assets/topic.json";
-import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 import { TiSortNumericallyOutline } from "react-icons/ti";
 import "./ITOMICGame.css";

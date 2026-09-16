@@ -134,6 +134,7 @@ const MainScreen = () => {
         </Col>
         <Col xs={22} sm={24} md={14} lg={8} xl={5}>
           <Button
+            disabled
             variant="solid"
             color="primary"
             href={window.location.origin + `/itomicFact`}
@@ -143,6 +144,7 @@ const MainScreen = () => {
               width: "100%",
               height: "50px",
               marginBottom: "10px",
+              backgroundColor: "gray",
             }}
           >
             iTOMIC : Fact
