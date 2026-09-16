@@ -7,7 +7,6 @@ import {
   TeamOutlined,
   SettingOutlined,
   BulbFilled,
-  SyncOutlined,
   CheckCircleFilled,
   ReloadOutlined,
   GiftFilled,

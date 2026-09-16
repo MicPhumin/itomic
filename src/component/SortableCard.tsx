@@ -5,7 +5,6 @@ import { supabase } from "../supabase";
 import "./SortableCard.css";
 import { MdCancel } from "react-icons/md";
 import "../screen/ITOMICGame.css";
-import { CrownFilled } from "@ant-design/icons";
 
 interface SortableCardProps {
   id: number;
