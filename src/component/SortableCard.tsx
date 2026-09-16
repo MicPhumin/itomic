@@ -4,6 +4,8 @@ import { useSortable } from "@dnd-kit/sortable";
 import { supabase } from "../supabase";
 import "./SortableCard.css";
 import { MdCancel } from "react-icons/md";
+import "../screen/ITOMICGame.css";
+import { CrownFilled } from "@ant-design/icons";
 
 interface SortableCardProps {
   id: number;
@@ -248,7 +250,7 @@ export default function SortableCard({
                     <div
                       style={{
                         color: "goldenrod",
-                        textShadow: "1px 1px 0 #000, 1px 1px 0 #000",
+
                         fontSize:
                           window.innerWidth <= 480
                             ? "clamp(9px, 3vw, 10px)"

@@ -11,6 +11,7 @@ import {
   ColorPicker,
   AutoComplete,
   Empty,
+  Tooltip,
 } from "antd";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -42,6 +43,21 @@ import topicGame from "../assets/topic.json";
 import { IoIosHeart } from "react-icons/io";
 import { MdCancel } from "react-icons/md";
 import { TiSortNumericallyOutline } from "react-icons/ti";
+import "./ITOMICGame.css";
+import {
+  BulbFilled,
+  CheckCircleFilled,
+  CrownFilled,
+  GiftFilled,
+  HeartFilled,
+  LeftOutlined,
+  ReloadOutlined,
+  RightOutlined,
+  SettingOutlined,
+  StarFilled,
+  SwapOutlined,
+  TeamOutlined,
+} from "@ant-design/icons";
 
 interface topicGame {
   id: number;
@@ -1018,881 +1034,837 @@ const SingleOrderScreen = () => {
   };
 
   return (
-    <div
-      style={{
-        margin:
-          window.innerWidth <= 480 ? "0px 10px 0px 10px" : "0px 50px 0px 50px",
-      }}
-    >
-      <Row justify={"center"}>
-        <TiSortNumericallyOutline
-          style={{
-            margin: "32px 10px 0px 0px",
-            fontSize: "40px",
-            color: "magenta",
-          }}
-        />
-        <h3
-          style={{ fontSize: "40px", color: "magenta", marginBottom: "20px" }}
-        >
-          iTOMIC{" "}
-        </h3>
-      </Row>
-      <Modal
-        title={
-          <Row>
-            <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+    <>
+      <div className="itomic-page">
+        {/* Background decorations */}
+        <div className="bg-shape bg-shape-1" />
+        <div className="bg-shape bg-shape-2" />
+        <div className="bg-shape bg-shape-3" />
+
+        {/* ================= HEADER ================= */}
+        <header className="itomic-header">
+          <div className="logo">
+            <span className="logo-number">
               {" "}
-              <Row justify={"center"}>
+              <TiSortNumericallyOutline />
+            </span>
+            <span className="logo-text">ITOMIC</span>
+          </div>
+
+          <div className="room-pill">
+            <TeamOutlined />
+            <span>Room :</span>
+            <strong>{room}</strong>
+          </div>
+
+          <div className="header-right">
+            <div className="players-pill">
+              <TeamOutlined />
+              <span>{cards.length} Players</span>
+            </div>
+
+            {/* <Tooltip title="Settings">
+              <Button className="setting-button" icon={<SettingOutlined />} />
+            </Tooltip> */}
+          </div>
+        </header>
+
+        {/* ================= MAIN ================= */}
+        <Modal
+          title={
+            <Row>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                 {" "}
-                <Col xs={24} sm={24} md={24} lg={24} xl={24}></Col>
-                <TiSortNumericallyOutline
+                <Row justify={"center"}>
+                  {" "}
+                  <Col xs={24} sm={24} md={24} lg={24} xl={24}></Col>
+                  <TiSortNumericallyOutline
+                    style={{
+                      margin: "0px 10px 0px 0px",
+                      fontSize: "40px",
+                      color: "magenta",
+                    }}
+                  />
+                  <h3
+                    style={{
+                      margin: "0px 10px 0px 0px",
+                      fontSize: "30px",
+                      color: "magenta",
+                    }}
+                  >
+                    iTOMIC
+                  </h3>
+                </Row>{" "}
+                <Button
+                  variant="solid"
+                  color="purple"
+                  href={window.location.origin + `/`}
+                >
+                  Back to menu
+                </Button>
+              </Col>
+            </Row>
+          }
+          closable={true}
+          onCancel={() => setIsModalOpen(false)}
+          open={isModalOpen}
+          footer={
+            <>
+              <Row justify={"center"}>
+                <Button
+                  htmlType="submit"
+                  disabled={!submittable}
+                  size="large"
+                  type="primary"
+                  onClick={handleOk}
                   style={{
-                    margin: "0px 10px 0px 0px",
-                    fontSize: "40px",
-                    color: "magenta",
-                  }}
-                />
-                <h3
-                  style={{
-                    margin: "0px 10px 0px 0px",
-                    fontSize: "30px",
-                    color: "magenta",
+                    width: "100px",
                   }}
                 >
-                  iTOMIC
-                </h3>
-              </Row>{" "}
-              <Button
-                variant="solid"
-                color="purple"
-                href={window.location.origin + `/`}
-              >
-                Back to menu
-              </Button>
-            </Col>
-          </Row>
-        }
-        closable={true}
-        onCancel={() => setIsModalOpen(false)}
-        open={isModalOpen}
-        footer={
-          <>
-            <Row justify={"center"}>
-              <Button
-                htmlType="submit"
-                disabled={!submittable}
-                size="large"
-                type="primary"
-                onClick={handleOk}
-                style={{
-                  width: "100px",
-                }}
-              >
-                Ok
-              </Button>
-            </Row>
-          </>
-        }
-        width={{
-          xs: "80%",
-          sm: "80%",
-          md: "70%",
-          lg: "60%",
-          xl: "50%",
-          xxl: "40%",
-        }}
-      >
-        <Form
-          form={form}
-          name="validateOnly"
-          layout="vertical"
-          autoComplete="off"
+                  Ok
+                </Button>
+              </Row>
+            </>
+          }
+          width={{
+            xs: "80%",
+            sm: "80%",
+            md: "70%",
+            lg: "60%",
+            xl: "50%",
+            xxl: "40%",
+          }}
         >
-          <Row gutter={12}>
-            <Col xs={24} sm={24} md={16} lg={16} xl={16}>
-              <Form.Item
-                name="Name"
-                label={<h3>Enter Name</h3>}
-                rules={[
-                  {
-                    required: true,
-                    whitespace: true,
-                    message: "Please enter your name",
-                  },
-                ]}
-              >
-                <Input
-                  placeholder="Enter Name"
-                  value={name}
-                  onChange={(e) => {
-                    setName(e.target.value);
-                    form.setFieldsValue({ Name: e.target.value });
-                  }}
-                />
-              </Form.Item>
-            </Col>
-
-            <Col xs={24} sm={24} md={8} lg={8} xl={8}>
-              {" "}
-              <h3>Host (Create Room)</h3>
-              <Switch
-                disabled={selectRoom === "" ? false : true}
-                onChange={(e) => {
-                  setHostBtn(e);
-                }}
-                value={hostBtn}
-                style={{ marginTop: "12px" }}
-              />
-            </Col>
-          </Row>
-
-          {hostBtn === true ? (
-            <>
-              <Row gutter={12} style={{ marginLeft: "1px" }} justify={"start"}>
+          <Form
+            form={form}
+            name="validateOnly"
+            layout="vertical"
+            autoComplete="off"
+          >
+            <Row gutter={12}>
+              <Col xs={24} sm={24} md={16} lg={16} xl={16}>
                 <Form.Item
-                  name="room"
-                  label={<h3>Create Room Name</h3>}
-                  style={{ width: "100%" }}
+                  name="Name"
+                  label={<h3>Enter Name</h3>}
                   rules={[
                     {
                       required: true,
                       whitespace: true,
-                      message: "Please enter a room name",
+                      message: "Please enter your name",
                     },
                   ]}
                 >
                   <Input
-                    placeholder="Enter Room Name"
-                    value={room}
+                    placeholder="Enter Name"
+                    value={name}
                     onChange={(e) => {
-                      setRoom(e.target.value);
-                      form.setFieldsValue({ room: e.target.value });
+                      setName(e.target.value);
+                      form.setFieldsValue({ Name: e.target.value });
                     }}
                   />
                 </Form.Item>
-              </Row>{" "}
-              {/* <h3 style={{ marginLeft: "10px" }}>Enter topic</h3>
-              <Row gutter={12} style={{ marginLeft: "1px" }}>
-                <AutoComplete
-                  style={{
-                    width: "100%",
-                    marginBottom: "10px",
+              </Col>
+
+              <Col xs={24} sm={24} md={8} lg={8} xl={8}>
+                {" "}
+                <h3>Host (Create Room)</h3>
+                <Switch
+                  disabled={selectRoom === "" ? false : true}
+                  onChange={(e) => {
+                    setHostBtn(e);
                   }}
-                  styles={{
-                    input: {
-                      fontFamily: "Kanit, sans-serif",
-                      fontSize: "15px",
-                    },
-                  }}
-                  options={groupedOptions}
-                  placeholder="Search or Enter Topic..."
-                  value={topic}
-                  filterOption={(
-                    inputValue: string,
-                    option: CategoryGroup | undefined,
-                  ): boolean => {
-                    return !!option?.label
-                      ?.toLowerCase()
-                      .includes(inputValue.toLowerCase());
-                  }}
-                  // onBlur={(e) => {
-                  //   const value = (e.target as HTMLInputElement).value;
-                  //   setTopic(value);
-                  // }}
-                  onChange={(value) => {
-                    setTopic(value);
-                  }}
-                  onSelect={(value) => {
-                    setTopic(value);
-                  }}
-                  prefix={
-                    <Button
-                      variant="outlined"
-                      type="text"
-                      color="purple"
-                      onClick={() => {
-                        handleRandomTopic();
-                      }}
-                      style={{ marginRight: "10px" }}
-                    >
-                      🎲 Random
-                    </Button>
-                  }
-                  allowClear
+                  value={hostBtn}
+                  style={{ marginTop: "12px" }}
                 />
-              </Row> */}
-              <Button
-                variant="solid"
-                color="red"
-                onClick={() => {
-                  deleteAllRows();
-                }}
-                icon={<AiOutlineReload />}
-              >
-                Reset game
-              </Button>
-            </>
-          ) : (
-            <>
-              <Form.Item
-                name="room"
-                hidden={hostBtn}
-                label={
-                  <>
-                    <h3>Select Room : </h3>{" "}
-                    <h3 style={{ color: "green", margin: "0px 0px 0px 5px" }}>
-                      {selectRoom}
-                    </h3>
-                  </>
-                }
-                rules={[
-                  {
-                    required: !hostBtn,
-                    message: "Please select a room",
-                  },
-                ]}
-              >
-                {roomList.length === 0 ? (
-                  <Row justify={"center"}>
-                    <Empty style={{ width: "80%" }} />
-                  </Row>
-                ) : (
-                  <>
-                    <div style={{ display: "flex", gap: 16 }}>
-                      {roomList.map((item) => (
-                        <Card
-                          key={item.room}
-                          hoverable
-                          onClick={() => {
-                            const nextRoom =
-                              selectRoom === item.room ? "" : item.room;
-                            setSelectRoom(nextRoom);
-                            form.setFieldsValue({
-                              room: nextRoom || undefined,
-                            });
-                          }}
-                          style={{
-                            width: 200,
-                            cursor: "pointer",
-                            borderRadius: 12,
-                            border:
-                              selectRoom === item.room
-                                ? "2px solid green"
-                                : "1px solid #d9d9d9",
-                          }}
-                        >
-                          <Row>
-                            <Col>
-                              <div
-                                style={{
-                                  color: "purple",
-                                  marginRight: "5px",
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                Room :{" "}
-                              </div>
-                            </Col>
-                            <Col>
-                              <div>{item.room}</div>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>
-                              <div
-                                style={{
-                                  color: "blue",
-                                  marginRight: "5px",
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                Host :{" "}
-                              </div>
-                            </Col>
-                            <Col>
-                              {" "}
-                              <div>{item.host}</div>
-                            </Col>
-                          </Row>
-                          <Row>
-                            <Col>
-                              <div
-                                style={{
-                                  color: "magenta",
-                                  marginRight: "5px",
-                                  fontWeight: "bold",
-                                }}
-                              >
-                                Player in room :{" "}
-                              </div>
-                            </Col>
-                            <Col>
-                              <div>{item.numberOfPlay}</div>
-                            </Col>
-                          </Row>
-                        </Card>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </Form.Item>
-            </>
-          )}
-        </Form>
-      </Modal>
-      {myCards === undefined ? (
-        <>
-          <Row justify={"center"}>
-            <h3
-              style={{
-                fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
-                margin: 10,
-              }}
-            >
-              ถ้าไม่เห็นหน้าต่าง join room
-            </h3>
-          </Row>
-          <Row justify={"center"}>
-            <h3
-              style={{
-                fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 480 ? "20px" : "25px",
-                margin: 10,
-              }}
-            >
-              กดที่ปุ่ม Reset Button
-            </h3>
-          </Row>
-          <Row justify={"center"}>
-            <Button
-              variant="solid"
-              color="red"
-              size="large"
-              onClick={() => {
-                localStorage.clear();
-                window.location.reload();
-              }}
-              style={{ marginLeft: "10px" }}
-            >
-              Reset
-            </Button>
-          </Row>
-        </>
-      ) : (
-        <>
-          <h2
-            style={{
-              fontFamily: "Kanit, sans-serif",
-              fontSize: "30px",
-              color: "cyan",
-            }}
-          >
-            Room : {room}
-          </h2>
+              </Col>
+            </Row>
 
-          <Row justify={"space-between"}>
-            <Col xs={24} sm={24} md={12} lg={12} xl={12}>
-              <h1
-                style={{
-                  fontFamily: "Kanit, sans-serif",
-                  fontSize: "30px",
-                }}
-              >
-                Sort the numbers from smallest to largest .
-              </h1>
-              <Row
-                justify={"center"}
-                style={{
-                  fontFamily: "Kanit, sans-serif",
-                  fontSize: "30px",
-                }}
-              >
-                <h3
-                  style={{
-                    fontFamily: "Kanit, sans-serif",
-                    fontSize: "30px",
-                    color: "white",
-                  }}
+            {hostBtn === true ? (
+              <>
+                <Row
+                  gutter={12}
+                  style={{ marginLeft: "1px" }}
+                  justify={"start"}
                 >
-                  Life Point
-                </h3>
-              </Row>
-
-              <Row justify={"center"}>
-                {Array.from({ length: heart }).map((_, index) => (
-                  <IoIosHeart
-                    key={index}
-                    style={{ color: "red", width: "50px", height: "50px" }}
-                  />
-                ))}
-              </Row>
+                  <Form.Item
+                    name="room"
+                    label={<h3>Create Room Name</h3>}
+                    style={{ width: "100%" }}
+                    rules={[
+                      {
+                        required: true,
+                        whitespace: true,
+                        message: "Please enter a room name",
+                      },
+                    ]}
+                  >
+                    <Input
+                      placeholder="Enter Room Name"
+                      value={room}
+                      onChange={(e) => {
+                        setRoom(e.target.value);
+                        form.setFieldsValue({ room: e.target.value });
+                      }}
+                    />
+                  </Form.Item>
+                </Row>{" "}
+                <Button
+                  variant="solid"
+                  color="red"
+                  onClick={() => {
+                    deleteAllRows();
+                  }}
+                  icon={<AiOutlineReload />}
+                >
+                  Reset game
+                </Button>
+              </>
+            ) : (
+              <>
+                <Form.Item
+                  name="room"
+                  hidden={hostBtn}
+                  label={
+                    <>
+                      <h3>Select Room : </h3>{" "}
+                      <h3
+                        style={{
+                          color: "green",
+                          margin: "0px 0px 0px 5px",
+                        }}
+                      >
+                        {selectRoom}
+                      </h3>
+                    </>
+                  }
+                  rules={[
+                    {
+                      required: !hostBtn,
+                      message: "Please select a room",
+                    },
+                  ]}
+                >
+                  {roomList.length === 0 ? (
+                    <Row justify={"center"}>
+                      <Empty style={{ width: "80%" }} />
+                    </Row>
+                  ) : (
+                    <>
+                      <div style={{ display: "flex", gap: 16 }}>
+                        {roomList.map((item) => (
+                          <Card
+                            key={item.room}
+                            hoverable
+                            onClick={() => {
+                              const nextRoom =
+                                selectRoom === item.room ? "" : item.room;
+                              setSelectRoom(nextRoom);
+                              form.setFieldsValue({
+                                room: nextRoom || undefined,
+                              });
+                            }}
+                            style={{
+                              width: 200,
+                              cursor: "pointer",
+                              borderRadius: 12,
+                              border:
+                                selectRoom === item.room
+                                  ? "2px solid green"
+                                  : "1px solid #d9d9d9",
+                            }}
+                          >
+                            <Row>
+                              <Col>
+                                <div
+                                  style={{
+                                    color: "purple",
+                                    marginRight: "5px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  Room :{" "}
+                                </div>
+                              </Col>
+                              <Col>
+                                <div>{item.room}</div>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>
+                                <div
+                                  style={{
+                                    color: "blue",
+                                    marginRight: "5px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  Host :{" "}
+                                </div>
+                              </Col>
+                              <Col>
+                                {" "}
+                                <div>{item.host}</div>
+                              </Col>
+                            </Row>
+                            <Row>
+                              <Col>
+                                <div
+                                  style={{
+                                    color: "magenta",
+                                    marginRight: "5px",
+                                    fontWeight: "bold",
+                                  }}
+                                >
+                                  Player in room :{" "}
+                                </div>
+                              </Col>
+                              <Col>
+                                <div>{item.numberOfPlay}</div>
+                              </Col>
+                            </Row>
+                          </Card>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </Form.Item>
+              </>
+            )}
+          </Form>
+        </Modal>
+        {myCards === undefined ? (
+          <>
+            <Row justify={"center"}>
               <h3
                 style={{
                   fontFamily: "Kanit, sans-serif",
-                  fontSize: "30px",
-                  color: "white",
+                  fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                  margin: 10,
                 }}
               >
-                Score : {score}
+                ถ้าไม่เห็นหน้าต่าง join room กดที่ปุ่ม Reset Button
               </h3>
-            </Col>
-
-            <Col xs={24} sm={24} md={10} lg={6} xl={6}>
-              <Row justify={"center"}>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                  {" "}
-                  <h2
-                    style={{
-                      fontSize: "20px",
-                      fontFamily: "Kanit, sans-serif",
-                    }}
-                  >
-                    Your Card Number
-                  </h2>
-                </Col>
-                <Col xs={22} sm={22} md={24} lg={24} xl={24}>
-                  <Card
-                    title={
-                      <div
-                        style={{
-                          color: getContrastColor(noteColor),
-                          textShadow:
-                            getContrastColor(noteColor) === "#FFFFFF"
-                              ? "1px 1px 0 #000, 2px 2px 0 #000"
-                              : "",
-                          fontSize: "20px",
-                        }}
-                      >
-                        {myCards?.name}
-                      </div>
-                    }
-                    style={{ backgroundColor: noteColor }}
-                  >
-                    <div
-                      style={{
-                        color: getContrastColor(noteColor),
-                        textShadow:
-                          getContrastColor(noteColor) === "#FFFFFF"
-                            ? "1px 1px 0 #000, 2px 2px 0 #000"
-                            : "",
-                        fontSize: window.innerWidth <= 480 ? "40px" : "80px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      {myCards?.value}
-                    </div>
-                    <Row style={{ marginBottom: "10px" }}>
-                      <Col xs={20} sm={20} md={20} lg={20} xl={20}>
-                        <TextArea
-                          rows={1}
-                          disabled={myCards?.showVal === true ? true : false}
-                          placeholder="Enter Note"
-                          value={note}
-                          allowClear
-                          onChange={(e) => setNote(e.target.value)}
-                          maxLength={40}
-                          showCount
-                          // onPressEnter={(e) => {
-                          //   e.currentTarget.onchange();
-                          // }}
-                        />
-                      </Col>
-                      <Col xs={4} sm={4} md={4} lg={4} xl={4}>
-                        <ColorPicker
-                          disabled={myCards?.showVal === true ? true : false}
-                          format="hex"
-                          value={noteColor}
-                          onChangeComplete={(color) => {
-                            const hex = color.toHexString();
-                            setNoteColor(hex);
-                          }}
-                        />
-                      </Col>
-                    </Row>
-
-                    <Button
-                      disabled={myCards?.showVal === true ? true : false}
-                      variant="solid"
-                      color="purple"
-                      onClick={() => {
-                        handleNote(note, noteColor);
-                      }}
-                      icon={<AiFillCheckCircle />}
-                      style={{ marginTop: "10px" }}
-                    >
-                      Save Note
-                    </Button>
-                  </Card>
-                </Col>
-              </Row>
-            </Col>
-          </Row>
-
-          <Divider
-            style={{ backgroundColor: "green", margin: "15px 0px 15px 0px" }}
-          />
-          <Row justify={"center"}>
-            <h2
-              style={{
-                fontFamily: "Kanit, sans-serif",
-                fontSize: window.innerWidth <= 480 ? "25px" : "30px",
-                color: "gray",
-                marginRight: "10px",
-              }}
-            >
-              Topic :
-            </h2>
-            <Row>
-              <h2
+            </Row>
+            <Row justify={"center"}>
+              <h3
                 style={{
                   fontFamily: "Kanit, sans-serif",
-                  fontSize: window.innerWidth <= 480 ? "25px" : "30px",
+                  fontSize: window.innerWidth <= 480 ? "20px" : "25px",
+                  margin: 10,
                 }}
               >
-                {myCards?.topic ? myCards?.topic : "กรุณาเลือกหัวข้อ..."}
-              </h2>{" "}
+                กดที่ปุ่ม Reset Button
+              </h3>
             </Row>
-            {changeTopic === false && (
-              <Row>
-                <Button
-                  variant="solid"
-                  size="large"
-                  color="purple"
-                  onClick={() => {
-                    setChangeTopic(true);
-                  }}
-                  icon={<AiFillPlusSquare />}
-                  style={{
-                    marginLeft: window.innerWidth <= 480 ? "0px" : "20px",
-                  }}
-                >
-                  Change Topic
-                </Button>
-              </Row>
-            )}
-          </Row>
+            <Row justify={"center"}>
+              <Button
+                variant="solid"
+                color="red"
+                size="large"
+                onClick={() => {
+                  localStorage.clear();
+                  window.location.reload();
+                }}
+                style={{ marginLeft: "10px" }}
+              >
+                Reset
+              </Button>
+            </Row>
+          </>
+        ) : (
+          <>
+            <main className="game-container">
+              {/* ================= LEFT ================= */}
+              <section className="game-left">
+                {/* Game instruction */}
+                <div className="instruction-card">
+                  <div className="mascot">
+                    <div className="crown">
+                      <CrownFilled />
+                    </div>
 
-          {changeTopic === true && (
-            <>
-              <Row justify={"center"}>
-                <Col xs={24} sm={24} md={18} lg={12} xl={12}>
-                  <AutoComplete
-                    style={{
-                      width: "100%",
-                      marginRight: "10px",
-                      marginBottom: "10px",
-                    }}
-                    styles={{
-                      input: {
-                        fontFamily: "Kanit, sans-serif",
-                        fontSize: "15px",
-                      },
-                    }}
-                    options={groupedOptions}
-                    placeholder="Search or Enter Topic..."
-                    value={topic}
-                    filterOption={(
-                      inputValue: string,
-                      option: CategoryGroup | undefined,
-                    ): boolean => {
-                      return !!option?.label
-                        ?.toLowerCase()
-                        .includes(inputValue.toLowerCase());
-                    }}
-                    onChange={(value) => {
-                      setTopic(value);
-                    }}
-                    onBlur={(event: React.FocusEvent<HTMLInputElement>) => {
-                      console.log("event.target.value", event.target.value);
+                    <div className="mascot-body">
+                      <div className="mascot-face">
+                        <span>•ᴗ•</span>
+                      </div>
 
-                      setTopic(event.target.value);
-                    }}
-                    onSelect={(value) => {
-                      setTopic(value);
-                    }}
-                    prefix={
-                      <Button
-                        variant="outlined"
-                        type="text"
-                        color="purple"
-                        onClick={() => {
-                          handleRandomTopic();
-                        }}
-                        style={{ marginRight: "10px" }}
-                      >
-                        🎲 Random
-                      </Button>
-                    }
-                    allowClear
-                  />
-                </Col>
-              </Row>
-              <Row justify={"center"}>
-                <Button
-                  variant="solid"
-                  size="large"
-                  color="green"
-                  onClick={() => {
-                    handleTopic(topic);
-                  }}
-                  icon={<AiFillCheckCircle />}
-                  style={{ marginRight: "10px" }}
-                >
-                  Ok
-                </Button>
-                <Button
-                  variant="solid"
-                  size="large"
-                  color="red"
-                  onClick={() => {
-                    setChangeTopic(false);
-                  }}
-                  icon={<MdCancel />}
-                  style={{ marginRight: "10px" }}
-                >
-                  cancel
-                </Button>
-              </Row>
-            </>
-          )}
-          {showDescription()}
+                      <div className="cards">
+                        <div className="mini-card purple" />
+                        <div className="mini-card blue" />
+                        <div className="mini-card yellow" />
+                      </div>
+                    </div>
+                  </div>
 
-          <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
-            <>
-              {window.innerWidth <= 480 ? (
-                <>
-                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                    <DndContext
-                      collisionDetection={closestCenter}
-                      onDragStart={handleDragStart}
-                      onDragMove={handleDragMove}
-                      onDragEnd={handleDragEnd}
+                  <div className="instruction-content">
+                    <h1>
+                      Sort the numbers
+                      <br />
+                      from <span>smallest</span> to <b>largest.</b>
+                    </h1>
+
+                    <div className="stats-card">
+                      <div className="stat">
+                        <div className="stat-icon heart-icon">
+                          <HeartFilled />
+                        </div>
+
+                        <div>
+                          <div className="stat-title">Life Point</div>
+
+                          <div className="hearts">
+                            {Array.from({ length: heart }).map((_, index) => (
+                              <HeartFilled key={index} />
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="stat-divider" />
+
+                      <div className="stat">
+                        <div className="stat-icon score-icon">
+                          <StarFilled />
+                        </div>
+
+                        <div>
+                          <div className="stat-title">Score</div>
+
+                          <div className="score">{score ? score : 0}</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* ================= TOPIC ================= */}
+                <div className="topic-card">
+                  <div className="topic-left">
+                    <div className="topic-icon">
+                      <BulbFilled />
+                    </div>
+
+                    <div className="topic-label">Topic :</div>
+
+                    <div className="topic-name">
+                      {" "}
+                      {myCards?.topic ? myCards?.topic : "กรุณาเลือกหัวข้อ..."}
+                    </div>
+                  </div>
+                  {changeTopic === false && (
+                    <Button
+                      className="topic-button"
+                      icon={<SwapOutlined />}
+                      onClick={() => {
+                        setChangeTopic(true);
+                      }}
                     >
-                      <SortableContext
-                        items={cards}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <Row>
-                          {cards.map((card) => (
-                            <>
-                              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                                <SortableCard
-                                  key={card.id}
-                                  id={card.id}
-                                  name={card.name}
-                                  value={card.value}
-                                  showVal={card?.showVal}
-                                  active={card.active}
-                                  player_Order={card.player_order}
-                                  is_host={card.is_host}
-                                  room={card.room}
-                                  topic={card.topic}
-                                  note={card.note}
-                                  mode={card.mode}
-                                  noteColor={card.notecolor}
-                                  host={myCards?.is_host}
-                                />
-                              </Col>
-                            </>
-                          ))}
-                        </Row>
-                      </SortableContext>
-                    </DndContext>
-                  </Col>
-                </>
-              ) : (
-                <>
-                  <Col xs={24} sm={24} md={24} lg={24} xl={24}>
-                    <DndContext
-                      collisionDetection={closestCenter}
-                      onDragStart={handleDragStart}
-                      onDragMove={handleDragMove}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <SortableContext
-                        items={cards}
-                        strategy={horizontalListSortingStrategy}
-                      >
-                        <Row
-                          gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
-                          align={"middle"}
+                      Change Topic
+                    </Button>
+                  )}
+                  {changeTopic === true && (
+                    <>
+                      <Row justify={"center"}>
+                        <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                          <AutoComplete
+                            style={{
+                              width: "100%",
+                              marginRight: "20px",
+                            }}
+                            styles={{
+                              input: {
+                                fontFamily: "Kanit, sans-serif",
+                                fontSize: "15px",
+                              },
+                            }}
+                            options={groupedOptions}
+                            placeholder="Search or Enter Topic..."
+                            value={topic}
+                            filterOption={(
+                              inputValue: string,
+                              option: CategoryGroup | undefined,
+                            ): boolean => {
+                              return !!option?.label
+                                ?.toLowerCase()
+                                .includes(inputValue.toLowerCase());
+                            }}
+                            onChange={(value) => {
+                              setTopic(value);
+                            }}
+                            onBlur={(
+                              event: React.FocusEvent<HTMLInputElement>,
+                            ) => {
+                              console.log(
+                                "event.target.value",
+                                event.target.value,
+                              );
+
+                              setTopic(event.target.value);
+                            }}
+                            onSelect={(value) => {
+                              setTopic(value);
+                            }}
+                            prefix={
+                              <Button
+                                variant="outlined"
+                                type="text"
+                                color="purple"
+                                onClick={() => {
+                                  handleRandomTopic();
+                                }}
+                                style={{ marginRight: "10px" }}
+                              >
+                                🎲 Random
+                              </Button>
+                            }
+                            allowClear
+                          />
+                        </Col>
+                      </Row>
+                      <Row justify={"center"}>
+                        <Button
+                          variant="solid"
+                          size="large"
+                          color="green"
+                          onClick={() => {
+                            handleTopic(topic);
+                          }}
+                          icon={<AiFillCheckCircle />}
+                          style={{ marginRight: "10px" }}
                         >
-                          {cards.map((card, index) => (
-                            <>
-                              <Col xs={8} sm={12} md={8} lg={6} xl={4} span={4}>
-                                <h2 style={{ fontSize: "50px" }}>
-                                  {index + 1}
-                                </h2>
-                                <SortableCard
-                                  key={card.id}
-                                  id={card.id}
-                                  name={card.name}
-                                  value={card.value}
-                                  showVal={card?.showVal}
-                                  active={card.active}
-                                  is_host={card.is_host}
-                                  room={card.room}
-                                  topic={card.topic}
-                                  note={card.note}
-                                  mode={card.mode}
-                                  noteColor={card.notecolor}
-                                  host={myCards?.is_host}
-                                />
-                              </Col>
-                            </>
-                          ))}
-                        </Row>
-                      </SortableContext>
+                          Ok
+                        </Button>
+                        <Button
+                          variant="solid"
+                          size="large"
+                          color="red"
+                          onClick={() => {
+                            setChangeTopic(false);
+                          }}
+                          icon={<MdCancel />}
+                          style={{ marginRight: "10px" }}
+                        >
+                          cancel
+                        </Button>
+                      </Row>
+                    </>
+                  )}
+                </div>
 
-                      {remoteDrag &&
-                        remoteDrag.left > 0 &&
-                        (() => {
-                          const targetCard = cards.find(
-                            (card) => card.id === remoteDrag.cardId,
-                          );
+                {/* ================= PLAY AREA ================= */}
+                {/* <div className="play-area"> */}
 
-                          if (!targetCard) return null;
+                {/* <div className="cards-container">
+                {players.map((player) => (
+                  <div className="player-wrapper" key={player.id}>
+                    <div className="player-order">
+                      <CrownFilled />
+                      {player.playerOrder}
+                    </div>
 
-                          // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
-                          if (targetCard.showVal === true) {
-                            return null;
-                          }
+                    <div className="player-card">
+                      <div className="player-header">
+                        <strong>{player.name}</strong>
 
-                          return (
-                            <div
-                              style={{
-                                position: "fixed",
-                                left: `${remoteDrag.left}px`,
-                                top: `${remoteDrag.top}px`,
-                                transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
-                                transition: "transform 30ms linear",
-                                width: "200px",
-                                height: "220px",
-                                boxSizing: "border-box",
-                                padding: "15px",
-                                background: "#ffffff",
-                                border: "3px dashed #722ed1",
-                                borderRadius: "12px",
-                                boxShadow:
-                                  "0 8px 25px rgba(114, 46, 209, 0.35)",
-                                zIndex: 99999,
-                                pointerEvents: "none",
-                                willChange: "transform",
-                              }}
-                            >
+                        {player.isHost && (
+                          <span className="host-label">(Host)</span>
+                        )}
+                      </div>
+
+                      <div className="player-number">?</div>
+
+                      <div className="card-decoration">♛</div>
+                    </div>
+                  </div>
+                ))}
+              </div> */}
+                {/* </div> */}
+              </section>
+
+              {/* ================= RIGHT CARD ================= */}
+              <aside className="my-card-wrapper">
+                <div className="my-card-title">
+                  <GiftFilled />
+                  <span>Your Card Number</span>
+
+                  <div className="floating-cards">
+                    <div />
+                    <div />
+                    <div />
+                  </div>
+                </div>
+
+                <div className="my-card" style={{ background: noteColor }}>
+                  <div
+                    className="my-player-name"
+                    style={{
+                      color: getContrastColor(noteColor),
+                      textShadow:
+                        getContrastColor(noteColor) === "#FFFFFF"
+                          ? "1px 1px 0 #000, 2px 2px 0 #000"
+                          : "",
+                    }}
+                  >
+                    {myCards?.name}
+                  </div>
+
+                  <div
+                    className="my-number"
+                    style={{
+                      color: getContrastColor(noteColor),
+                      textShadow:
+                        getContrastColor(noteColor) === "#FFFFFF"
+                          ? "1px 1px 0 #000, 2px 2px 0 #000"
+                          : "",
+                    }}
+                  >
+                    {myCards?.value}
+                  </div>
+
+                  {/* <div className="number-decoration left">✦</div>
+
+              <div className="number-decoration right">✦</div> */}
+
+                  <div className="note-row">
+                    <TextArea
+                      rows={1}
+                      disabled={myCards?.showVal === true ? true : false}
+                      placeholder="Enter Note"
+                      value={note}
+                      allowClear
+                      onChange={(e) => setNote(e.target.value)}
+                      maxLength={40}
+                      showCount
+                      // onPressEnter={(e) => {
+                      //   e.currentTarget.onchange();
+                      // }}
+                    />
+
+                    <ColorPicker
+                      disabled={myCards?.showVal === true ? true : false}
+                      format="hex"
+                      value={noteColor}
+                      onChangeComplete={(color) => {
+                        const hex = color.toHexString();
+                        setNoteColor(hex);
+                      }}
+                    />
+                  </div>
+
+                  <Button
+                    type="primary"
+                    className="save-note-button"
+                    icon={<CheckCircleFilled />}
+                    onClick={() => {
+                      handleNote(note, noteColor);
+                    }}
+                    style={{ marginTop: "10px" }}
+                  >
+                    Save Note
+                  </Button>
+                </div>
+              </aside>
+            </main>
+            {showDescription()}
+
+            <Row style={{ margin: "20px 50px 10px 50px" }} justify={"center"}>
+              <>
+                {window.innerWidth <= 480 ? (
+                  <>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <DndContext
+                        collisionDetection={closestCenter}
+                        onDragStart={handleDragStart}
+                        onDragMove={handleDragMove}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={cards}
+                          strategy={verticalListSortingStrategy}
+                        >
+                          <Row>
+                            {cards.map((card) => (
+                              <>
+                                <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                                  <SortableCard
+                                    key={card.id}
+                                    id={card.id}
+                                    name={card.name}
+                                    value={card.value}
+                                    showVal={card?.showVal}
+                                    active={card.active}
+                                    player_Order={card.player_order}
+                                    is_host={card.is_host}
+                                    room={card.room}
+                                    topic={card.topic}
+                                    note={card.note}
+                                    mode={card.mode}
+                                    noteColor={card.notecolor}
+                                    host={myCards?.is_host}
+                                  />
+                                </Col>
+                              </>
+                            ))}
+                          </Row>
+                        </SortableContext>
+                      </DndContext>
+                    </Col>
+                  </>
+                ) : (
+                  <>
+                    <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                      <DndContext
+                        collisionDetection={closestCenter}
+                        onDragStart={handleDragStart}
+                        onDragMove={handleDragMove}
+                        onDragEnd={handleDragEnd}
+                      >
+                        <SortableContext
+                          items={cards}
+                          strategy={horizontalListSortingStrategy}
+                        >
+                          <Row
+                            gutter={{ xs: 8, sm: 16, md: 24, lg: 24 }}
+                            align={"middle"}
+                          >
+                            {cards.map((card, index) => (
+                              <>
+                                <Col
+                                  xs={8}
+                                  sm={12}
+                                  md={8}
+                                  lg={6}
+                                  xl={4}
+                                  span={4}
+                                >
+                                  <h2 style={{ fontSize: "50px" }}>
+                                    {index + 1}
+                                  </h2>
+                                  <SortableCard
+                                    key={card.id}
+                                    id={card.id}
+                                    name={card.name}
+                                    value={card.value}
+                                    showVal={card?.showVal}
+                                    active={card.active}
+                                    is_host={card.is_host}
+                                    room={card.room}
+                                    topic={card.topic}
+                                    note={card.note}
+                                    mode={card.mode}
+                                    noteColor={card.notecolor}
+                                    host={myCards?.is_host}
+                                  />
+                                </Col>
+                              </>
+                            ))}
+                          </Row>
+                        </SortableContext>
+
+                        {remoteDrag &&
+                          remoteDrag.left > 0 &&
+                          (() => {
+                            const targetCard = cards.find(
+                              (card) => card.id === remoteDrag.cardId,
+                            );
+
+                            if (!targetCard) return null;
+
+                            // 🔒 ถ้า showVal=true ไม่ต้องแสดง Overlay
+                            if (targetCard.showVal === true) {
+                              return null;
+                            }
+
+                            return (
                               <div
                                 style={{
-                                  fontWeight: "bold",
-                                  color: "#333",
-                                  fontSize: "16px",
+                                  position: "fixed",
+                                  left: `${remoteDrag.left}px`,
+                                  top: `${remoteDrag.top}px`,
+                                  transform: `translate3d(${remoteDrag.x}px, ${remoteDrag.y}px, 0)`,
+                                  transition: "transform 30ms linear",
+                                  width: "200px",
+                                  height: "220px",
+                                  boxSizing: "border-box",
+                                  padding: "15px",
+                                  background: "#ffffff",
+                                  border: "3px dashed #722ed1",
+                                  borderRadius: "12px",
+                                  boxShadow:
+                                    "0 8px 25px rgba(114, 46, 209, 0.35)",
+                                  zIndex: 99999,
+                                  pointerEvents: "none",
+                                  willChange: "transform",
                                 }}
                               >
-                                {targetCard.name}
-                              </div>
+                                <div
+                                  style={{
+                                    fontWeight: "bold",
+                                    color: "#333",
+                                    fontSize: "16px",
+                                  }}
+                                >
+                                  {targetCard.name}
+                                </div>
 
-                              <div
-                                style={{
-                                  fontSize: "36px",
-                                  fontWeight: "bold",
-                                  textAlign: "center",
-                                  color: "#722ed1",
-                                  marginTop: "10px",
-                                }}
-                              >
-                                {targetCard.showVal ? targetCard.value : "?"}
+                                <div
+                                  style={{
+                                    fontSize: "36px",
+                                    fontWeight: "bold",
+                                    textAlign: "center",
+                                    color: "#722ed1",
+                                    marginTop: "10px",
+                                  }}
+                                >
+                                  {targetCard.showVal ? targetCard.value : "?"}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })()}
-                    </DndContext>
-                  </Col>
-                </>
-              )}
-            </>
-          </Row>
-
-          {isHost && isHost.is_host === true && (
-            <Row justify={"center"} gutter={[32, 0]}>
-              <Col>
+                            );
+                          })()}
+                      </DndContext>
+                    </Col>
+                  </>
+                )}
+              </>
+            </Row>
+            {/* ================= BOTTOM ACTIONS ================= */}
+            {isHost && isHost.is_host === true && (
+              <footer className="game-actions">
                 <Button
-                  variant="solid"
-                  color="green"
+                  className="action-button check-button"
+                  icon={<CheckCircleFilled />}
                   onClick={() => {
                     handleSingle();
-                  }}
-                  icon={<AiFillCheckCircle />}
-                  style={{
-                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                    width: window.innerWidth <= 480 ? "120px" : "150px",
-                    height: window.innerWidth <= 480 ? "40px" : "50px",
-                    marginBottom: "10px ",
                   }}
                 >
                   Check
                 </Button>
-              </Col>
 
-              <Col>
                 <Button
-                  variant="solid"
-                  color="red"
+                  className="action-button reset-button"
+                  icon={<ReloadOutlined />}
                   onClick={() => {
                     handleRestart();
                   }}
-                  icon={<AiOutlineReload />}
-                  style={{
-                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                    width: window.innerWidth <= 480 ? "120px" : "150px",
-                    height: window.innerWidth <= 480 ? "40px" : "50px",
-                    marginBottom: "10px",
-                  }}
                 >
-                  Restart
+                  Reset
                 </Button>
-              </Col>
-              <Col>
+
                 <Button
-                  variant="solid"
-                  color="purple"
+                  className="action-button next-button"
+                  icon={<MdCancel />}
                   onClick={() => {
                     deleteAllRows();
-                  }}
-                  icon={<MdCancel />}
-                  style={{
-                    fontSize: window.innerWidth <= 480 ? "15px" : "20px",
-                    width: window.innerWidth <= 480 ? "150px" : "180px",
-                    height: window.innerWidth <= 480 ? "40px" : "50px",
-                    marginBottom: "10px",
                   }}
                 >
                   Delete Room
                 </Button>
-              </Col>
-            </Row>
-          )}
-
-          <Row justify={"end"}>
-            <TiSortNumericallyOutline
-              style={{
-                margin: "18px 5px 00px 0px",
-                fontSize: "27px",
-                color: "magenta",
-              }}
-            />
-            <h3
-              style={{
-                fontSize: "20px",
-                color: "magenta",
-              }}
-            >
-              iTOMIC
-            </h3>
-          </Row>
-        </>
-      )}
-    </div>
+              </footer>
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
