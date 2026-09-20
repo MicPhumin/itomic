@@ -1177,7 +1177,7 @@ const SingleOrderScreen = () => {
                   color="purple"
                   href={window.location.origin + `/`}
                   onClick={() => {
-                    broadcastSound("button_click", player.id);
+                    broadcastSound("button_click");
                   }}
                 >
                   Back to menu
