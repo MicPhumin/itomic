@@ -5,6 +5,7 @@ import { GiSpy } from "react-icons/gi";
 import { IoGameController } from "react-icons/io5";
 import { RiFundsBoxFill } from "react-icons/ri";
 import { TiSortNumericallyOutline } from "react-icons/ti";
+import { unlockAudio } from "../utils/sound";
 
 const MainScreen = () => {
   const [howToPlayModal, setHowToPlayModal] = useState(false);
@@ -120,7 +121,9 @@ const MainScreen = () => {
             variant="solid"
             color="cyan"
             href={window.location.origin + `/itomic`}
-            onClick={() => {}}
+            onClick={async () => {
+              await unlockAudio();
+            }}
             icon={<TiSortNumericallyOutline />}
             style={{
               fontSize: "25px",

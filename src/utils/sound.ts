@@ -5,6 +5,27 @@ const sounds = {
   buttonReset: new Audio("/public/sounds/reset.mp3"),
 };
 
+let audioUnlocked = false;
+
+export const unlockAudio = async () => {
+  if (audioUnlocked) return;
+
+  try {
+    for (const audio of Object.values(sounds)) {
+      audio.muted = true;
+      await audio.play();
+      audio.pause();
+      audio.currentTime = 0;
+      audio.muted = false;
+    }
+
+    audioUnlocked = true;
+    console.log("🔊 Audio unlocked");
+  } catch (error) {
+    console.log("Audio unlock failed:", error);
+  }
+};
+
 export const playSound = (
   type: keyof typeof sounds,
   volume = 0.5
