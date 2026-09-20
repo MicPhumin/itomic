@@ -416,7 +416,7 @@ const SingleOrderScreen = () => {
 
   const broadcastSound = async (
     sound: "card_move" | "button_check" | "button_click" | "button_reset",
-    playerId: number,
+    playerId?: number,
   ) => {
     // เล่นของตัวเองทันที
     if (sound === "card_move") {
@@ -1176,6 +1176,9 @@ const SingleOrderScreen = () => {
                   variant="solid"
                   color="purple"
                   href={window.location.origin + `/`}
+                  onClick={() => {
+                    broadcastSound("button_click", player.id);
+                  }}
                 >
                   Back to menu
                 </Button>
@@ -1183,7 +1186,10 @@ const SingleOrderScreen = () => {
             </Row>
           }
           closable={true}
-          onCancel={() => setIsModalOpen(false)}
+          onCancel={() => {
+            setIsModalOpen(false);
+            broadcastSound("button_click");
+          }}
           open={isModalOpen}
           footer={
             <>
@@ -1193,7 +1199,10 @@ const SingleOrderScreen = () => {
                   disabled={!submittable}
                   size="large"
                   type="primary"
-                  onClick={handleOk}
+                  onClick={() => {
+                    broadcastSound("button_click");
+                    handleOk();
+                  }}
                   style={{
                     width: "100px",
                   }}
@@ -1248,6 +1257,7 @@ const SingleOrderScreen = () => {
                 <Switch
                   disabled={selectRoom === "" ? false : true}
                   onChange={(e) => {
+                    broadcastSound("button_click");
                     setHostBtn(e);
                   }}
                   value={hostBtn}
@@ -1290,6 +1300,7 @@ const SingleOrderScreen = () => {
                   color="red"
                   onClick={() => {
                     deleteAllRows();
+                    broadcastSound("button_click");
                   }}
                   icon={<AiOutlineReload />}
                 >
@@ -1333,6 +1344,7 @@ const SingleOrderScreen = () => {
                             key={item.room}
                             hoverable
                             onClick={() => {
+                              broadcastSound("button_click");
                               const nextRoom =
                                 selectRoom === item.room ? "" : item.room;
                               setSelectRoom(nextRoom);
@@ -1439,6 +1451,7 @@ const SingleOrderScreen = () => {
                 color="red"
                 size="large"
                 onClick={() => {
+                  broadcastSound("button_click");
                   localStorage.clear();
                   window.location.reload();
                 }}
