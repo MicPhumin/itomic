@@ -48,7 +48,7 @@ import {
   SwapOutlined,
   TeamOutlined,
 } from "@ant-design/icons";
-
+import { playSound } from "../utils/sound";
 interface topicGame {
   id: number;
   label: string;
@@ -114,7 +114,7 @@ const SingleOrderScreen = () => {
   const [isModalOpen, setIsModalOpen] = useState(true);
   const [submittable, setSubmittable] = React.useState<boolean>(false);
   const [form] = Form.useForm();
-
+  const player = JSON.parse(localStorage.getItem("player") ?? "null");
   // ---------------- Realtime Drag (ง่าย ๆ) ----------------
   const channelRef = useRef<any>(null);
   const playerIdRef = useRef<string>(crypto.randomUUID());
@@ -130,7 +130,7 @@ const SingleOrderScreen = () => {
   } | null>(null);
 
   //console.log("card", cards);
-  //console.log("myCard", myCards);
+  console.log("myCard", myCards);
   //console.log("topic", topic);
   //console.log("hostBtn", hostBtn);
 
@@ -380,6 +380,70 @@ const SingleOrderScreen = () => {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  useEffect(() => {
+    const channel = supabase.channel(`game-room-${room}`);
+
+    channel
+      .on("broadcast", { event: "game_sound" }, ({ payload }) => {
+        console.log("🔊 Receive sound:", payload);
+
+        // ไม่เล่นเสียงของตัวเองซ้ำ
+        if (payload.playerId === player.id) {
+          return;
+        }
+
+        if (payload.sound === "card_move") {
+          playSound("cardMove", 0.5);
+        }
+
+        if (payload.sound === "button_check") {
+          playSound("buttonCheck", 0.5);
+        }
+
+        if (payload.sound === "button_reset") {
+          playSound("buttonReset", 0.5);
+        }
+      })
+      .subscribe();
+
+    channelRef.current = channel;
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [room, player?.id]);
+
+  const broadcastSound = async (
+    sound: "card_move" | "button_check" | "button_click" | "button_reset",
+    playerId: number,
+  ) => {
+    // เล่นของตัวเองทันที
+    if (sound === "card_move") {
+      playSound("cardMove", 0.5);
+    }
+
+    if (sound === "button_check") {
+      playSound("buttonCheck", 0.5);
+    }
+
+    if (sound === "button_click") {
+      playSound("buttonClick", 0.5);
+    }
+
+    if (sound === "button_reset") {
+      playSound("buttonReset", 0.5);
+    }
+    // ส่งไปผู้เล่นคนอื่น
+    await channelRef.current?.send({
+      type: "broadcast",
+      event: "game_sound",
+      payload: {
+        sound,
+        playerId,
+      },
+    });
+  };
 
   const handleRestart = async () => {
     const shuffled = Array.from({ length: 100 }, (_, i) => i + 1);
@@ -653,7 +717,7 @@ const SingleOrderScreen = () => {
     const newCards = arrayMove(cards, oldIndex, newIndex);
 
     setCards(newCards);
-
+    broadcastSound("card_move", player.id);
     // Browser อื่น
     await channelRef.current?.send({
       type: "broadcast",
@@ -872,6 +936,19 @@ const SingleOrderScreen = () => {
     ),
   );
 
+  const deletePlayer = async (id: number) => {
+    const { error } = await supabase
+      .from("itomic")
+      .delete()
+      .eq("id", id)
+      .eq("room", room)
+      .eq("mode", "single");
+    if (error) {
+      console.error(error);
+    } else {
+      console.log("Deleted all rows");
+    }
+  };
   const showDescription = () => {
     if (myCards && myCards?.heart <= 0 && myCards?.score <= 0) {
       return (
@@ -1045,6 +1122,16 @@ const SingleOrderScreen = () => {
             <TeamOutlined />
             <span>Room :</span>
             <strong>{room}</strong>
+            <Button
+              variant="solid"
+              color="danger"
+              onClick={() => {
+                broadcastSound("button_click", player.id);
+                deletePlayer(player.id);
+              }}
+            >
+              Leave Room
+            </Button>
           </div>
 
           <div className="header-right">
@@ -1446,6 +1533,7 @@ const SingleOrderScreen = () => {
                       className="topic-button"
                       icon={<SwapOutlined />}
                       onClick={() => {
+                        broadcastSound("button_click", player.id);
                         setChangeTopic(true);
                       }}
                     >
@@ -1500,6 +1588,7 @@ const SingleOrderScreen = () => {
                                 type="text"
                                 color="purple"
                                 onClick={() => {
+                                  broadcastSound("button_click", player.id);
                                   handleRandomTopic();
                                 }}
                                 style={{ marginRight: "10px" }}
@@ -1517,6 +1606,7 @@ const SingleOrderScreen = () => {
                           size="large"
                           color="green"
                           onClick={() => {
+                            broadcastSound("button_click", player.id);
                             handleTopic(topic);
                           }}
                           icon={<AiFillCheckCircle />}
@@ -1529,6 +1619,7 @@ const SingleOrderScreen = () => {
                           size="large"
                           color="red"
                           onClick={() => {
+                            broadcastSound("button_click", player.id);
                             setChangeTopic(false);
                           }}
                           icon={<MdCancel />}
@@ -1646,6 +1737,7 @@ const SingleOrderScreen = () => {
                     className="save-note-button"
                     icon={<CheckCircleFilled />}
                     onClick={() => {
+                      broadcastSound("button_click", player.id);
                       handleNote(note, noteColor);
                     }}
                     style={{ marginTop: "10px" }}
@@ -1824,6 +1916,7 @@ const SingleOrderScreen = () => {
                   className="action-button check-button"
                   icon={<CheckCircleFilled />}
                   onClick={() => {
+                    broadcastSound("button_check", player.id);
                     handleSingle();
                   }}
                 >
@@ -1834,6 +1927,7 @@ const SingleOrderScreen = () => {
                   className="action-button reset-button"
                   icon={<ReloadOutlined />}
                   onClick={() => {
+                    broadcastSound("button_reset", player.id);
                     handleRestart();
                   }}
                 >
@@ -1844,6 +1938,7 @@ const SingleOrderScreen = () => {
                   className="action-button next-button"
                   icon={<MdCancel />}
                   onClick={() => {
+                    broadcastSound("button_reset", player.id);
                     deleteAllRows();
                   }}
                 >

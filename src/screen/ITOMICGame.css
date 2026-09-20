@@ -993,9 +993,9 @@ body {
     gap: 10px;
   }
 
-  .room-pill {
+  /* .room-pill {
     display: none;
-  }
+  } */
 
   .logo-text {
     font-size: 27px;
