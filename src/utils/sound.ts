@@ -1,8 +1,8 @@
 const sounds = {
-  cardMove: new Audio("/public/sounds/whoosh.mp3"),
-  buttonCheck: new Audio("/public/sounds/tada.mp3"),
-  buttonClick: new Audio("/public/sounds/pop.mp3"),
-  buttonReset: new Audio("/public/sounds/reset.mp3"),
+  cardMove: new Audio("/sounds/whoosh.mp3"),
+  buttonCheck: new Audio("/sounds/tada.mp3"),
+  buttonClick: new Audio("/sounds/pop.mp3"),
+  buttonReset: new Audio("/sounds/reset.mp3"),
 };
 
 let audioUnlocked = false;
